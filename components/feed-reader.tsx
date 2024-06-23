@@ -397,6 +397,33 @@ const FeedReader = () => {
                 <p className="text-sm text-gray-500 mb-2">
                   {new Date(item.pubDate).toLocaleString()}
                 </p>
+                <div className="relative z-20">
+                  <div
+                    className={`mb-4 flex gap-2 ${isReversed ? "justify-start" : "justify-end"}`}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleFeedback(index, "like")}
+                    >
+                      <ThumbsUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleFeedback(index, "dislike")}
+                    >
+                      <ThumbsDown className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleSave(index)}
+                    >
+                      <Bookmark className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
                 <p
                   className="mb-2 whitespace-normal text-justify"
                   dangerouslySetInnerHTML={sanitize(
