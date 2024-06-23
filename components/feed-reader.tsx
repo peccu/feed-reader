@@ -204,6 +204,11 @@ const FeedReader = () => {
         left: targetScroll,
         behavior: "instant",
       });
+      // and scroll to top of the article
+      scrollContainerRef.current.scrollIntoView({
+        behavior: "instant",
+        block: "start",
+      });
     }
   };
 
