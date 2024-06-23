@@ -437,7 +437,7 @@ const FeedReader = () => {
                   </div>
                 </div>
               </CardContent>
-              <pre>{item.description}</pre>
+              <pre className="text-xs">{item.description}</pre>
             </Card>
           ))}
         </div>
