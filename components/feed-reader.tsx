@@ -55,8 +55,8 @@ interface Enclosure {
 
 // https://stackoverflow.com/a/60797348
 const defaultOptions = {
-  //ALLOWED_TAGS: [ 'b', 'i', 'em', 'strong', 'a' ],
-  ALLOWED_ATTR: ["href"],
+  ALLOWED_TAGS: [ 'b', 'i', 'em', 'strong', 'a', 'img', 'br', 'div', 'p', 'ul', 'li', 'ol', 'h1', 'pre', 'code', 'blockquote', 'hr', 'h2', 'h3', 'h4', 'h5' ],
+  ALLOWED_ATTR: ["href", 'src', 'target', 'rel', 'title', 'alt', 'width', 'height'],
 };
 
 const sanitize = (dirty: string) => ({
@@ -288,7 +288,6 @@ const FeedReader = () => {
                 <Button
                   onClick={handleImportClick}
                   variant="outline"
-                  component="label"
                 >
                   <Upload className="mr-2 h-4 w-4" />
                   Import Settings
@@ -306,13 +305,20 @@ const FeedReader = () => {
         )}
         <CardContent>
           <div className="flex justify-between items-center">
-            <Button onClick={toggleDirection} variant="outline" size="sm">
-              <Repeat className="mr-2 h-4 w-4" />
-              {isReversed ? "Normal Direction" : "Reverse Direction"}
-            </Button>
+            {isReversed ? (
             <span onClick={toggleDirection}>
               {currentIndex + 1} / {feedItems.length}
             </span>
+            ):""}
+<Button onClick={toggleDirection} variant="outline" size="sm">
+              <Repeat className="mr-2 h-4 w-4" />
+              {isReversed ? "Normal Direction" : "Reverse Direction"}
+            </Button>
+            {!isReversed ? (
+            <span onClick={toggleDirection}>
+              {currentIndex + 1} / {feedItems.length}
+            </span>
+            ):""}
           </div>
         </CardContent>
       </Card>
@@ -328,8 +334,15 @@ const FeedReader = () => {
             <Card key={index} className="w-screen flex-shrink-0 snap-center">
               <CardHeader>
                 <CardTitle className="text-lg whitespace-normal">
-                  {item.title}
-                </CardTitle>
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2"
+                  >
+{item.title}
+                  </a>
+</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-500 mb-2">
@@ -346,7 +359,7 @@ const FeedReader = () => {
                   )}
                 ></p>
                 <div className="relative z-20">
-                  <div className="mt-4 flex justify-end gap-2">
+                  <div className={`mt-4 flex gap-2 ${isReversed ? 'justify-start' : 'justify-end'}`}>
                     <a
                       href={item.link}
                       target="_blank"
@@ -358,7 +371,7 @@ const FeedReader = () => {
                   </div>
                 </div>
                 <div className="relative z-20">
-                  <div className="mt-4 flex justify-end gap-2">
+                  <div className={`mt-4 flex gap-2 ${isReversed ? 'justify-start' : 'justify-end'}`}>
                     <Button
                       variant="outline"
                       size="sm"
@@ -383,6 +396,9 @@ const FeedReader = () => {
                   </div>
                 </div>
               </CardContent>
+              <pre className="text-sm text-gray-500 m-2 overflow-x-auto whitespace-normal">
+                {item.description}
+              </pre>
             </Card>
           ))}
         </div>
