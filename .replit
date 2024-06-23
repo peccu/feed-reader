@@ -1,0 +1,18 @@
+run = "npm run dev"
+modules = ["nodejs-18:v3-20230608-f4cd419"]
+hidden = [".config", "package-lock.json"]
+
+disableInstallBeforeRun = true
+disableGuessImports = true
+
+[nix]
+channel = "stable-23_05"
+
+[deployment]
+run = ["node", "index.js"]
+deploymentTarget = "cloudrun"
+ignorePorts = false
+
+[[ports]]
+localPort = 3000
+externalPort = 80
