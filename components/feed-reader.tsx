@@ -6,17 +6,17 @@ import {
   Bookmark,
   ChevronLeft,
   ChevronRight,
+  Download,
   Loader2,
   Plus,
   Repeat,
+  Settings,
   ThumbsDown,
   ThumbsUp,
-  X,
-  Settings,
-  Download,
   Upload,
+  X,
 } from "lucide-react";
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 interface Rss2JsonResponse {
   status: string;
@@ -55,8 +55,39 @@ interface Enclosure {
 
 // https://stackoverflow.com/a/60797348
 const defaultOptions = {
-  ALLOWED_TAGS: [ 'b', 'i', 'em', 'strong', 'a', 'img', 'br', 'div', 'p', 'ul', 'li', 'ol', 'h1', 'pre', 'code', 'blockquote', 'hr', 'h2', 'h3', 'h4', 'h5' ],
-  ALLOWED_ATTR: ["href", 'src', 'target', 'rel', 'title', 'alt', 'width', 'height'],
+  ALLOWED_TAGS: [
+    "b",
+    "i",
+    "em",
+    "strong",
+    "a",
+    "img",
+    "br",
+    "div",
+    "p",
+    "ul",
+    "li",
+    "ol",
+    "h1",
+    "pre",
+    "code",
+    "blockquote",
+    "hr",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+  ],
+  ALLOWED_ATTR: [
+    "href",
+    "src",
+    "target",
+    "rel",
+    "title",
+    "alt",
+    "width",
+    "height",
+  ],
 };
 
 const sanitize = (dirty: string) => ({
@@ -285,10 +316,7 @@ const FeedReader = () => {
                   <Download className="mr-2 h-4 w-4" />
                   Export Settings
                 </Button>
-                <Button
-                  onClick={handleImportClick}
-                  variant="outline"
-                >
+                <Button onClick={handleImportClick} variant="outline">
                   <Upload className="mr-2 h-4 w-4" />
                   Import Settings
                   <input
@@ -306,19 +334,23 @@ const FeedReader = () => {
         <CardContent>
           <div className="flex justify-between items-center">
             {isReversed ? (
-            <span onClick={toggleDirection}>
-              {currentIndex + 1} / {feedItems.length}
-            </span>
-            ):""}
-<Button onClick={toggleDirection} variant="outline" size="sm">
+              <span onClick={toggleDirection}>
+                {currentIndex + 1} / {feedItems.length}
+              </span>
+            ) : (
+              ""
+            )}
+            <Button onClick={toggleDirection} variant="outline" size="sm">
               <Repeat className="mr-2 h-4 w-4" />
               {isReversed ? "Normal Direction" : "Reverse Direction"}
             </Button>
             {!isReversed ? (
-            <span onClick={toggleDirection}>
-              {currentIndex + 1} / {feedItems.length}
-            </span>
-            ):""}
+              <span onClick={toggleDirection}>
+                {currentIndex + 1} / {feedItems.length}
+              </span>
+            ) : (
+              ""
+            )}
           </div>
         </CardContent>
       </Card>
@@ -340,9 +372,9 @@ const FeedReader = () => {
                     rel="noopener noreferrer"
                     className="mt-2"
                   >
-{item.title}
+                    {item.title}
                   </a>
-</CardTitle>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-500 mb-2">
@@ -359,7 +391,9 @@ const FeedReader = () => {
                   )}
                 ></p>
                 <div className="relative z-20">
-                  <div className={`mt-4 flex gap-2 ${isReversed ? 'justify-start' : 'justify-end'}`}>
+                  <div
+                    className={`mt-4 flex gap-2 ${isReversed ? "justify-start" : "justify-end"}`}
+                  >
                     <a
                       href={item.link}
                       target="_blank"
@@ -371,7 +405,9 @@ const FeedReader = () => {
                   </div>
                 </div>
                 <div className="relative z-20">
-                  <div className={`mt-4 flex gap-2 ${isReversed ? 'justify-start' : 'justify-end'}`}>
+                  <div
+                    className={`mt-4 flex gap-2 ${isReversed ? "justify-start" : "justify-end"}`}
+                  >
                     <Button
                       variant="outline"
                       size="sm"
@@ -396,9 +432,7 @@ const FeedReader = () => {
                   </div>
                 </div>
               </CardContent>
-              <pre className="text-sm text-gray-500 m-2 overflow-x-auto whitespace-normal break-all">
-                {item.description}
-              </pre>
+              <pre>{item.description}</pre>
             </Card>
           ))}
         </div>

@@ -82,4 +82,7 @@
       background-position: 0 100%;
       background-repeat: no-repeat;
     }
+  pre {
+    @apply rounded bg-muted font-mono text-xs text-gray-200 overflow-x-auto whitespace-pre-wrap break-all p-2;
+  }
 }
