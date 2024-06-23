@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 interface Rss2JsonResponse {
   status: string;
@@ -132,6 +133,7 @@ const FeedReader = () => {
           });
         } else {
           console.error(`Failed to fetch feed: ${result.feed.url}`);
+          toast(`Failed to fetch feed: ${result.feed.url}`);
           return [];
         }
       });
@@ -143,6 +145,7 @@ const FeedReader = () => {
       );
     } catch (err) {
       setError("An error occurred. Please check the URL or try again later.");
+      toast("An error occurred. Please check the URL or try again later.");
     } finally {
       setLoading(false);
     }
@@ -230,11 +233,15 @@ const FeedReader = () => {
 
   const handleFeedback = (index: number, type: "like" | "dislike") => {
     console.log(`Feedback for item ${index}: ${type}`);
+    toast(
+      `Feedback for item ${index}: ${type}, title: ${feedItems[index].title}`,
+    );
     // Here you would typically send this feedback to a server
   };
 
   const handleSave = (index: number) => {
     console.log(`Saved item ${index}`);
+    toast(`Saved item ${index}, title: ${feedItems[index].title}`);
     // Here you would typically save this item to local storage or a server
   };
 
@@ -260,10 +267,12 @@ const FeedReader = () => {
           const settings = JSON.parse(e.target?.result as string);
           if (settings.feedUrls) {
             setFeedUrls(settings.feedUrls);
+            toast("Settings imported successfully");
           }
         } catch (error) {
           console.error("Failed to parse settings file", error);
           setError("Failed to import settings. Please check the file format.");
+          toast("Failed to import settings. Please check the file format.");
         }
       };
       reader.readAsText(file);
