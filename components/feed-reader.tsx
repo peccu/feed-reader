@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-// import DOMPurify from "dompurify";
+import DOMPurify from "dompurify";
 import {
   Bookmark,
   ChevronLeft,
@@ -13,6 +13,8 @@ import {
   ThumbsUp,
   X,
   Settings,
+  Download,
+  Upload,
 } from "lucide-react";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 
@@ -58,8 +60,8 @@ const defaultOptions = {
 };
 
 const sanitize = (dirty: string) => ({
-  // __html: DOMPurify.sanitize(dirty, { ...defaultOptions }),
-  __html: dirty,
+  __html: DOMPurify.sanitize(dirty, { ...defaultOptions }),
+  // __html: dirty,
 });
 
 const FeedReader = () => {
@@ -77,6 +79,7 @@ const FeedReader = () => {
   const [isReversed, setIsReversed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchFeeds = useCallback(async () => {
     setLoading(true);
@@ -117,6 +120,17 @@ const FeedReader = () => {
   useEffect(() => {
     fetchFeeds();
   }, [fetchFeeds]);
+
+  useEffect(() => {
+    const storedUrls = localStorage.getItem("feedUrls");
+    if (storedUrls) {
+      setFeedUrls(JSON.parse(storedUrls));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("feedUrls", JSON.stringify(feedUrls));
+  }, [feedUrls]);
 
   useEffect(() => {
     const updateCurrentIndex = () => {
@@ -188,14 +202,49 @@ const FeedReader = () => {
     // Here you would typically save this item to local storage or a server
   };
 
+  const exportSettings = () => {
+    const settings = JSON.stringify({ feedUrls });
+    const blob = new Blob([settings], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "feed_reader_settings.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const importSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const settings = JSON.parse(e.target?.result as string);
+          if (settings.feedUrls) {
+            setFeedUrls(settings.feedUrls);
+          }
+        } catch (error) {
+          console.error("Failed to parse settings file", error);
+          setError("Failed to import settings. Please check the file format.");
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="p-0 relative">
       <Card className="mb-4 relative z-20">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Multi-Feed Reader</CardTitle>
           <Button onClick={toggleSettings} variant="outline" size="sm">
-            <Settings className="h-4 w-4 mr-2" />
-            {showSettings ? "Hide Settings" : "Show Settings"}
+            <Settings className="h-4 w-4" />
           </Button>
         </CardHeader>
         {showSettings && (
@@ -231,6 +280,27 @@ const FeedReader = () => {
                   "Load All Feeds"
                 )}
               </Button>
+              <div className="flex gap-2 mt-4">
+                <Button onClick={exportSettings} variant="outline">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export Settings
+                </Button>
+                <Button
+                  onClick={handleImportClick}
+                  variant="outline"
+                  component="label"
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import Settings
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    hidden
+                    accept=".json"
+                    onChange={importSettings}
+                  />
+                </Button>
+              </div>
             </div>
           </CardContent>
         )}
@@ -318,13 +388,13 @@ const FeedReader = () => {
         </div>
       </div>
       <div
-        className="absolute left-0 top-0 bottom-0 w-16 flex items-center justify-start cursor-pointer z-10 opacity-25 bg-gradient-to-r from-gray-700 to-slate-900"
+        className="absolute left-0 top-0 bottom-0 w-16 flex items-center justify-start cursor-pointer z-10 opacity-25 bg-gradient-to-r from-gray-700 to-transparent"
         onClick={(e) => handleNavClick(e, -1)}
       >
         <ChevronLeft className="text-gray-500 hover:text-gray-700" size={28} />
       </div>
       <div
-        className="absolute right-0 top-0 bottom-0 w-16 flex items-center justify-end cursor-pointer z-10 bg-slate-400 opacity-25 bg-gradient-to-l from-gray-700 to-slate-900"
+        className="absolute right-0 top-0 bottom-0 w-16 flex items-center justify-end cursor-pointer z-10 opacity-25 bg-gradient-to-l from-gray-700 to-transparent"
         onClick={(e) => handleNavClick(e, 1)}
       >
         <ChevronRight className="text-gray-500 hover:text-gray-700" size={28} />
