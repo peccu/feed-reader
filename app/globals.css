@@ -31,8 +31,18 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
- 
+
     --radius: 0.5rem;
+
+    a {
+      background: linear-gradient(to right, #191f1f, #ffffed);
+      background-size: 100% 2px;
+      background-position: 0 100%;
+      background-repeat: no-repeat;
+    }
+    pre {
+      @apply text-gray-800;
+    }
   }
  
   .dark {
@@ -63,6 +73,16 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+
+    a {
+      background: linear-gradient(to right, #ffffed, #191f1f);
+      background-size: 100% 2px;
+      background-position: 0 100%;
+      background-repeat: no-repeat;
+    }
+    pre {
+      @apply text-gray-200;
+    }
   }
 }
  
@@ -76,13 +96,9 @@
   a {
     /*@apply text-primary underline underline-offset-2 hover:underline-offset-4;*/
   /*  .gradient-underline {*/
-      display: inline;
-      background: linear-gradient(to right, #ffffed, #191f1f);
-      background-size: 100% 2px;
-      background-position: 0 100%;
-      background-repeat: no-repeat;
-    }
+    display: inline;
+  }
   pre {
-    @apply rounded bg-muted font-mono text-xs text-gray-200 overflow-x-auto whitespace-pre-wrap break-all p-2;
+    @apply rounded bg-muted font-mono overflow-x-auto whitespace-pre-wrap break-all p-2;
   }
 }
