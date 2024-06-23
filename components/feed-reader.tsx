@@ -352,7 +352,7 @@ const FeedReader = () => {
                   {new Date(item.pubDate).toLocaleString()}
                 </p>
                 <p
-                  className="mb-2 whitespace-normal"
+                  className="mb-2 whitespace-normal text-justify"
                   dangerouslySetInnerHTML={sanitize(
                     item.description,
                     // .replace(/<[^>]*>?/gm, '')
@@ -396,7 +396,7 @@ const FeedReader = () => {
                   </div>
                 </div>
               </CardContent>
-              <pre className="text-sm text-gray-500 m-2 overflow-x-auto whitespace-normal">
+              <pre className="text-sm text-gray-500 m-2 overflow-x-auto whitespace-normal break-all">
                 {item.description}
               </pre>
             </Card>
