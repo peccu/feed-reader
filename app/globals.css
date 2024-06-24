@@ -101,4 +101,7 @@
   pre {
     @apply rounded bg-muted font-mono overflow-x-auto whitespace-pre-wrap break-all p-2;
   }
+  code {
+    @apply bg-muted;
+  }
 }
