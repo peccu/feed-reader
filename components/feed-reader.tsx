@@ -1,6 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import DOMPurify from "dompurify";
 import {
   Bookmark,
@@ -98,13 +105,14 @@ const sanitize = (dirty: string) => ({
 
 const FeedReader = () => {
   const [feedUrls, setFeedUrls] = useState([
-    "https://www.lifehacker.jp/feed/index.xml",
-    "https://github.blog/feed/",
-    "https://www.publickey1.jp/atom.xml",
-    "https://dev.to/feed",
+    { url: "https://www.lifehacker.jp/feed/index.xml", type: "RSS" },
+    { url: "https://github.blog/feed/", type: "RSS" },
+    { url: "https://www.publickey1.jp/atom.xml", type: "Atom" },
+    { url: "https://dev.to/feed", type: "RSS" },
   ]);
   const [newFeedUrl, setNewFeedUrl] = useState("");
   const [feedItems, setFeedItems] = useState<Item[]>([]);
+  const [newFeedType, setNewFeedType] = useState("RSS");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -117,10 +125,10 @@ const FeedReader = () => {
     setLoading(true);
     setError(null);
     try {
-      const feedPromises = feedUrls.map((url) =>
+      const feedPromises = feedUrls.map((feed) =>
         fetch(
           `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(
-            url,
+            feed.url,
           )}`,
         ).then((response) => response.json()),
       );
@@ -188,14 +196,15 @@ const FeedReader = () => {
   }, []);
 
   const addFeed = () => {
-    if (newFeedUrl && !feedUrls.includes(newFeedUrl)) {
-      setFeedUrls([...feedUrls, newFeedUrl]);
+    if (newFeedUrl && !feedUrls.some((feed) => feed.url === newFeedUrl)) {
+      setFeedUrls([...feedUrls, { url: newFeedUrl, type: newFeedType }]);
       setNewFeedUrl("");
+      setNewFeedType("RSS");
     }
   };
 
   const removeFeed = (urlToRemove: string) => {
-    setFeedUrls(feedUrls.filter((url) => url !== urlToRemove));
+    setFeedUrls(feedUrls.filter((feed) => feed.url !== urlToRemove));
   };
 
   const scrollToNextItem = (direction: number) => {
@@ -295,11 +304,12 @@ const FeedReader = () => {
         {showSettings && (
           <CardContent>
             <div className="flex flex-col gap-2 mb-2">
-              {feedUrls.map((url, index) => (
+              {feedUrls.map((feed, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <Input value={url} readOnly />
+                  <Input value={feed.url} readOnly />
+                  <span className="text-sm text-gray-500">{feed.type}</span>
                   <Button
-                    onClick={() => removeFeed(url)}
+                    onClick={() => removeFeed(feed.url)}
                     variant="outline"
                     size="icon"
                   >
@@ -314,6 +324,16 @@ const FeedReader = () => {
                   value={newFeedUrl}
                   onChange={(e) => setNewFeedUrl(e.target.value)}
                 />
+                <Select value={newFeedType} onValueChange={setNewFeedType}>
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue placeholder="Feed type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="RSS">RSS</SelectItem>
+                    <SelectItem value="Atom">Atom</SelectItem>
+                    <SelectItem value="JSON">JSON</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button onClick={addFeed}>
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -474,6 +494,7 @@ const FeedReader = () => {
                 </div>
               </CardContent>
               <pre className="text-xs">{item.description}</pre>
+              <pre className="text-xs">{JSON.stringify(item, null, 2)}</pre>
             </Card>
           ))}
         </div>
