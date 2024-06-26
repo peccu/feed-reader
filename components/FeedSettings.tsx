@@ -91,7 +91,7 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
     <div className="flex flex-col gap-2 mb-2">
       {feedUrls.map((feed, index) => (
         <div key={index} className="flex items-center gap-2">
-          <Input value={feed.url} readOnly />
+          <Input className="text-base" value={feed.url} readOnly />
           <span className="text-sm text-gray-500">{feed.type}</span>
           <Button
             onClick={() => removeFeed(feed.url)}
@@ -105,6 +105,7 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
       <div className="flex gap-2">
         <Input
           type="text"
+          className="text-base"
           placeholder="Enter new RSS feed URL"
           value={newFeedUrl}
           onChange={(e) => setNewFeedUrl(e.target.value)}
