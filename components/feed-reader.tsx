@@ -1,107 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import DOMPurify from "dompurify";
-import {
-  Bookmark,
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  Loader2,
-  Plus,
-  Repeat,
-  Settings,
-  ThumbsDown,
-  ThumbsUp,
-  Upload,
-  X,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Repeat, Settings } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-
-interface Rss2JsonResponse {
-  status: string;
-  feed: Feed;
-  items: Item[];
-}
-
-interface Feed {
-  url: string;
-  title: string;
-  link: string;
-  author: string;
-  description: string;
-  image: string;
-}
-
-interface Item {
-  title: string;
-  pubDate: string;
-  link: string;
-  guid: string;
-  author: string;
-  thumbnail: string;
-  description: string;
-  content: string;
-  enclosure: Enclosure;
-  categories: string[];
-  feed?: Feed;
-}
-
-interface Enclosure {
-  link: string;
-  type: string;
-  length?: string; // Optional as it might not be present in all responses
-}
-
-// https://stackoverflow.com/a/60797348
-const defaultOptions = {
-  ALLOWED_TAGS: [
-    "b",
-    "i",
-    "em",
-    "strong",
-    "a",
-    "img",
-    "br",
-    "div",
-    "p",
-    "ul",
-    "li",
-    "ol",
-    "h1",
-    "pre",
-    "code",
-    "blockquote",
-    "hr",
-    "h2",
-    "h3",
-    "h4",
-    "h5",
-  ],
-  ALLOWED_ATTR: [
-    "href",
-    "src",
-    "target",
-    "rel",
-    "title",
-    "alt",
-    "width",
-    "height",
-  ],
-};
-
-const sanitize = (dirty: string) => ({
-  __html: DOMPurify.sanitize(dirty, { ...defaultOptions }),
-  // __html: dirty,
-});
+import FeedItem from "./FeedItem";
+import FeedSettings from "./FeedSettings";
+import { Item, Rss2JsonResponse } from "./types";
 
 const FeedReader = () => {
   const [feedUrls, setFeedUrls] = useState([
@@ -110,16 +14,13 @@ const FeedReader = () => {
     { url: "https://www.publickey1.jp/atom.xml", type: "Atom" },
     { url: "https://dev.to/feed", type: "RSS" },
   ]);
-  const [newFeedUrl, setNewFeedUrl] = useState("");
   const [feedItems, setFeedItems] = useState<Item[]>([]);
-  const [newFeedType, setNewFeedType] = useState("RSS");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isReversed, setIsReversed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchFeeds = useCallback(async () => {
     setLoading(true);
@@ -195,18 +96,6 @@ const FeedReader = () => {
     };
   }, []);
 
-  const addFeed = () => {
-    if (newFeedUrl && !feedUrls.some((feed) => feed.url === newFeedUrl)) {
-      setFeedUrls([...feedUrls, { url: newFeedUrl, type: newFeedType }]);
-      setNewFeedUrl("");
-      setNewFeedType("RSS");
-    }
-  };
-
-  const removeFeed = (urlToRemove: string) => {
-    setFeedUrls(feedUrls.filter((feed) => feed.url !== urlToRemove));
-  };
-
   const scrollToNextItem = (direction: number) => {
     if (scrollContainerRef.current) {
       const containerWidth = scrollContainerRef.current.clientWidth;
@@ -254,44 +143,6 @@ const FeedReader = () => {
     // Here you would typically save this item to local storage or a server
   };
 
-  const exportSettings = () => {
-    const settings = JSON.stringify({ feedUrls });
-    const blob = new Blob([settings], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "feed_reader_settings.json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const importSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const settings = JSON.parse(e.target?.result as string);
-          if (settings.feedUrls) {
-            setFeedUrls(settings.feedUrls);
-            toast("Settings imported successfully");
-          }
-        } catch (error) {
-          console.error("Failed to parse settings file", error);
-          setError("Failed to import settings. Please check the file format.");
-          toast("Failed to import settings. Please check the file format.");
-        }
-      };
-      reader.readAsText(file);
-    }
-  };
-
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
   return (
     <div className="p-0 relative">
       <Card className="mb-4 relative z-20">
@@ -303,66 +154,13 @@ const FeedReader = () => {
         </CardHeader>
         {showSettings && (
           <CardContent>
-            <div className="flex flex-col gap-2 mb-2">
-              {feedUrls.map((feed, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Input value={feed.url} readOnly />
-                  <span className="text-sm text-gray-500">{feed.type}</span>
-                  <Button
-                    onClick={() => removeFeed(feed.url)}
-                    variant="outline"
-                    size="icon"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="Enter new RSS feed URL"
-                  value={newFeedUrl}
-                  onChange={(e) => setNewFeedUrl(e.target.value)}
-                />
-                <Select value={newFeedType} onValueChange={setNewFeedType}>
-                  <SelectTrigger className="w-[100px]">
-                    <SelectValue placeholder="Feed type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="RSS">RSS</SelectItem>
-                    <SelectItem value="Atom">Atom</SelectItem>
-                    <SelectItem value="JSON">JSON</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button onClick={addFeed}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <Button onClick={fetchFeeds} disabled={loading}>
-                {loading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  "Load All Feeds"
-                )}
-              </Button>
-              <div className="flex gap-2 mt-4">
-                <Button onClick={exportSettings} variant="outline">
-                  <Download className="mr-2 h-4 w-4" />
-                  Export Settings
-                </Button>
-                <Button onClick={handleImportClick} variant="outline">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Import Settings
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    hidden
-                    accept=".json"
-                    onChange={importSettings}
-                  />
-                </Button>
-              </div>
-            </div>
+            <FeedSettings
+              feedUrls={feedUrls}
+              setFeedUrls={setFeedUrls}
+              setError={setError}
+              fetchFeeds={fetchFeeds}
+              loading={loading}
+            />
           </CardContent>
         )}
         <CardContent>
@@ -397,110 +195,19 @@ const FeedReader = () => {
       >
         <div className="inline-flex">
           {feedItems.map((item, index) => (
-            <Card key={index} className="w-screen flex-shrink-0 snap-center">
-              <CardContent>
-                <div className="relative z-20">
-                  <div
-                    className={`flex gap-2 ${isReversed ? "justify-start" : "justify-end"}`}
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleFeedback(index, "like")}
-                    >
-                      <ThumbsUp className="h-5 w-5" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleFeedback(index, "dislike")}
-                    >
-                      <ThumbsDown className="h-5 w-5" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSave(index)}
-                    >
-                      <Bookmark className="h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-              <CardHeader>
-                <CardTitle className="text-lg whitespace-normal">
-                  <a
-                    href={item.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2"
-                  >
-                    {item.title}
-                  </a>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500 mb-2">
-                  {item.feed?.title || "Unknown Feed"}
-                </p>
-                <p className="text-sm text-gray-500 mb-2">
-                  {new Date(item.pubDate).toLocaleString()}
-                </p>
-                <p
-                  className="mb-2 whitespace-normal text-justify text-sm"
-                  dangerouslySetInnerHTML={sanitize(
-                    item.description,
-                    // .replace(/<[^>]*>?/gm, '')
-                  )}
-                ></p>
-                <div className="relative z-20">
-                  <div
-                    className={`mt-4 flex gap-2 ${isReversed ? "justify-start" : "justify-end"}`}
-                  >
-                    <a
-                      href={item.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2"
-                    >
-                      Read More
-                    </a>
-                  </div>
-                </div>
-                <div className="relative z-20">
-                  <div
-                    className={`mt-4 flex gap-2 ${isReversed ? "justify-start" : "justify-end"}`}
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleFeedback(index, "like")}
-                    >
-                      <ThumbsUp className="h-5 w-5" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleFeedback(index, "dislike")}
-                    >
-                      <ThumbsDown className="h-5 w-5" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSave(index)}
-                    >
-                      <Bookmark className="h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-              <pre className="text-xs">{item.description}</pre>
-              <pre className="text-xs">{JSON.stringify(item, null, 2)}</pre>
-            </Card>
+            <FeedItem
+              key={index}
+              item={item}
+              index={index}
+              isReversed={isReversed}
+              handleFeedback={handleFeedback}
+              handleSave={handleSave}
+            />
           ))}
         </div>
       </div>
+
+      <!-- navigation -->
       <div
         className="absolute left-0 top-0 bottom-0 w-16 flex items-center justify-start cursor-pointer z-10 opacity-25 bg-gradient-to-r from-gray-700 to-transparent"
         onClick={(e) => handleNavClick(e, -1)}
