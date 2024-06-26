@@ -20,6 +20,15 @@ export default function RootLayout({
   return (
     <>
       <html lang="en" suppressHydrationWarning>
+        <head>
+          <title>Feed Text</title>
+          <link rel="manifest" href="/manifest.json" />
+          <link rel="apple-touch-icon" href="/apple-icon-180x180.png" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <link rel="apple-touch-startup-image" href="/splash.png" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+          <meta name="apple-mobile-web-app-title" content="Feed Text" />
+        </head>
         <body className={inter.className}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
