@@ -124,6 +124,11 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
           <Plus className="h-4 w-4" />
         </Button>
       </div>
+      <div className="my-2">
+        <a href="https://feedurl.netlify.app/" target="_blank" rel="noreferrer">
+          Feed URL Extractor
+        </a>
+      </div>
       <Button onClick={fetchFeeds} disabled={loading}>
         {loading ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
