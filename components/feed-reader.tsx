@@ -207,7 +207,6 @@ const FeedReader = () => {
         </div>
       </div>
 
-      <!-- navigation -->
       <div
         className="absolute left-0 top-0 bottom-0 w-16 flex items-center justify-start cursor-pointer z-10 opacity-25 bg-gradient-to-r from-gray-700 to-transparent"
         onClick={(e) => handleNavClick(e, -1)}
