@@ -398,18 +398,6 @@ const FeedReader = () => {
         <div className="inline-flex">
           {feedItems.map((item, index) => (
             <Card key={index} className="w-screen flex-shrink-0 snap-center">
-              <CardHeader>
-                <CardTitle className="text-lg whitespace-normal">
-                  <a
-                    href={item.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2"
-                  >
-                    {item.title}
-                  </a>
-                </CardTitle>
-              </CardHeader>
               <CardContent>
                 <div className="relative z-20">
                   <div
@@ -438,6 +426,20 @@ const FeedReader = () => {
                     </Button>
                   </div>
                 </div>
+              </CardContent>
+              <CardHeader>
+                <CardTitle className="text-lg whitespace-normal">
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2"
+                  >
+                    {item.title}
+                  </a>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
                 <p className="text-sm text-gray-500 mb-2">
                   {item.feed?.title || "Unknown Feed"}
                 </p>
