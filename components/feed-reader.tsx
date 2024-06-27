@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings } from "lucide-react";
+import { Bookmark, Repeat, Settings, ThumbsDown, ThumbsUp } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import FeedItem from "./FeedItem";
@@ -99,55 +99,86 @@ const FeedReader: React.FC = () => {
 
   return (
     <div className="p-0 relative">
-      <Card className="mb-4 relative z-20">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Multi-Feed Reader</CardTitle>
-          <Button onClick={toggleSettings} variant="outline" size="sm">
-            <Settings className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-        {showSettings && (
-          <CardContent>
-            <FeedSettings
-              feedUrls={feedUrls}
-              setFeedUrls={setFeedUrls}
-              setError={setError}
-              fetchFeeds={fetchFeeds}
-              loading={loading}
-            />
-          </CardContent>
-        )}
-        <CardContent>
-          <FeedNavigation
-            currentIndex={currentIndex}
-            totalItems={feedItems.length}
-            isReversed={isReversed}
-            toggleDirection={toggleDirection}
-          />
-        </CardContent>
-      </Card>
+      {showSettings && (
+        <>
+          <Card className="mb-4 relative z-20">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Multi-Feed Reader</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FeedSettings
+                feedUrls={feedUrls}
+                setFeedUrls={setFeedUrls}
+                setError={setError}
+                fetchFeeds={fetchFeeds}
+                loading={loading}
+              />
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
       <div
-        className="overflow-x-auto whitespace-nowrap pb-4 relative scroll-auto snap-x snap-mandatory"
+        className="overflow-x-auto scroll-auto whitespace-nowrap relative snap-x snap-mandatory"
         ref={scrollContainerRef}
       >
         <div className="inline-flex">
           {feedItems.map((item, index) => (
-            <FeedItem
-              key={index}
-              item={item}
-              index={index}
-              isReversed={isReversed}
-              handleFeedback={handleFeedback}
-              handleSave={handleSave}
-            />
+            <FeedItem key={index} item={item} isReversed={isReversed} />
           ))}
         </div>
       </div>
 
       <FeedScrollButtons handleNavClick={handleNavClick} />
+
+      {/* New fixed navigation */}
+      <div
+        className={`fixed top-0 z-30 p-2 rounded-lg shadow-lg ${isReversed ? "right-0" : "left-0"}`}
+      >
+        <FeedNavigation
+          currentIndex={currentIndex}
+          totalItems={feedItems.length}
+          isReversed={isReversed}
+          toggleDirection={toggleDirection}
+        />
+      </div>
+
+      {/* New fixed action buttons */}
+      <div
+        className={`fixed bottom-4 z-30 bg-background/80 backdrop-blur-sm p-1 rounded-sm shadow-lg ${isReversed ? "left-4" : "right-4"}`}
+      >
+        <div className={`flex gap-3 ${isReversed ? "flex-row-reverse" : ""}`}>
+          <Button variant="outline" size="sm" onClick={toggleDirection}>
+            <Repeat className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="sm" onClick={toggleSettings}>
+            <Settings className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleFeedback(currentIndex, "like")}
+          >
+            <ThumbsUp className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleFeedback(currentIndex, "dislike")}
+          >
+            <ThumbsDown className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleSave(currentIndex)}
+          >
+            <Bookmark className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
