@@ -35,7 +35,7 @@
     --radius: 0.5rem;
 
     a {
-      background: linear-gradient(to right, #191f1f, #ffffed);
+      background: linear-gradient(to right, #191f1f, #887);
       background-size: 100% 2px;
       background-position: 0 100%;
       background-repeat: no-repeat;
@@ -75,7 +75,7 @@
     --ring: 212.7 26.8% 83.9%;
 
     a {
-      background: linear-gradient(to right, #ffffed, #191f1f);
+      background: linear-gradient(to right, #887, #191f1f);
       background-size: 100% 2px;
       background-position: 0 100%;
       background-repeat: no-repeat;
@@ -105,19 +105,19 @@
     @apply bg-muted;
   }
   h1 {
-    @apply text-3xl font-bold mb-4;
+    @apply text-2xl font-bold mb-4;
   }
 
   h2 {
-    @apply text-2xl font-semibold mb-3;
+    @apply text-xl font-semibold mb-3;
   }
 
   h3 {
-    @apply text-xl font-medium mb-2;
+    @apply text-lg font-medium mb-2;
   }
 
   p {
-    @apply text-base mb-4;
+    @apply text-sm mb-4;
   }
 
   ul {
