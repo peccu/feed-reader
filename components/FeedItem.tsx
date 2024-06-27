@@ -40,7 +40,7 @@ const FeedItem: React.FC<FeedItemProps> = ({ item, isReversed }) => {
           ></p>
           <div className="relative z-20">
             <div
-              className={`mt-4 flex gap-2 ${isReversed ? "justify-start" : "justify-end"}`}
+              className="mt-4 flex gap-2 justify-center"
             >
               <a
                 href={item.link}
