@@ -124,9 +124,12 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
           <Plus className="h-4 w-4" />
         </Button>
       </div>
-      <div className="my-2">
+      <div className="flex gap-4 my-2">
         <a href="https://feedurl.netlify.app/" target="_blank" rel="noreferrer">
           Feed URL Extractor
+        </a>
+        <a href="https://openrss.org/" target="_blank" rel="noreferrer">
+          Open RSS
         </a>
       </div>
       <Button onClick={fetchFeeds} disabled={loading}>
