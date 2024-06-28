@@ -35,7 +35,7 @@
     --radius: 0.5rem;
 
     a {
-      background: linear-gradient(to right, #191f1f, #887);
+      background: linear-gradient(to right, #668, #ffe);
       background-size: 100% 2px;
       background-position: 0 100%;
       background-repeat: no-repeat;
@@ -75,8 +75,8 @@
     --ring: 212.7 26.8% 83.9%;
 
     a {
-      background: linear-gradient(to right, #887, #191f1f);
-      background-size: 100% 2px;
+      background: linear-gradient(to right, #ffe, #668);
+      background-size: 100% 1px;
       background-position: 0 100%;
       background-repeat: no-repeat;
     }
@@ -97,10 +97,10 @@
     display: inline;
   }
   pre {
-    @apply rounded bg-muted font-mono overflow-x-auto whitespace-pre-wrap break-all p-2;
+    @apply rounded bg-zinc-800 font-mono overflow-x-auto whitespace-pre-wrap break-all p-2;
   }
   code {
-    @apply bg-muted;
+    @apply bg-zinc-800;
   }
   h1 {
     @apply text-2xl font-bold mb-4;

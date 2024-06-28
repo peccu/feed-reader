@@ -27,7 +27,9 @@ const pickDescription = (
   if (content != null && description != null) {
     const lastTrimmed =
       description.length > 3 ? description.slice(0, -3) : description;
-    return content.startsWith(lastTrimmed) ? content : description;
+    return content.startsWith(lastTrimmed)
+      ? content
+      : `${description}<hr/>${content}`;
   }
   return "";
 };
@@ -75,6 +77,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
               href={item.link}
               target="_blank"
               rel="noopener noreferrer"
+              className="leading-9"
               onClick={onRead}
             >
               {item.title}
