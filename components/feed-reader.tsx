@@ -47,7 +47,7 @@ const FeedReader: React.FC = () => {
         (item) => displayMode === "all" || !readStatus[item.link],
       ),
     );
-  }, [feedItems, readStatus, displayMode]);
+  }, [feedItems, displayMode]);
 
   useEffect(() => {
     const updateCurrentIndex = () => {
