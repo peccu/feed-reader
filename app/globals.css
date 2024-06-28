@@ -94,8 +94,6 @@
     @apply bg-background text-foreground;
   }
   a {
-    /*@apply text-primary underline underline-offset-2 hover:underline-offset-4;*/
-  /*  .gradient-underline {*/
     display: inline;
   }
   pre {
