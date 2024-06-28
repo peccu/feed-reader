@@ -102,7 +102,7 @@ const FeedReader: React.FC = () => {
       {showSettings && (
         <>
           <Card className="mb-4 relative z-20">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between pt-6">
               <CardTitle>Multi-Feed Reader</CardTitle>
             </CardHeader>
             <CardContent>
