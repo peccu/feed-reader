@@ -34,6 +34,7 @@ export const useFeedReader = (initialFeedUrls: Feed[]) => {
             new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime(),
         ),
       );
+      toast(`Fetched ${allItems.length} items from ${feedUrls.length} feeds`);
     } catch (err) {
       setError("An error occurred. Please check the URL or try again later.");
       toast("An error occurred. Please check the URL or try again later.");

@@ -1,11 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import React from "react";
-import { Item } from "./types";
+import React, { useEffect } from "react";
+import { toast } from "sonner";
+import { Item, ReadStatuses } from "./types";
 import { sanitize } from "./utils";
 
 interface FeedItemProps {
   item: Item;
   isReversed: boolean;
+  readStatus: ReadStatuses;
+  onRead: () => void;
 }
 
 const pickDescription = (
@@ -29,17 +32,50 @@ const pickDescription = (
   return "";
 };
 
-const FeedItem: React.FC<FeedItemProps> = ({ item, isReversed }) => {
+const FeedItem: React.FC<FeedItemProps> = ({
+  item,
+  isReversed,
+  readStatus,
+  onRead,
+}) => {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !readStatus[item.link]) {
+          toast(`read: ${item.title}`);
+          onRead();
+        }
+      },
+      { threshold: 0.5 }, // 50%以上表示されたら既読とみなす
+    );
+
+    const element = document.getElementById(`feed-item-${item.link}`);
+    if (element) {
+      observer.observe(element);
+    }
+
+    return () => {
+      if (element) {
+        observer.unobserve(element);
+      }
+    };
+  }, [item.link, item.title, readStatus, onRead]);
+
   return (
-    <Card className="w-screen flex-shrink-0 snap-center flex flex-col pt-4 whitespace-normal">
+    <Card
+      id={`feed-item-${item.link}`}
+      className={`w-screen flex-shrink-0 snap-center flex flex-col pt-4 whitespace-normal ${
+        readStatus[item.link] ? "opacity-50" : ""
+      }`}
+    >
       <div className="flex-grow overflow-y-auto">
-        <CardHeader>
-          <CardTitle className="text-lg">
+        <CardHeader className="pt-6">
+          <CardTitle>
             <a
               href={item.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2"
+              onClick={onRead}
             >
               {item.title}
             </a>
@@ -63,6 +99,9 @@ const FeedItem: React.FC<FeedItemProps> = ({ item, isReversed }) => {
               </span>
             ))}
           </p>
+          <p className="text-sm text-gray-500 mb-2">
+            Status: {readStatus[item.link] ? "Read" : "Unread"}
+          </p>
           {/* show enclosure */}
           {item.enclosure?.link && (
             <div className="w-screen -mx-3 md:-mx-6 mb-2 md:mb-4">
@@ -85,6 +124,7 @@ const FeedItem: React.FC<FeedItemProps> = ({ item, isReversed }) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-2 inline-block"
+                onClick={onRead}
               >
                 Read More
               </a>

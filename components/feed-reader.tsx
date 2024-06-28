@@ -1,13 +1,22 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bookmark, Repeat, Settings, ThumbsDown, ThumbsUp } from "lucide-react";
+import {
+  Bookmark,
+  Check,
+  Circle,
+  Repeat,
+  Settings,
+  ThumbsDown,
+  ThumbsUp,
+} from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import FeedItem from "./FeedItem";
-import FeedNavigation from "./FeedNavigation";
 import FeedScrollButtons from "./FeedScrollButtons";
 import FeedSettings from "./FeedSettings";
 import { useFeedReader } from "./hooks/useFeedReader";
+import { useReadStatus } from "./hooks/useReadStatus";
+import PagePosition from "./PagePosition";
+import { Item } from "./types";
 
 const FeedReader: React.FC = () => {
   const {
@@ -24,10 +33,21 @@ const FeedReader: React.FC = () => {
     { url: "https://www.publickey1.jp/atom.xml", type: "Atom" },
     { url: "https://dev.to/feed", type: "RSS" },
   ]);
+  const { readStatus, toggleReadStatus, displayMode, toggleDisplayMode } =
+    useReadStatus(feedItems);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isReversed, setIsReversed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+
+  useEffect(() => {
+    setFilteredItems(
+      feedItems.filter(
+        (item) => displayMode === "all" || !readStatus[item.link],
+      ),
+    );
+  }, [feedItems, readStatus, displayMode]);
 
   useEffect(() => {
     const updateCurrentIndex = () => {
@@ -86,36 +106,29 @@ const FeedReader: React.FC = () => {
   const handleFeedback = (index: number, type: "like" | "dislike") => {
     console.log(`Feedback for item ${index}: ${type}`);
     toast(
-      `Feedback for item ${index}: ${type}, title: ${feedItems[index].title}`,
+      `Feedback for item ${index}: ${type}, title: ${filteredItems[index].title}`,
     );
     // Here you would typically send this feedback to a server
   };
 
   const handleSave = (index: number) => {
     console.log(`Saved item ${index}`);
-    toast(`Saved item ${index}, title: ${feedItems[index].title}`);
+    toast(`Saved item ${index}, title: ${filteredItems[index].title}`);
     // Here you would typically save this item to local storage or a server
   };
 
   return (
     <div className="p-0 relative">
       {showSettings && (
-        <>
-          <Card className="mb-4 relative z-20">
-            <CardHeader className="flex flex-row items-center justify-between pt-6">
-              <CardTitle>Multi-Feed Reader</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FeedSettings
-                feedUrls={feedUrls}
-                setFeedUrls={setFeedUrls}
-                setError={setError}
-                fetchFeeds={fetchFeeds}
-                loading={loading}
-              />
-            </CardContent>
-          </Card>
-        </>
+        <FeedSettings
+          feedUrls={feedUrls}
+          setFeedUrls={setFeedUrls}
+          setError={setError}
+          fetchFeeds={fetchFeeds}
+          loading={loading}
+          displayMode={displayMode}
+          toggleDisplayMode={toggleDisplayMode}
+        />
       )}
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
@@ -125,8 +138,14 @@ const FeedReader: React.FC = () => {
         ref={scrollContainerRef}
       >
         <div className="inline-flex">
-          {feedItems.map((item, index) => (
-            <FeedItem key={index} item={item} isReversed={isReversed} />
+          {filteredItems.map((item, index) => (
+            <FeedItem
+              key={index}
+              item={item}
+              isReversed={isReversed}
+              readStatus={readStatus}
+              onRead={() => toggleReadStatus(item.link)}
+            />
           ))}
         </div>
       </div>
@@ -134,16 +153,12 @@ const FeedReader: React.FC = () => {
       <FeedScrollButtons handleNavClick={handleNavClick} />
 
       {/* New fixed navigation */}
-      <div
-        className={`fixed top-0 z-30 p-2 rounded-lg shadow-lg ${isReversed ? "right-0" : "left-0"}`}
-      >
-        <FeedNavigation
-          currentIndex={currentIndex}
-          totalItems={feedItems.length}
-          isReversed={isReversed}
-          toggleDirection={toggleDirection}
-        />
-      </div>
+      <PagePosition
+        currentIndex={currentIndex}
+        totalItems={feedItems.length}
+        isReversed={isReversed}
+        toggleDirection={toggleDirection}
+      />
 
       {/* New fixed action buttons */}
       <div
@@ -176,6 +191,17 @@ const FeedReader: React.FC = () => {
             onClick={() => handleSave(currentIndex)}
           >
             <Bookmark className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => toggleReadStatus(filteredItems[currentIndex]?.link)}
+          >
+            {readStatus[filteredItems[currentIndex]?.link] ? (
+              <Check className="h-5 w-5" />
+            ) : (
+              <Circle className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </div>

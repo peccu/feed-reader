@@ -27,8 +27,14 @@ export interface Item {
   feed?: Feed;
 }
 
+export interface ReadStatuses {
+  [key: string]: boolean;
+}
+
 interface Enclosure {
   link: string;
   type: string;
   length?: string; // Optional as it might not be present in all responses
 }
+
+export type DisplayMode = "unread" | "all";

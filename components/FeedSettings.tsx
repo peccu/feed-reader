@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -7,9 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Download, Loader2, Plus, Upload, X } from "lucide-react";
 import React, { useRef, useState } from "react";
 import { toast } from "sonner";
+import { DisplayMode } from "./types";
 
 type FeedUrl = {
   url: string;
@@ -24,6 +27,8 @@ interface FeedSettingsProps {
   setError: (message: string) => void;
   fetchFeeds: () => void;
   loading: boolean;
+  displayMode: DisplayMode;
+  toggleDisplayMode: () => void;
 }
 
 const FeedSettings: React.FC<FeedSettingsProps> = ({
@@ -32,6 +37,8 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
   setError,
   fetchFeeds,
   loading,
+  displayMode,
+  toggleDisplayMode,
 }) => {
   const [newFeedUrl, setNewFeedUrl] = useState("");
   const [newFeedType, setNewFeedType] = useState<FeedType>("RSS");
@@ -88,75 +95,99 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 mb-2">
-      {feedUrls.map((feed, index) => (
-        <div key={index} className="flex items-center gap-2">
-          <Input className="text-base" value={feed.url} readOnly />
-          <span className="text-sm text-gray-500">{feed.type}</span>
-          <Button
-            onClick={() => removeFeed(feed.url)}
-            variant="outline"
-            size="icon"
-          >
-            <X className="h-4 w-4" />
+    <Card className="mb-4 relative z-20">
+      <CardHeader className="flex flex-row items-center justify-between pt-6">
+        <CardTitle>Multi-Feed Reader</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col gap-2 mb-2">
+          {feedUrls.map((feed, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <Input className="text-base" value={feed.url} readOnly />
+              <span className="text-sm text-gray-500">{feed.type}</span>
+              <Button
+                onClick={() => removeFeed(feed.url)}
+                variant="outline"
+                size="icon"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              className="text-base"
+              placeholder="Enter new RSS feed URL"
+              value={newFeedUrl}
+              onChange={(e) => setNewFeedUrl(e.target.value)}
+            />
+            <Select value={newFeedType} onValueChange={setNewFeedType}>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder="Feed type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="RSS">RSS</SelectItem>
+                <SelectItem value="Atom">Atom</SelectItem>
+                <SelectItem value="JSON">JSON</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={addFeed}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex gap-4 my-2">
+            <a
+              href="https://feedurl.netlify.app/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Feed URL Extractor
+            </a>
+            <a href="https://openrss.org/" target="_blank" rel="noreferrer">
+              Open RSS
+            </a>
+          </div>
+          <Button onClick={fetchFeeds} disabled={loading}>
+            {loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              "Load All Feeds"
+            )}
           </Button>
+          <div className="flex gap-2 mt-4">
+            <Button onClick={exportSettings} variant="outline">
+              <Download className="mr-2 h-4 w-4" />
+              Export Settings
+            </Button>
+            <Button onClick={handleImportClick} variant="outline">
+              <Upload className="mr-2 h-4 w-4" />
+              Import Settings
+              <input
+                type="file"
+                ref={fileInputRef}
+                hidden
+                accept=".json"
+                onChange={importSettings}
+              />
+            </Button>
+          </div>
+
+          <div className="flex items-center space-x-2 mt-4">
+            <Switch
+              id="display-mode"
+              checked={displayMode === "all"}
+              onCheckedChange={toggleDisplayMode}
+            />
+            <label htmlFor="display-mode">
+              {displayMode === "all"
+                ? "Showing all items"
+                : "Showing unread items only"}
+            </label>
+          </div>
         </div>
-      ))}
-      <div className="flex gap-2">
-        <Input
-          type="text"
-          className="text-base"
-          placeholder="Enter new RSS feed URL"
-          value={newFeedUrl}
-          onChange={(e) => setNewFeedUrl(e.target.value)}
-        />
-        <Select value={newFeedType} onValueChange={setNewFeedType}>
-          <SelectTrigger className="w-[100px]">
-            <SelectValue placeholder="Feed type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="RSS">RSS</SelectItem>
-            <SelectItem value="Atom">Atom</SelectItem>
-            <SelectItem value="JSON">JSON</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button onClick={addFeed}>
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
-      <div className="flex gap-4 my-2">
-        <a href="https://feedurl.netlify.app/" target="_blank" rel="noreferrer">
-          Feed URL Extractor
-        </a>
-        <a href="https://openrss.org/" target="_blank" rel="noreferrer">
-          Open RSS
-        </a>
-      </div>
-      <Button onClick={fetchFeeds} disabled={loading}>
-        {loading ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          "Load All Feeds"
-        )}
-      </Button>
-      <div className="flex gap-2 mt-4">
-        <Button onClick={exportSettings} variant="outline">
-          <Download className="mr-2 h-4 w-4" />
-          Export Settings
-        </Button>
-        <Button onClick={handleImportClick} variant="outline">
-          <Upload className="mr-2 h-4 w-4" />
-          Import Settings
-          <input
-            type="file"
-            ref={fileInputRef}
-            hidden
-            accept=".json"
-            onChange={importSettings}
-          />
-        </Button>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
