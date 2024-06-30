@@ -66,12 +66,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
   return (
     <Card
       id={`feed-item-${item.link}`}
-      className={`w-screen flex-shrink-0 snap-center flex flex-col pt-4 whitespace-normal ${
+      className={`w-screen flex-shrink-0 snap-center flex flex-col pt-3 whitespace-normal ${
         readStatus[item.link] ? "opacity-50" : ""
       }`}
     >
       <div className="flex-grow overflow-y-auto">
-        <CardHeader className="pt-6">
+        <CardHeader>
           <CardTitle>
             <a
               href={item.link}
