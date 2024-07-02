@@ -31,10 +31,14 @@ export interface ReadStatuses {
   [key: string]: boolean;
 }
 
+export interface BookmarkStatuses {
+  [key: string]: boolean;
+}
+
 interface Enclosure {
   link: string;
   type: string;
   length?: string; // Optional as it might not be present in all responses
 }
 
-export type DisplayMode = "unread" | "all";
+export type DisplayMode = "unread" | "unbookmarked" | "all";

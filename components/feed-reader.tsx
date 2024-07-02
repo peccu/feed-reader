@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import FeedItem from "./FeedItem";
 import FeedScrollButtons from "./FeedScrollButtons";
 import FeedSettings from "./FeedSettings";
+import { useBookmarkStatus } from "./hooks/useBookmark";
 import { useFeedReader } from "./hooks/useFeedReader";
 import { useReadStatus } from "./hooks/useReadStatus";
 import PagePosition from "./PagePosition";
@@ -40,6 +41,11 @@ const FeedReader: React.FC = () => {
     displayMode,
     toggleDisplayMode,
   } = useReadStatus(feedItems);
+  const {
+    bookmarkStatus,
+    toggleBookmarkStatus,
+    toggleDisplayMode: toggleBookmarkDisplayMode,
+  } = useBookmarkStatus(feedItems);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isReversed, setIsReversed] = useState(false);
@@ -131,6 +137,8 @@ const FeedReader: React.FC = () => {
     console.log(`Saved item ${index}`);
     toast(`Saved item ${index}, title: ${filteredItems[index].title}`);
     // Here you would typically save this item to local storage or a server
+    toggleBookmarkStatus(filteredItems[index].link);
+    // TODO store the article itself in indexed db
   };
 
   const handleRead = (index: number) => {
@@ -213,7 +221,11 @@ const FeedReader: React.FC = () => {
             size="sm"
             onClick={() => handleSave(currentIndex)}
           >
-            <Bookmark className="h-5 w-5" />
+            {bookmarkStatus[filteredItems[currentIndex]?.link] ? (
+              <Bookmark fill="#fff" className="h-5 w-5" />
+            ) : (
+              <Bookmark className="h-5 w-5" />
+            )}
           </Button>
           <Button
             variant="outline"
