@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import { BookmarkStatuses, DisplayMode, Item } from "../types";
 
 export const useBookmarkStatus = (feedItems: Item[]) => {
@@ -11,16 +11,16 @@ export const useBookmarkStatus = (feedItems: Item[]) => {
     const savedBookmarkStatus = JSON.parse(
       localStorage.getItem("bookmarkStatus") || "{}",
     );
-    toast(
-      `restored read status: ${JSON.stringify(savedBookmarkStatus, null, 2)}`,
-    );
+    // toast(
+    //   `restored read status: ${JSON.stringify(savedBookmarkStatus, null, 2)}`,
+    //);
     setBookmarkStatus(savedBookmarkStatus);
   }, [feedItems]);
 
   // if bookmark status is updated, save it
   useEffect(() => {
     if (Object.keys(bookmarkStatus).length > 0) {
-      toast(`saving: ${JSON.stringify(bookmarkStatus, null, 2)}`);
+      // toast(`saving: ${JSON.stringify(bookmarkStatus, null, 2)}`);
       localStorage.setItem("bookmarkStatus", JSON.stringify(bookmarkStatus));
     }
   }, [bookmarkStatus]);
