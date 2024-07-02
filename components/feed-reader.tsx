@@ -69,13 +69,17 @@ const FeedReader: React.FC = () => {
         const scrollLeft = scrollContainerRef.current.scrollLeft;
         const itemWidth = scrollContainerRef.current.clientWidth;
         const newIndex = Math.round(scrollLeft / itemWidth);
-        setCurrentIndex(newIndex);
+        if (newIndex === currentIndex) {
+          return;
+        }
+        // toast(`index changed: ${currentIndex} -> ${newIndex}`);
 
         // Mark the current item as read
-        const currentItem = filteredItems[newIndex];
+        const currentItem = filteredItems[currentIndex];
         if (currentItem) {
           markAsRead(currentItem.link);
         }
+        setCurrentIndex(newIndex);
       }
     };
 
