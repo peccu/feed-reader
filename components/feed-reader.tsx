@@ -33,14 +33,21 @@ const FeedReader: React.FC = () => {
     { url: "https://www.publickey1.jp/atom.xml", type: "Atom" },
     { url: "https://dev.to/feed", type: "RSS" },
   ]);
-  const { readStatus, toggleReadStatus, displayMode, toggleDisplayMode } =
-    useReadStatus(feedItems);
+  const {
+    readStatus,
+    toggleReadStatus,
+    markAsRead,
+    displayMode,
+    toggleDisplayMode,
+  } = useReadStatus(feedItems);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isReversed, setIsReversed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
 
+  // set filtered items filter by displayMode
   useEffect(() => {
     setFilteredItems(
       feedItems.filter(
@@ -49,12 +56,20 @@ const FeedReader: React.FC = () => {
     );
   }, [feedItems, displayMode]);
 
+  // add/remove event listener to scroll container
   useEffect(() => {
     const updateCurrentIndex = () => {
       if (scrollContainerRef.current) {
         const scrollLeft = scrollContainerRef.current.scrollLeft;
         const itemWidth = scrollContainerRef.current.clientWidth;
-        setCurrentIndex(Math.round(scrollLeft / itemWidth));
+        const newIndex = Math.round(scrollLeft / itemWidth);
+        setCurrentIndex(newIndex);
+
+        // Mark the current item as read
+        const currentItem = filteredItems[newIndex];
+        if (currentItem) {
+          markAsRead(currentItem.link);
+        }
       }
     };
 
@@ -63,12 +78,13 @@ const FeedReader: React.FC = () => {
       container.addEventListener("scroll", updateCurrentIndex);
     }
 
+    // Clean up event listener on unmount
     return () => {
       if (container) {
         container.removeEventListener("scroll", updateCurrentIndex);
       }
     };
-  }, []);
+  }, [filteredItems, markAsRead]);
 
   const scrollToNextItem = (direction: number) => {
     if (scrollContainerRef.current) {
@@ -115,6 +131,13 @@ const FeedReader: React.FC = () => {
     console.log(`Saved item ${index}`);
     toast(`Saved item ${index}, title: ${filteredItems[index].title}`);
     // Here you would typically save this item to local storage or a server
+  };
+
+  const handleRead = (index: number) => {
+    console.log(`Read item ${index}`);
+    toast(`Read item ${index}, title: ${filteredItems[index].title}`);
+    // Here you would typically mark this item as read in local storage or a server
+    toggleReadStatus(filteredItems[index]?.link);
   };
 
   return (
@@ -195,7 +218,7 @@ const FeedReader: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => toggleReadStatus(filteredItems[currentIndex]?.link)}
+            onClick={() => handleRead(currentIndex)}
           >
             {readStatus[filteredItems[currentIndex]?.link] ? (
               <Check className="h-5 w-5" />

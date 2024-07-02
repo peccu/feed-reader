@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { DisplayMode, Item, ReadStatuses } from "../types";
+// import { toast } from "sonner";
 
 export const useReadStatus = (feedItems: Item[]) => {
   const [displayMode, setDisplayMode] = useState<DisplayMode>("unread");
@@ -31,6 +32,24 @@ export const useReadStatus = (feedItems: Item[]) => {
     });
   };
 
+  const markAsRead = (id: string) => {
+    // toast(`set as read: ${id}`);
+    setReadStatus((prev) => {
+      const newReadStatus = { ...prev };
+      newReadStatus[id] = true;
+      return newReadStatus;
+    });
+  };
+
+  const markAsUnread = (id: string) => {
+    // toast(`set as unread: ${id}`);
+    setReadStatus((prev) => {
+      const newReadStatus = { ...prev };
+      newReadStatus[id] = false;
+      return newReadStatus;
+    });
+  };
+
   const toggleDisplayMode = () => {
     setDisplayMode((prev) => (prev === "unread" ? "all" : "unread"));
   };
@@ -38,6 +57,8 @@ export const useReadStatus = (feedItems: Item[]) => {
   return {
     readStatus,
     toggleReadStatus,
+    markAsRead,
+    markAsUnread,
     displayMode,
     toggleDisplayMode,
   };
