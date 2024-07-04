@@ -2,6 +2,7 @@ import React from "react";
 
 interface FeedNavigationProps {
   currentIndex: number;
+  filteredItems: number;
   totalItems: number;
   isReversed: boolean;
   toggleDirection: () => void;
@@ -9,6 +10,7 @@ interface FeedNavigationProps {
 
 const PagePosition: React.FC<FeedNavigationProps> = ({
   currentIndex,
+  filteredItems,
   totalItems,
   isReversed,
   toggleDirection,
@@ -19,7 +21,7 @@ const PagePosition: React.FC<FeedNavigationProps> = ({
     <div className="flex justify-between items-center text-xs">
       <span onClick={toggleDirection}>
         {isReversed ? "〈 " : ""}
-        {currentIndex + 1} / {totalItems}
+        {currentIndex + 1} / {filteredItems} ({totalItems})
         {isReversed ? "" : " 〉"}
       </span>
     </div>

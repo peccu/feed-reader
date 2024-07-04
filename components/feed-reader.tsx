@@ -151,6 +151,7 @@ const FeedReader: React.FC = () => {
       {/* New fixed navigation */}
       <PagePosition
         currentIndex={currentIndex}
+        filteredItems={filteredItems.length}
         totalItems={feedItems.length}
         isReversed={isReversed}
         toggleDirection={toggleDirection}
