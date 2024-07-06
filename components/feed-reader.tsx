@@ -5,6 +5,7 @@ import FeedScrollButtons from "./FeedScrollButtons";
 import FeedSettings from "./FeedSettings";
 import { useFeedReader } from "./hooks/useFeedReader";
 import { useReadStatus } from "./hooks/useReadStatus";
+import ModalMenu from "./ModalMenu";
 import PagePosition from "./PagePosition";
 import { Item } from "./types";
 
@@ -113,6 +114,12 @@ const FeedReader: React.FC = () => {
     setShowSettings(!showSettings);
   };
 
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
     <div className="p-0 relative">
       {showSettings && (
@@ -165,9 +172,12 @@ const FeedReader: React.FC = () => {
         isReversed={isReversed}
         readStatus={readStatus}
         toggleReadStatus={toggleReadStatus}
+        toggleMenu={toggleMenu}
         toggleDirection={toggleDirection}
         toggleSettings={toggleSettings}
       />
+
+      <ModalMenu isOpen={isOpen} toggleMenu={toggleMenu} />
     </div>
   );
 };
