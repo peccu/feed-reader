@@ -1,14 +1,22 @@
+import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import React from "react";
+import { MenuItem } from "./types";
 
 interface ModalMenuProps {
   isOpen: boolean;
   toggleMenu: () => void;
+  menuItems: MenuItem[];
 }
 
-const ModalMenu: React.FC<ModalMenuProps> = ({ isOpen, toggleMenu }) => {
-  const clickOne = () => {
-    alert(`one`);
+const ModalMenu: React.FC<ModalMenuProps> = ({
+  isOpen,
+  toggleMenu,
+  menuItems,
+}) => {
+  const handleMenuItemClick = (item: MenuItem) => {
+    item.onClick();
+    toggleMenu();
   };
 
   return (
@@ -16,31 +24,33 @@ const ModalMenu: React.FC<ModalMenuProps> = ({ isOpen, toggleMenu }) => {
       {isOpen && (
         <div
           onClick={toggleMenu}
-          className="z-40 fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+          className="flex fixed inset-0 z-40 justify-center items-center p-4 bg-black bg-opacity-50"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-background text-foreground rounded-lg shadow-lg w-full max-w-md"
+            className="w-full max-w-md rounded-lg shadow-lg text-foreground bg-background"
           >
-            <div className="flex justify-between items-center border-b p-4">
+            <div className="flex justify-between items-center p-4 border-b">
               <h2 className="text-xl font-bold">メニュー</h2>
-              <button onClick={toggleMenu} className="">
+              <Button
+                onClick={toggleMenu}
+                variant="ghost"
+                size="icon"
+                className="transition duration-200"
+              >
                 <X size={24} />
-              </button>
+              </Button>
             </div>
             <ul className="p-4 space-y-2">
-              <li
-                onClick={clickOne}
-                className="p-2 rounded transition duration-200"
-              >
-                メニュー項目 1
-              </li>
-              <li className=" p-2 rounded transition duration-200">
-                メニュー項目 2
-              </li>
-              <li className=" p-2 rounded transition duration-200">
-                メニュー項目 3
-              </li>
+              {menuItems.map((item) => (
+                <li
+                  key={item.id}
+                  onClick={() => handleMenuItemClick(item)}
+                  className="flex items-center p-3 rounded transition duration-200 cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                >
+                  <span className="text-lg">{item.label}</span>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

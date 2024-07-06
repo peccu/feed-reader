@@ -7,7 +7,7 @@ import { useFeedReader } from "./hooks/useFeedReader";
 import { useReadStatus } from "./hooks/useReadStatus";
 import ModalMenu from "./ModalMenu";
 import PagePosition from "./PagePosition";
-import { Item } from "./types";
+import { Item, MenuItem } from "./types";
 
 const FeedReader: React.FC = () => {
   const {
@@ -120,8 +120,40 @@ const FeedReader: React.FC = () => {
     setIsOpen(!isOpen);
   };
 
+  const menuItems: MenuItem[] = [
+    {
+      id: 1,
+      label: "Home",
+      onClick() {
+        alert("home");
+      },
+    },
+    {
+      id: 2,
+      label: "Profile",
+      onClick() {
+        alert("profile");
+      },
+    },
+    {
+      id: 3,
+      label: "Settings",
+      onClick() {
+        alert("open settings");
+        toggleSettings();
+      },
+    },
+    {
+      id: 4,
+      label: "Help",
+      onClick() {
+        alert("help");
+      },
+    },
+  ];
+
   return (
-    <div className="p-0 relative">
+    <div className="relative p-0">
       {showSettings && (
         <FeedSettings
           feedUrls={feedUrls}
@@ -134,10 +166,10 @@ const FeedReader: React.FC = () => {
         />
       )}
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {error && <p className="mb-4 text-red-500">{error}</p>}
 
       <div
-        className="overflow-x-auto scroll-auto whitespace-nowrap relative snap-x snap-mandatory"
+        className="overflow-x-auto relative whitespace-nowrap scroll-auto snap-x snap-mandatory"
         ref={scrollContainerRef}
       >
         <div className="inline-flex">
@@ -177,7 +209,11 @@ const FeedReader: React.FC = () => {
         toggleSettings={toggleSettings}
       />
 
-      <ModalMenu isOpen={isOpen} toggleMenu={toggleMenu} />
+      <ModalMenu
+        isOpen={isOpen}
+        toggleMenu={toggleMenu}
+        menuItems={menuItems}
+      />
     </div>
   );
 };
