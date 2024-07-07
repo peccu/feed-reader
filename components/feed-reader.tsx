@@ -7,6 +7,7 @@ import { useFeedReader } from "./hooks/useFeedReader";
 import { useReadStatus } from "./hooks/useReadStatus";
 import ModalMenu from "./ModalMenu";
 import PagePosition from "./PagePosition";
+import DynamicSyntaxHighlighter from "./DynamicSyntaxHighlighter";
 import { Item, MenuItem } from "./types";
 
 const FeedReader: React.FC = () => {
@@ -174,13 +175,15 @@ const FeedReader: React.FC = () => {
       >
         <div className="inline-flex">
           {filteredItems.map((item, index) => (
-            <FeedItem
-              key={index}
-              item={item}
-              isReversed={isReversed}
-              readStatus={readStatus}
-              onRead={() => toggleReadStatus(item.link)}
-            />
+            <DynamicSyntaxHighlighter key={index}>
+              <FeedItem
+                key={index}
+                item={item}
+                isReversed={isReversed}
+                readStatus={readStatus}
+                onRead={() => toggleReadStatus(item.link)}
+              />
+            </DynamicSyntaxHighlighter>
           ))}
         </div>
       </div>

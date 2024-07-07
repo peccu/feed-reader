@@ -40,9 +40,6 @@
       background-position: 0 100%;
       background-repeat: no-repeat;
     }
-    pre {
-      @apply text-gray-800;
-    }
   }
  
   .dark {
@@ -80,9 +77,6 @@
       background-position: 0 100%;
       background-repeat: no-repeat;
     }
-    pre {
-      @apply text-gray-200;
-    }
   }
 }
  
@@ -97,10 +91,7 @@
     display: inline;
   }
   pre {
-    @apply rounded bg-zinc-800 font-mono overflow-x-auto whitespace-pre-wrap break-all p-2;
-  }
-  code {
-    @apply bg-zinc-800;
+    @apply rounded overflow-x-auto whitespace-pre-wrap break-all;
   }
   h1 {
     @apply text-2xl font-bold mb-4;
