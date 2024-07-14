@@ -140,7 +140,7 @@ const FeedReader: React.FC = () => {
       id: 3,
       label: "Settings",
       onClick() {
-        alert("open settings");
+        //alert("open settings");
         toggleSettings();
       },
     },
