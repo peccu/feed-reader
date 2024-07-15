@@ -1,6 +1,7 @@
 import { Settings } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import ActionButtons from "./ActionButtons";
+import DynamicSyntaxHighlighter from "./DynamicSyntaxHighlighter";
 import FeedItem from "./FeedItem";
 import FeedScrollButtons from "./FeedScrollButtons";
 import FeedSettings from "./FeedSettings";
@@ -8,7 +9,6 @@ import { useFeedReader } from "./hooks/useFeedReader";
 import { useReadStatus } from "./hooks/useReadStatus";
 import ModalMenu from "./ModalMenu";
 import PagePosition from "./PagePosition";
-import DynamicSyntaxHighlighter from "./DynamicSyntaxHighlighter";
 import { Item, MenuItem } from "./types";
 
 const FeedReader: React.FC = () => {
