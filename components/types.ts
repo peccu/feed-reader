@@ -46,5 +46,6 @@ export type DisplayMode = "unread" | "unbookmarked" | "all";
 export interface MenuItem {
   id: number;
   label: string;
+  icon?: JSX.Element;
   onClick: () => void;
 }

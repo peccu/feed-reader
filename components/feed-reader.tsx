@@ -1,3 +1,4 @@
+import { Settings } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import ActionButtons from "./ActionButtons";
 import FeedItem from "./FeedItem";
@@ -139,6 +140,7 @@ const FeedReader: React.FC = () => {
     {
       id: 3,
       label: "Settings",
+      icon: <Settings className="h-4 w-4" />,
       onClick() {
         //alert("open settings");
         toggleSettings();
@@ -213,7 +215,6 @@ const FeedReader: React.FC = () => {
         toggleReadStatus={toggleReadStatus}
         toggleMenu={toggleMenu}
         toggleDirection={toggleDirection}
-        toggleSettings={toggleSettings}
       />
 
       <ModalMenu

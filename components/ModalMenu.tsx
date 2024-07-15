@@ -46,8 +46,9 @@ const ModalMenu: React.FC<ModalMenuProps> = ({
                 <li
                   key={item.id}
                   onClick={() => handleMenuItemClick(item)}
-                  className="flex items-center p-3 rounded transition duration-200 cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                  className="flex items-center p-3 rounded transition duration-200 cursor-pointer hover:bg-accent hover:text-accent-foreground gap-2"
                 >
+                  <span className="w-3">{item.icon && item.icon}</span>
                   <span className="text-lg">{item.label}</span>
                 </li>
               ))}
