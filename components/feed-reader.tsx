@@ -169,35 +169,39 @@ const FeedReader: React.FC = () => {
 
       {error && <p className="mb-4 text-red-500">{error}</p>}
 
-      <div
-        className="overflow-x-auto relative whitespace-nowrap scroll-auto snap-x snap-mandatory"
-        ref={scrollContainerRef}
-      >
-        <div className="inline-flex">
-          {filteredItems.map((item, index) => (
-            <DynamicSyntaxHighlighter key={index}>
-              <FeedItem
-                key={index}
-                item={item}
-                isReversed={isReversed}
-                readStatus={readStatus}
-                onRead={() => toggleReadStatus(item.link)}
-              />
-            </DynamicSyntaxHighlighter>
-          ))}
+      {!showSettings && (
+        <div
+          className="overflow-x-auto relative whitespace-nowrap scroll-auto snap-x snap-mandatory"
+          ref={scrollContainerRef}
+        >
+          <div className="inline-flex">
+            {filteredItems.map((item, index) => (
+              <DynamicSyntaxHighlighter key={index}>
+                <FeedItem
+                  key={index}
+                  item={item}
+                  isReversed={isReversed}
+                  readStatus={readStatus}
+                  onRead={() => toggleReadStatus(item.link)}
+                />
+              </DynamicSyntaxHighlighter>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      <FeedScrollButtons handleNavClick={handleNavClick} />
+      {!showSettings && <FeedScrollButtons handleNavClick={handleNavClick} />}
 
       {/* New fixed navigation */}
-      <PagePosition
-        currentIndex={currentIndex}
-        filteredItems={filteredItems.length}
-        totalItems={feedItems.length}
-        isReversed={isReversed}
-        toggleDirection={toggleDirection}
-      />
+      {!showSettings && (
+        <PagePosition
+          currentIndex={currentIndex}
+          filteredItems={filteredItems.length}
+          totalItems={feedItems.length}
+          isReversed={isReversed}
+          toggleDirection={toggleDirection}
+        />
+      )}
 
       {/* New fixed action buttons */}
       <ActionButtons
