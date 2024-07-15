@@ -97,7 +97,7 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
   return (
     <Card className="mb-4 relative z-20">
       <CardHeader className="flex flex-row items-center justify-between pt-6">
-        <CardTitle>Multi-Feed Reader</CardTitle>
+        <CardTitle>Settings</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-2 mb-2">

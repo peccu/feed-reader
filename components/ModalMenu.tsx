@@ -31,7 +31,7 @@ const ModalMenu: React.FC<ModalMenuProps> = ({
             className="w-full max-w-md rounded-lg shadow-lg text-foreground bg-background"
           >
             <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-bold">メニュー</h2>
+              <h2 className="text-xl font-bold">Multi-Feed Reader</h2>
               <Button
                 onClick={toggleMenu}
                 variant="ghost"
