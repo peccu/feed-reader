@@ -39,6 +39,24 @@ const FeedReader: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+  const [dimensions, setDimensions] = useState({ width: 1200, height: 800 });
+
+  // set window dimensions
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const updateDimensions = () => {
+        setDimensions({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+      };
+
+      updateDimensions();
+      window.addEventListener("resize", updateDimensions);
+
+      return () => window.removeEventListener("resize", updateDimensions);
+    }
+  }, []);
 
   // set filtered items filter by displayMode
   useEffect(() => {
