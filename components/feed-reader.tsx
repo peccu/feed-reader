@@ -215,7 +215,6 @@ const FeedReader: React.FC = () => {
         readStatus={readStatus}
         toggleReadStatus={toggleReadStatus}
         toggleMenu={toggleMenu}
-        toggleDirection={toggleDirection}
       />
 
       <ModalMenu
