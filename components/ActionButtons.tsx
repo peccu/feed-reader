@@ -4,7 +4,6 @@ import {
   Check,
   Circle,
   Menu,
-  Repeat,
   ThumbsDown,
   ThumbsUp,
 } from "lucide-react";
@@ -21,7 +20,6 @@ interface ActionButtonsProps {
   readStatus: ReadStatuses;
   toggleReadStatus: (link: string) => void;
   toggleMenu: () => void;
-  toggleDirection: () => void;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -32,7 +30,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   readStatus,
   toggleReadStatus,
   toggleMenu,
-  toggleDirection,
 }) => {
   const {
     bookmarkStatus,
@@ -70,9 +67,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       }`}
     >
       <div className={`flex gap-3 ${isReversed ? "flex-row-reverse" : ""}`}>
-        <Button variant="outline" size="sm" onClick={toggleDirection}>
-          <Repeat className="h-4 w-4" />
-        </Button>
         <Button variant="outline" size="sm" onClick={toggleMenu}>
           <Menu className="h-4 w-4" />
         </Button>
