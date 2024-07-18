@@ -1,4 +1,4 @@
-import { Settings } from "lucide-react";
+import { Repeat, Settings } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import ActionButtons from "./ActionButtons";
 import DynamicSyntaxHighlighter from "./DynamicSyntaxHighlighter";
@@ -150,9 +150,10 @@ const FeedReader: React.FC = () => {
     },
     {
       id: 2,
-      label: "Profile",
+      label: "Reverse direction",
+      icon: <Repeat className="h-4 w-4" />,
       onClick() {
-        alert("profile");
+        toggleDirection();
       },
     },
     {
