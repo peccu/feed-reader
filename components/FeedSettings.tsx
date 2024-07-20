@@ -147,6 +147,13 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
             <a href="https://openrss.org/" target="_blank" rel="noreferrer">
               Open RSS
             </a>
+            <a
+              href="https://genfeed.netlify.app/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GenFeed
+            </a>
           </div>
           <Button onClick={fetchFeeds} disabled={loading}>
             {loading ? (
