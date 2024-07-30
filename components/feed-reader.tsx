@@ -40,7 +40,7 @@ const FeedReader: React.FC = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [dimensions, setDimensions] = useState({ width: 1200, height: 800 });
-  const listRef = useRef<typeof List>(null);
+  const listRef = useRef<List>(null);
 
   // set window dimensions
   useEffect(() => {
@@ -89,7 +89,7 @@ const FeedReader: React.FC = () => {
     if (list) {
       const nextIndex = currentIndex + direction;
       setCurrentIndex(nextIndex);
-      listRef.current?.scrollToItem(nextIndex);
+      list.scrollToItem(nextIndex);
     }
   };
 
