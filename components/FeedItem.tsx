@@ -67,7 +67,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
   return (
     <Card
       id={`feed-item-${item.link}`}
-      className={`flex flex-col pt-3 whitespace-normal ${
+      className={`flex flex-col pt-3 pb-16 whitespace-normal ${
         readStatus[item.link] ? "opacity-50" : ""
       }`}
     >
@@ -135,10 +135,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
                 Read More
               </a>
             </div>
+            <div className="mt-4 flex gap-2 justify-center">
+              <details>
+                <summary className="text-sm text-gray-500">Debug</summary>
+                <pre className="text-xs">{JSON.stringify(item, null, 2)}</pre>
+              </details>
+            </div>
           </div>
         </CardContent>
-        {/* debug output */}
-        <pre className="text-xs">{JSON.stringify(item, null, 2)}</pre>
       </div>
     </Card>
   );
