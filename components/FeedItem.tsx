@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
+import DynamicSyntaxHighlighter from "./DynamicSyntaxHighlighter";
 import { Item, ReadStatuses } from "./types";
 import { sanitize } from "./utils";
 
@@ -66,11 +67,11 @@ const FeedItem: React.FC<FeedItemProps> = ({
   return (
     <Card
       id={`feed-item-${item.link}`}
-      className={`w-screen flex-shrink-0 snap-center flex flex-col pt-3 whitespace-normal ${
+      className={`flex flex-col pt-3 whitespace-normal ${
         readStatus[item.link] ? "opacity-50" : ""
       }`}
     >
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-grow overflow-x-hidden overflow-y-auto">
         <CardHeader>
           <CardTitle>
             <a
@@ -112,13 +113,15 @@ const FeedItem: React.FC<FeedItemProps> = ({
             </div>
           )}
           {/* show the description and content */}
-          <p
-            className="mb-2 text-justify text-sm"
-            dangerouslySetInnerHTML={sanitize(
-              pickDescription(item.description, item.content),
-              // .replace(/<[^>]*>?/gm, '')
-            )}
-          ></p>
+          <DynamicSyntaxHighlighter>
+            <p
+              className="mb-2 text-justify text-sm"
+              dangerouslySetInnerHTML={sanitize(
+                pickDescription(item.description, item.content),
+                // .replace(/<[^>]*>?/gm, '')
+              )}
+            ></p>
+          </DynamicSyntaxHighlighter>
           {/* read more */}
           <div className="relative z-20">
             <div className="mt-4 flex gap-2 justify-center">
