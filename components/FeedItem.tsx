@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import React, { useEffect } from "react";
-import { toast } from "sonner";
+// import React, { useEffect } from "react";
+// import { toast } from "sonner";
+import React from "react";
+import DynamicSyntaxHighlighter from "./DynamicSyntaxHighlighter";
 import { Item, ReadStatuses } from "./types";
 import { sanitize } from "./utils";
 
@@ -40,6 +42,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
   readStatus,
   onRead,
 }) => {
+  /*
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -62,7 +65,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
       }
     };
   }, [item.link, item.title, readStatus, onRead]);
-
+*/
   return (
     <Card
       id={`feed-item-${item.link}`}
