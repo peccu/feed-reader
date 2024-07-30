@@ -13,8 +13,13 @@ const DynamicSyntaxHighlighter: React.FC<DynamicSyntaxHighlighterProps> = ({
 
   useEffect(() => {
     if (containerRef.current) {
-      const codeBlocks = containerRef.current.querySelectorAll("pre code");
+      const codeBlocks = containerRef.current.querySelectorAll(
+        "pre code",
+      ) as NodeListOf<HTMLPreElement>;
       codeBlocks.forEach((block) => {
+        if (block.dataset.highlighted == "yes") {
+          return;
+        }
         hljs.highlightElement(block as HTMLElement);
       });
     }

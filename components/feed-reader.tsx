@@ -1,7 +1,7 @@
 import { Repeat, Settings } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { FixedSizeList as List } from "react-window";
 import ActionButtons from "./ActionButtons";
-import DynamicSyntaxHighlighter from "./DynamicSyntaxHighlighter";
 import FeedItem from "./FeedItem";
 import FeedScrollButtons from "./FeedScrollButtons";
 import FeedSettings from "./FeedSettings";
@@ -39,6 +39,25 @@ const FeedReader: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+  const [dimensions, setDimensions] = useState({ width: 1200, height: 800 });
+  const listRef = useRef<typeof List>(null);
+
+  // set window dimensions
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const updateDimensions = () => {
+        setDimensions({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+      };
+
+      updateDimensions();
+      window.addEventListener("resize", updateDimensions);
+
+      return () => window.removeEventListener("resize", updateDimensions);
+    }
+  }, []);
 
   // set filtered items filter by displayMode
   useEffect(() => {
@@ -49,54 +68,28 @@ const FeedReader: React.FC = () => {
     );
   }, [feedItems, displayMode]);
 
-  // add/remove event listener to scroll container
-  useEffect(() => {
-    const updateCurrentIndex = () => {
-      if (scrollContainerRef.current) {
-        const scrollLeft = scrollContainerRef.current.scrollLeft;
-        const itemWidth = scrollContainerRef.current.clientWidth;
-        const newIndex = Math.round(scrollLeft / itemWidth);
-        if (newIndex === currentIndex) {
-          return;
-        }
-        // toast(`index changed: ${currentIndex} -> ${newIndex}`);
-
-        // Mark the current item as read
-        const currentItem = filteredItems[currentIndex];
-        if (currentItem) {
-          markAsRead(currentItem.link);
-        }
-        setCurrentIndex(newIndex);
+  // set current index
+  const handleItemsRendered = useCallback(
+    ({ visibleStartIndex }: { visibleStartIndex: number }) => {
+      /* toast(`items rendered: ${visibleStartIndex}`); */
+      if (visibleStartIndex == currentIndex) {
+        return;
       }
-    };
-
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener("scroll", updateCurrentIndex);
-    }
-
-    // Clean up event listener on unmount
-    return () => {
-      if (container) {
-        container.removeEventListener("scroll", updateCurrentIndex);
+      const currentItem = filteredItems[visibleStartIndex];
+      if (currentItem) {
+        markAsRead(currentItem.link);
       }
-    };
-  }, [filteredItems, markAsRead]);
+      setCurrentIndex(visibleStartIndex);
+    },
+    [],
+  );
 
   const scrollToNextItem = (direction: number) => {
-    if (scrollContainerRef.current) {
-      const containerWidth = scrollContainerRef.current.clientWidth;
-      const currentScroll = scrollContainerRef.current.scrollLeft;
-      const targetScroll = currentScroll + direction * containerWidth;
-      scrollContainerRef.current.scrollTo({
-        left: targetScroll,
-        behavior: "instant",
-      });
-      // and scroll to top of the article
-      scrollContainerRef.current.scrollIntoView({
-        behavior: "instant",
-        block: "start",
-      });
+    const list = listRef.current;
+    if (list) {
+      const nextIndex = currentIndex + direction;
+      setCurrentIndex(nextIndex);
+      listRef.current?.scrollToItem(nextIndex);
     }
   };
 
@@ -156,6 +149,32 @@ const FeedReader: React.FC = () => {
     },
   ];
 
+  const Column = ({
+    index,
+    style,
+  }: {
+    index: number;
+    style: React.CSSProperties;
+  }) => (
+    <div
+      className="flex-shrink-0 w-full h-full snap-center overflow-hidden"
+      style={style}
+    >
+      <div className="w-full h-full overflow-y-auto bg-green">
+        {/*JSON.stringify(style, null, 2)*/}
+        {/* {JSON.stringify(filteredItems[index], null, 2)} */}
+        {/*<div>{`Row ${index}`}</div>*/}
+        <FeedItem
+          key={index}
+          item={filteredItems[index]}
+          isReversed={isReversed}
+          readStatus={readStatus}
+          onRead={() => toggleReadStatus(filteredItems[index].link)}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div className="relative p-0">
       {showSettings && (
@@ -173,24 +192,19 @@ const FeedReader: React.FC = () => {
       {error && <p className="mb-4 text-red-500">{error}</p>}
 
       {!showSettings && (
-        <div
-          className="overflow-x-auto relative whitespace-nowrap scroll-auto snap-x snap-mandatory"
-          ref={scrollContainerRef}
+        <List
+          className="flex w-screen h-screen overflow-x-scroll overflow-y-hidden snap-x snap-mandatory"
+          height={dimensions.height}
+          itemSize={dimensions.width}
+          layout="horizontal"
+          width={dimensions.width}
+          ref={listRef}
+          itemCount={filteredItems.length}
+          overscanCount={1}
+          onItemsRendered={handleItemsRendered}
         >
-          <div className="inline-flex">
-            {filteredItems.map((item, index) => (
-              <DynamicSyntaxHighlighter key={index}>
-                <FeedItem
-                  key={index}
-                  item={item}
-                  isReversed={isReversed}
-                  readStatus={readStatus}
-                  onRead={() => toggleReadStatus(item.link)}
-                />
-              </DynamicSyntaxHighlighter>
-            ))}
-          </div>
-        </div>
+          {Column}
+        </List>
       )}
 
       {!showSettings && <FeedScrollButtons handleNavClick={handleNavClick} />}

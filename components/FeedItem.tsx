@@ -69,11 +69,11 @@ const FeedItem: React.FC<FeedItemProps> = ({
   return (
     <Card
       id={`feed-item-${item.link}`}
-      className={`w-screen flex-shrink-0 snap-center flex flex-col pt-3 whitespace-normal ${
+      className={`flex flex-col pt-3 pb-16 whitespace-normal ${
         readStatus[item.link] ? "opacity-50" : ""
       }`}
     >
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-grow overflow-x-hidden overflow-y-auto">
         <CardHeader>
           <CardTitle>
             <a
@@ -115,13 +115,15 @@ const FeedItem: React.FC<FeedItemProps> = ({
             </div>
           )}
           {/* show the description and content */}
-          <p
-            className="mb-2 text-justify text-sm"
-            dangerouslySetInnerHTML={sanitize(
-              pickDescription(item.description, item.content),
-              // .replace(/<[^>]*>?/gm, '')
-            )}
-          ></p>
+          <DynamicSyntaxHighlighter>
+            <p
+              className="mb-2 text-justify text-sm"
+              dangerouslySetInnerHTML={sanitize(
+                pickDescription(item.description, item.content),
+                // .replace(/<[^>]*>?/gm, '')
+              )}
+            ></p>
+          </DynamicSyntaxHighlighter>
           {/* read more */}
           <div className="relative z-20">
             <div className="mt-4 flex gap-2 justify-center">
@@ -135,10 +137,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
                 Read More
               </a>
             </div>
+            <div className="mt-4 flex gap-2 justify-center">
+              <details>
+                <summary className="text-sm text-gray-500">Debug</summary>
+                <pre className="text-xs">{JSON.stringify(item, null, 2)}</pre>
+              </details>
+            </div>
           </div>
         </CardContent>
-        {/* debug output */}
-        <pre className="text-xs">{JSON.stringify(item, null, 2)}</pre>
       </div>
     </Card>
   );
