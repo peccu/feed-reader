@@ -115,6 +115,7 @@ const FeedReader: React.FC = () => {
         <FeedReaderCarousel
           filteredItems={filteredItems}
           showPager={false}
+          currentIndex={currentIndex}
           isReversed={isReversed}
           readStatus={readStatus}
           onRead={(index: number) =>

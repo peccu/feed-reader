@@ -6,6 +6,7 @@ import FeedReaderPager from "./FeedReaderPager";
 
 const FeedReaderCarousel = ({
   filteredItems,
+  currentIndex,
   showPager = false,
   isReversed = false,
   readStatus = {},
@@ -13,13 +14,13 @@ const FeedReaderCarousel = ({
   onIndexChanged = (_newIndex) => {},
 }: {
   filteredItems: Item[];
+  currentIndex: number;
   showPager: boolean;
   isReversed: boolean;
   readStatus: ReadStatuses;
   onRead: (index: number) => void;
   onIndexChanged: (newIndex: number) => void;
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   // handle scroll and update index
@@ -31,7 +32,7 @@ const FeedReaderCarousel = ({
         const articleWidth = carousel.offsetWidth;
         const newIndex = Math.round(scrollPosition / articleWidth);
         newIndex !== currentIndex && onIndexChanged(newIndex);
-        setCurrentIndex(newIndex);
+        onIndexChanged(newIndex);
       }
     };
 
@@ -60,7 +61,7 @@ const FeedReaderCarousel = ({
     const list = carouselRef.current;
     if (list) {
       const nextIndex = currentIndex + direction;
-      setCurrentIndex(nextIndex);
+      onIndexChanged(nextIndex);
       scrollToIndex(nextIndex);
     }
   };
