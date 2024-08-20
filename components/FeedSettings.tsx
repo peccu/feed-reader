@@ -82,12 +82,12 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
           const settings = JSON.parse(e.target?.result as string);
           if (settings.feedUrls) {
             setFeedUrls(settings.feedUrls);
-            toast("Settings imported successfully");
+            toast.success("Settings imported successfully");
           }
         } catch (error) {
           console.error("Failed to parse settings file", error);
           setError("Failed to import settings. Please check the file format.");
-          toast("Failed to import settings. Please check the file format.");
+          toast.error("Failed to import settings. Please check the file format.");
         }
       };
       reader.readAsText(file);

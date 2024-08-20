@@ -38,24 +38,29 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   } = useBookmarkStatus(feedItems);
 
   const handleFeedback = (index: number, type: "like" | "dislike") => {
-    console.log(`Feedback for item ${index}: ${type}`);
-    toast(
-      `Feedback for item ${index}: ${type}, title: ${filteredItems[index].title}`,
-    );
+    console.log(`Feedback "${type}" for item ${index}, title: ${filteredItems[index].title}`);
+    toast(`Feedback "${type}"`);
     // Here you would typically send this feedback to a server
   };
 
   const handleSave = (index: number) => {
-    console.log(`Saved item ${index}`);
-    toast(`Saved item ${index}, title: ${filteredItems[index].title}`);
+    // TODO store the article itself in indexed db
     // Here you would typically save this item to local storage or a server
     toggleBookmarkStatus(filteredItems[index].link);
-    // TODO store the article itself in indexed db
+    const saved = !!bookmarkStatus[filteredItems[index]?.link];
+    if(saved){
+      console.log(`Removed item ${index}, title: ${filteredItems[index].title}`);
+      toast('Removed');
+    }else{
+      console.log(`Saved item ${index}, title: ${filteredItems[index].title}`);
+      toast('Saved');
+    }
   };
 
   const handleRead = (index: number) => {
-    console.log(`Read item ${index}`);
-    toast(`Read item ${index}, title: ${filteredItems[index].title}`);
+    console.log(`Read item ${index}, title: ${filteredItems[index].title}`);
+    // read status is shown as dark shadow
+    /* toast(`Read item ${index}, title: ${filteredItems[index].title}`); */
     // Here you would typically mark this item as read in local storage or a server
     toggleReadStatus(filteredItems[index]?.link);
   };
