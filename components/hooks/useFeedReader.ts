@@ -35,10 +35,10 @@ export const useFeedReader = (initialFeedUrls: Feed[]) => {
         ),
       );
       toast.success(`Fetched ${allItems.length} items from ${feedUrls.length} feeds`);
-    } catch (err) {
+    } catch (err: any) {
       setError("An error occurred. Please check the URL or try again later.");
       toast.error("An error occurred. Please check the URL or try again later.", {
-        description: err
+        description: err.message
       });
     } finally {
       setLoading(false);

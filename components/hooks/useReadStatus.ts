@@ -42,7 +42,7 @@ export const useReadStatus = (feedItems: Item[]) => {
   };
 
   const markAsReadIfNotSetUnread = (id: string) => {
-    if(newReadStatus.hasOwnProperty(id) && newReadStatus[id] === false){
+    if(readStatus.hasOwnProperty(id) && readStatus[id] === false){
       console.log(`This item is set as unread. skip marking as read. (${id})`);
       return;
     }
