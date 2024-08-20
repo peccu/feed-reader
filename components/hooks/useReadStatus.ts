@@ -41,6 +41,15 @@ export const useReadStatus = (feedItems: Item[]) => {
     });
   };
 
+  const markAsReadIfNotSetUnread = (id: string) => {
+    if(newReadStatus.hasOwnProperty(id) && newReadStatus[id] === false){
+      console.log(`This item is set as unread. skip marking as read. (${id})`);
+      return;
+    }
+    console.log(`This item is not set as unread. marking as read. (${id})`);
+    markAsRead(id);
+  }
+
   const markAsUnread = (id: string) => {
     // toast(`set as unread: ${id}`);
     setReadStatus((prev) => {
@@ -58,6 +67,7 @@ export const useReadStatus = (feedItems: Item[]) => {
     readStatus,
     toggleReadStatus,
     markAsRead,
+    markAsReadIfNotSetUnread,
     markAsUnread,
     displayMode,
     toggleDisplayMode,

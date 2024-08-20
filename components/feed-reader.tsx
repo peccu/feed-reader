@@ -27,7 +27,7 @@ const FeedReader: React.FC = () => {
   const {
     readStatus,
     toggleReadStatus,
-    markAsRead,
+    markAsReadIfNotSetUnread,
     displayMode,
     toggleDisplayMode,
   } = useReadStatus(feedItems);
