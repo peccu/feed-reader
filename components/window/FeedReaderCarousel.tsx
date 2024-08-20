@@ -50,6 +50,10 @@ const FeedReaderCarousel = ({
 
   // page move related functions
   const scrollToIndex = (index: number) => {
+    // console.log(`index: ${index}, filteredItems.length: ${filteredItems.length}`);
+    if(index < 0 || filteredItems.length <= index){
+      return;
+    }
     if (carouselRef.current) {
       carouselRef.current.scrollTo({
         left: index * carouselRef.current.offsetWidth,
@@ -58,9 +62,12 @@ const FeedReaderCarousel = ({
   };
 
   const scrollToNextItem = (direction: number) => {
-    const list = carouselRef.current;
-    if (list) {
-      const nextIndex = currentIndex + direction;
+    const nextIndex = currentIndex + direction;
+    // console.log(`nextIndex: ${nextIndex}, filteredItems.length: ${filteredItems.length}`);
+    if(nextIndex < 0 || filteredItems.length < nextIndex){
+      return;
+    }
+    if (carouselRef.current) {
       onIndexChanged(nextIndex);
       scrollToIndex(nextIndex);
     }
