@@ -1,10 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { DisplayMode, Item, ReadStatuses } from "../types";
 // import { toast } from "sonner";
 
 export const useReadStatus = (feedItems: Item[]) => {
   const [displayMode, setDisplayMode] = useState<DisplayMode>("unread");
   const [readStatus, setReadStatus] = useState<ReadStatuses>({});
+  const readStatusRef = useRef(readStatus);
+
+  useEffect(() => {
+    readStatusRef.current = readStatus;
+  }, [readStatus]);
 
   // load status from localstorage
   useEffect(() => {
@@ -24,7 +29,7 @@ export const useReadStatus = (feedItems: Item[]) => {
   }, [readStatus]);
 
   const toggleReadStatus = (id: string) => {
-    // toast(`read status: ${id}`);
+    // toast(`toggle read status: ${id}`);
     setReadStatus((prev) => {
       const newReadStatus = { ...prev };
       newReadStatus[id] = !prev[id];
@@ -42,13 +47,20 @@ export const useReadStatus = (feedItems: Item[]) => {
   };
 
   const markAsReadIfNotSetUnread = (id: string) => {
-    if(readStatus.hasOwnProperty(id) && readStatus[id] === false){
+    // toast(`mark as read if not set unread: ${id}`);
+    console.log(
+      `readStatus: ${JSON.stringify(readStatusRef.current, null, 2)}`,
+    );
+    if (
+      readStatusRef.current.hasOwnProperty(id) &&
+      readStatusRef.current[id] === false
+    ) {
       console.log(`This item is set as unread. skip marking as read. (${id})`);
       return;
     }
     console.log(`This item is not set as unread. marking as read. (${id})`);
     markAsRead(id);
-  }
+  };
 
   const markAsUnread = (id: string) => {
     // toast(`set as unread: ${id}`);
