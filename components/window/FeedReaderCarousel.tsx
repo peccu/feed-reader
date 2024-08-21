@@ -11,7 +11,7 @@ const FeedReaderCarousel = ({
   isReversed = false,
   readStatus = {},
   onRead = (_index) => {},
-  onIndexChanged = (_newIndex) => {},
+  onIndexChanged = (_prevIndex, _newIndex) => {},
 }: {
   filteredItems: Item[];
   currentIndex: number;
@@ -19,7 +19,7 @@ const FeedReaderCarousel = ({
   isReversed: boolean;
   readStatus: ReadStatuses;
   onRead: (index: number) => void;
-  onIndexChanged: (newIndex: number) => void;
+  onIndexChanged: (prevIndex: number, newIndex: number) => void;
 }) => {
   const carouselRef = useRef<HTMLDivElement>(null);
   const currentIndexRef = useRef(currentIndex);
@@ -37,7 +37,7 @@ const FeedReaderCarousel = ({
         const articleWidth = carousel.offsetWidth;
         const newIndex = Math.round(scrollPosition / articleWidth);
         // console.log(`newIndex: ${newIndex}, currentIndex: ${currentIndex}, ref: ${currentIndexRef.current}`);
-        newIndex !== currentIndexRef.current && onIndexChanged(newIndex);
+        newIndex !== currentIndexRef.current && onIndexChanged(currentIndexRef.current, newIndex);
       }
     };
 

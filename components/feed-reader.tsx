@@ -33,10 +33,19 @@ const FeedReader: React.FC = () => {
   } = useReadStatus(feedItems);
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const currentIndexRef = useRef(currentIndex);
   const [isReversed, setIsReversed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+  const filteredItemsRef = useRef(filteredItems);
+
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
+
+  useEffect(() => {
+    filteredItemsRef.current = filteredItems;
+  }, [filteredItems]);
 
   // set filtered items filter by displayMode
   useEffect(() => {
@@ -49,6 +58,13 @@ const FeedReader: React.FC = () => {
 
   const toggleDirection = () => {
     setIsReversed(!isReversed);
+  };
+
+  const onIndexChanged = (prevIndex: number, newIndex: number) => {
+    console.log(
+      `parent: newIndex:${newIndex},currentIndex:${currentIndexRef.current}`,
+    );
+    markAsReadIfNotSetUnread(filteredItemsRef.current[prevIndex].link);
   };
 
   const toggleSettings = () => {
@@ -121,7 +137,7 @@ const FeedReader: React.FC = () => {
           onRead={(index: number) =>
             toggleReadStatus(filteredItems[index].link)
           }
-          onIndexChanged={setCurrentIndex}
+          onIndexChanged={onIndexChanged}
         />
       )}
 
