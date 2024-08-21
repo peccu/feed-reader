@@ -64,6 +64,7 @@ const FeedReader: React.FC = () => {
     console.log(
       `parent: newIndex:${newIndex},currentIndex:${currentIndexRef.current}`,
     );
+    setCurrentIndex(newIndex);
     markAsReadIfNotSetUnread(filteredItemsRef.current[prevIndex].link);
   };
 
