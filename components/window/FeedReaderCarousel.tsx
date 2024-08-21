@@ -22,6 +22,11 @@ const FeedReaderCarousel = ({
   onIndexChanged: (newIndex: number) => void;
 }) => {
   const carouselRef = useRef<HTMLDivElement>(null);
+  const currentIndexRef = useRef(currentIndex);
+
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
 
   // handle scroll and update index
   useEffect(() => {
@@ -31,8 +36,8 @@ const FeedReaderCarousel = ({
         const scrollPosition = carousel.scrollLeft;
         const articleWidth = carousel.offsetWidth;
         const newIndex = Math.round(scrollPosition / articleWidth);
-        newIndex !== currentIndex && onIndexChanged(newIndex);
-        onIndexChanged(newIndex);
+        // console.log(`newIndex: ${newIndex}, currentIndex: ${currentIndex}, ref: ${currentIndexRef.current}`);
+        newIndex !== currentIndexRef.current && onIndexChanged(newIndex);
       }
     };
 
@@ -68,7 +73,8 @@ const FeedReaderCarousel = ({
       return;
     }
     if (carouselRef.current) {
-      onIndexChanged(nextIndex);
+      // should be called in on scroll event
+      // onIndexChanged(nextIndex);
       scrollToIndex(nextIndex);
     }
   };
