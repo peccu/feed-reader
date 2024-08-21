@@ -111,7 +111,11 @@ const FeedItem: React.FC<FeedItemProps> = ({
           {/* show enclosure */}
           {item.enclosure?.link && (
             <div className="w-screen -mx-3 md:-mx-6 mb-2 md:mb-4">
-              <img className="w-screen" src={item.enclosure?.link} alt="enclosure" />
+              <img
+                className="w-screen"
+                src={item.enclosure?.link}
+                alt="enclosure"
+              />
             </div>
           )}
           {/* show the description and content */}

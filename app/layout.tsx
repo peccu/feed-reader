@@ -38,8 +38,9 @@ export default function RootLayout({
             position="top-center"
             richColors
             toastOptions={{
-              duration: 2000
-            }} />
+              duration: 2000,
+            }}
+          />
         </body>
       </html>
     </>

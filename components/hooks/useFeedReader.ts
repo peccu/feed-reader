@@ -34,12 +34,17 @@ export const useFeedReader = (initialFeedUrls: Feed[]) => {
             new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime(),
         ),
       );
-      toast.success(`Fetched ${allItems.length} items from ${feedUrls.length} feeds`);
+      toast.success(
+        `Fetched ${allItems.length} items from ${feedUrls.length} feeds`,
+      );
     } catch (err: any) {
       setError("An error occurred. Please check the URL or try again later.");
-      toast.error("An error occurred. Please check the URL or try again later.", {
-        description: err.message
-      });
+      toast.error(
+        "An error occurred. Please check the URL or try again later.",
+        {
+          description: err.message,
+        },
+      );
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import FeedItem from "../FeedItem";
 import FeedScrollButtons from "../FeedScrollButtons";
 import { Item, ReadStatuses } from "../types";
@@ -37,7 +37,8 @@ const FeedReaderCarousel = ({
         const articleWidth = carousel.offsetWidth;
         const newIndex = Math.round(scrollPosition / articleWidth);
         // console.log(`newIndex: ${newIndex}, currentIndex: ${currentIndex}, ref: ${currentIndexRef.current}`);
-        newIndex !== currentIndexRef.current && onIndexChanged(currentIndexRef.current, newIndex);
+        newIndex !== currentIndexRef.current &&
+          onIndexChanged(currentIndexRef.current, newIndex);
       }
     };
 
@@ -56,7 +57,7 @@ const FeedReaderCarousel = ({
   // page move related functions
   const scrollToIndex = (index: number) => {
     // console.log(`index: ${index}, filteredItems.length: ${filteredItems.length}`);
-    if(index < 0 || filteredItems.length <= index){
+    if (index < 0 || filteredItems.length <= index) {
       return;
     }
     if (carouselRef.current) {
@@ -69,7 +70,7 @@ const FeedReaderCarousel = ({
   const scrollToNextItem = (direction: number) => {
     const nextIndex = currentIndex + direction;
     // console.log(`nextIndex: ${nextIndex}, filteredItems.length: ${filteredItems.length}`);
-    if(nextIndex < 0 || filteredItems.length < nextIndex){
+    if (nextIndex < 0 || filteredItems.length < nextIndex) {
       return;
     }
     if (carouselRef.current) {

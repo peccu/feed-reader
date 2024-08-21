@@ -38,7 +38,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   } = useBookmarkStatus(feedItems);
 
   const handleFeedback = (index: number, type: "like" | "dislike") => {
-    console.log(`Feedback "${type}" for item ${index}, title: ${filteredItems[index].title}`);
+    console.log(
+      `Feedback "${type}" for item ${index}, title: ${filteredItems[index].title}`,
+    );
     toast(`Feedback "${type}"`);
     // Here you would typically send this feedback to a server
   };
@@ -48,12 +50,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     // Here you would typically save this item to local storage or a server
     toggleBookmarkStatus(filteredItems[index].link);
     const saved = !!bookmarkStatus[filteredItems[index]?.link];
-    if(saved){
-      console.log(`Removed item ${index}, title: ${filteredItems[index].title}`);
-      toast('Removed');
-    }else{
+    if (saved) {
+      console.log(
+        `Removed item ${index}, title: ${filteredItems[index].title}`,
+      );
+      toast("Removed");
+    } else {
       console.log(`Saved item ${index}, title: ${filteredItems[index].title}`);
-      toast('Saved');
+      toast("Saved");
     }
   };
 
