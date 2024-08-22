@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import React, { useEffect, useRef } from "react";
 import FeedItem from "../FeedItem";
 import FeedScrollButtons from "../FeedScrollButtons";
@@ -7,6 +8,8 @@ import FeedReaderPager from "./FeedReaderPager";
 const FeedReaderCarousel = ({
   filteredItems,
   currentIndex,
+  totalItems,
+  toggleDisplayMode,
   showPager = false,
   isReversed = false,
   readStatus = {},
@@ -15,6 +18,8 @@ const FeedReaderCarousel = ({
 }: {
   filteredItems: Item[];
   currentIndex: number;
+  totalItems: number;
+  toggleDisplayMode: () => void;
   showPager: boolean;
   isReversed: boolean;
   readStatus: ReadStatuses;
@@ -116,7 +121,25 @@ const FeedReaderCarousel = ({
         ref={carouselRef}
         className="flex w-screen h-screen overflow-x-scroll overflow-y-hidden snap-x snap-mandatory"
       >
-        {filteredItems.map(renderArticle)}
+        {filteredItems.length == 0 && totalItems > 0 ? (
+          <div className="flex items-center justify-center mx-auto">
+            <div className="text-center">
+              <div className="mb-2 p-6 rounded-lg shadow-md">
+                <h1 className="text-2xl font-bold mb-2">
+                  You read all articles!
+                </h1>
+                <p className="text-gray-400">
+                  Do you want to show already read articles?
+                </p>
+              </div>
+              <Button onClick={toggleDisplayMode} variant="outline">
+                Show all items
+              </Button>
+            </div>
+          </div>
+        ) : (
+          filteredItems.map(renderArticle)
+        )}
       </div>
       {showPager && (
         <FeedReaderPager

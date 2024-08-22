@@ -134,6 +134,8 @@ const FeedReader: React.FC = () => {
           filteredItems={filteredItems}
           showPager={false}
           currentIndex={currentIndex}
+          totalItems={feedItems.length}
+          toggleDisplayMode={toggleDisplayMode}
           isReversed={isReversed}
           readStatus={readStatus}
           onRead={(index: number) =>
