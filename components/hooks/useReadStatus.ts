@@ -48,17 +48,14 @@ export const useReadStatus = (feedItems: Item[]) => {
 
   const markAsReadIfNotSetUnread = (id: string) => {
     // toast(`mark as read if not set unread: ${id}`);
-    console.log(
-      `readStatus: ${JSON.stringify(readStatusRef.current, null, 2)}`,
-    );
     if (
       readStatusRef.current.hasOwnProperty(id) &&
       readStatusRef.current[id] === false
     ) {
-      console.log(`This item is set as unread. skip marking as read. (${id})`);
+      // console.log(`This item is set as unread. skip marking as read. (${id})`);
       return;
     }
-    console.log(`This item is not set as unread. marking as read. (${id})`);
+    // console.log(`This item is not set as unread. marking as read. (${id})`);
     markAsRead(id);
   };
 
