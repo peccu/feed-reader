@@ -30,9 +30,9 @@ export const useFeedReader = (initialFeedUrls: Feed[]) => {
         if (result.status === "ok") {
           return result.items.map((item) => ({ ...item, feed: result.feed }));
         } else {
-          console.log(
-            `result.status is not ok. result: ${JSON.stringify(result, null, 2)}`,
-          );
+          // console.log(
+          //   `result.status is not ok. result: ${JSON.stringify(result, null, 2)}`,
+          // );
           console.error(`Failed to fetch feed: ${result?.feed?.url}`);
           toast(`Failed to fetch feed: ${result?.feed?.url}`);
           return [];
