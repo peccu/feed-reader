@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { modifyFeed } from "../feeds/modifier";
 import { Item, Rss2JsonResponse } from "../types";
 type Feed = { url: string; type: string };
 
@@ -21,7 +22,8 @@ export const useFeedReader = (initialFeedUrls: Feed[]) => {
           .then((json) => {
             json["_feed"] = feed;
             return json;
-          }),
+          })
+          .then((json) => modifyFeed(json)),
       );
       const results: Rss2JsonResponse[] = await Promise.all(feedPromises);
       const allItems = results.flatMap((result) => {
