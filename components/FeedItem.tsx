@@ -31,7 +31,7 @@ const pickDescription = (
       description.length > 3 ? description.slice(0, -3) : description;
     return content.startsWith(lastTrimmed)
       ? content
-      : `${description}<hr/>${content}`;
+      : `${description}<hr className="my-2"/>${content}`;
   }
   return "";
 };
