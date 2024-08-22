@@ -123,6 +123,7 @@ const FeedReader: React.FC = () => {
           loading={loading}
           displayMode={displayMode}
           toggleDisplayMode={toggleDisplayMode}
+          toggleSettings={toggleSettings}
         />
       )}
 
@@ -154,15 +155,17 @@ const FeedReader: React.FC = () => {
       )}
 
       {/* New fixed action buttons */}
-      <ActionButtons
-        currentIndex={currentIndex}
-        feedItems={feedItems}
-        filteredItems={filteredItems}
-        isReversed={isReversed}
-        readStatus={readStatus}
-        toggleReadStatus={toggleReadStatus}
-        toggleMenu={toggleMenu}
-      />
+      {!showSettings && (
+        <ActionButtons
+          currentIndex={currentIndex}
+          feedItems={feedItems}
+          filteredItems={filteredItems}
+          isReversed={isReversed}
+          readStatus={readStatus}
+          toggleReadStatus={toggleReadStatus}
+          toggleMenu={toggleMenu}
+        />
+      )}
 
       <ModalMenu
         isOpen={isOpen}

@@ -29,6 +29,7 @@ interface FeedSettingsProps {
   loading: boolean;
   displayMode: DisplayMode;
   toggleDisplayMode: () => void;
+  toggleSettings: () => void;
 }
 
 const FeedSettings: React.FC<FeedSettingsProps> = ({
@@ -39,6 +40,7 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
   loading,
   displayMode,
   toggleDisplayMode,
+  toggleSettings,
 }) => {
   const [newFeedUrl, setNewFeedUrl] = useState("");
   const [newFeedType, setNewFeedType] = useState<FeedType>("RSS");
@@ -97,26 +99,81 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
   };
 
   return (
-    <Card className="mb-4 relative z-20">
+    <Card className="relative z-20">
       <CardHeader className="flex flex-row items-center justify-between pt-6">
         <CardTitle>Settings</CardTitle>
+        <Button
+          onClick={toggleSettings}
+          variant="ghost"
+          size="icon"
+          className="transition duration-200"
+        >
+          <X size={24} />
+        </Button>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-2 mb-2">
-          {feedUrls.map((feed, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <Input className="text-base" value={feed.url} readOnly />
-              <span className="text-sm text-gray-500">{feed.type}</span>
-              <Button
-                onClick={() => removeFeed(feed.url)}
-                variant="outline"
-                size="icon"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
-          <div className="flex gap-2">
+        <div className="flex flex-col gap-2 m-2">
+          {/* useful links */}
+          <div className="flex gap-4 mb-2">
+            <a
+              href="https://feedurl.netlify.app/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Feed URL Extractor
+            </a>
+            <a href="https://openrss.org/" target="_blank" rel="noreferrer">
+              Open RSS
+            </a>
+            <a
+              href="https://genfeed.netlify.app/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GenFeed
+            </a>
+          </div>
+          {/* load button */}
+          <Button onClick={fetchFeeds} disabled={loading}>
+            {loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              "Load All Feeds"
+            )}
+          </Button>
+          {/* import export */}
+          <div className="flex gap-2 mt-4">
+            <Button onClick={exportSettings} variant="outline">
+              <Download className="mr-2 h-4 w-4" />
+              Export Settings
+            </Button>
+            <Button onClick={handleImportClick} variant="outline">
+              <Upload className="mr-2 h-4 w-4" />
+              Import Settings
+              <input
+                type="file"
+                ref={fileInputRef}
+                hidden
+                accept=".json"
+                onChange={importSettings}
+              />
+            </Button>
+          </div>
+          {/* display mode */}
+          <div className="flex items-center space-x-2 m-3">
+            <Switch
+              id="display-mode"
+              checked={displayMode === "all"}
+              onCheckedChange={toggleDisplayMode}
+            />
+            <label htmlFor="display-mode">
+              {displayMode === "all"
+                ? "Showing all items"
+                : "Showing unread items only"}
+            </label>
+          </div>
+          {/* add form */}
+          <div className="flex gap-2 mb-3">
             <Input
               type="text"
               className="text-base"
@@ -138,62 +195,21 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
               <Plus className="h-4 w-4" />
             </Button>
           </div>
-          <div className="flex gap-4 my-2">
-            <a
-              href="https://feedurl.netlify.app/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Feed URL Extractor
-            </a>
-            <a href="https://openrss.org/" target="_blank" rel="noreferrer">
-              Open RSS
-            </a>
-            <a
-              href="https://genfeed.netlify.app/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              GenFeed
-            </a>
-          </div>
-          <Button onClick={fetchFeeds} disabled={loading}>
-            {loading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              "Load All Feeds"
-            )}
-          </Button>
-          <div className="flex gap-2 mt-4">
-            <Button onClick={exportSettings} variant="outline">
-              <Download className="mr-2 h-4 w-4" />
-              Export Settings
-            </Button>
-            <Button onClick={handleImportClick} variant="outline">
-              <Upload className="mr-2 h-4 w-4" />
-              Import Settings
-              <input
-                type="file"
-                ref={fileInputRef}
-                hidden
-                accept=".json"
-                onChange={importSettings}
-              />
-            </Button>
-          </div>
-
-          <div className="flex items-center space-x-2 mt-4">
-            <Switch
-              id="display-mode"
-              checked={displayMode === "all"}
-              onCheckedChange={toggleDisplayMode}
-            />
-            <label htmlFor="display-mode">
-              {displayMode === "all"
-                ? "Showing all items"
-                : "Showing unread items only"}
-            </label>
-          </div>
+          {/* feed urls */}
+          {feedUrls.map((feed, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <Input className="text-base" value={feed.url} readOnly />
+              <span className="text-sm text-gray-500">{feed.type}</span>
+              <Button
+                onClick={() => removeFeed(feed.url)}
+                variant="outline"
+                size="icon"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+          {/* bottom */}
         </div>
       </CardContent>
     </Card>
