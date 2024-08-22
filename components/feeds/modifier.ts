@@ -1,17 +1,36 @@
 import { Enclosure, Item, Rss2JsonResponse } from "../types";
 
-const filters = [];
+const feedFilters: ((feed: Rss2JsonResponse) => Rss2JsonResponse)[] = [];
 
 export const modifyFeed: (feed: Rss2JsonResponse) => Rss2JsonResponse = (
   feed,
+) => feedFilters.reduce((feed, f) => f(feed), feed);
+
+const itemFilters: ((item: Item, feed: Rss2JsonResponse) => Item)[] = [];
+
+const modifyFeedItems: (feed: Rss2JsonResponse) => Rss2JsonResponse = (
+  feed,
 ) => {
-  const items = filters.reduce(
-    (items, f) => items.map((item: Item) => f(item)),
+  const items = itemFilters.reduce(
+    (items, f) => items.map((item: Item) => f(item, feed)),
     feed.items,
   );
   feed.items = items;
   return feed;
 };
+feedFilters.push(modifyFeedItems);
+
+const appendFeedToItem: (item: Item, feed: Rss2JsonResponse) => Item = (
+  item,
+  feed,
+) => ({ ...item, feed: feed.feed });
+itemFilters.push(appendFeedToItem);
+
+const appendOriginalFeedToItem: (item: Item, feed: Rss2JsonResponse) => Item = (
+  item,
+  feed,
+) => ({ ...item, feedConfig: feed.feedConfig });
+itemFilters.push(appendOriginalFeedToItem);
 
 const extractImageUrl: (text: string) => string | null = (text) => {
   const urlPattern = /^(https?:\/\/[^\s<]+?)(?=[\s<])/i;
@@ -20,7 +39,10 @@ const extractImageUrl: (text: string) => string | null = (text) => {
   return match ? match[1] : null;
 };
 
-const techcrunchEnclosure: (item: Item) => Item = (item) => {
+const techcrunchEnclosure: (item: Item, _feed: Rss2JsonResponse) => Item = (
+  item,
+  _feed,
+) => {
   const imageUrl = extractImageUrl(item.description);
   // console.log(`item.description: ${item.description}`);
   // console.log(`imageUrl: ${imageUrl}`);
@@ -33,4 +55,4 @@ const techcrunchEnclosure: (item: Item) => Item = (item) => {
   }
   return item;
 };
-filters.push(techcrunchEnclosure);
+itemFilters.push(techcrunchEnclosure);

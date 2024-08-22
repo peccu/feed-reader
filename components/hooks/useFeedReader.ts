@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { modifyFeed } from "../feeds/modifier";
-import { Item, Rss2JsonResponse } from "../types";
-type Feed = { url: string; type: string };
+import { FeedConfig, Item, Rss2JsonResponse } from "../types";
 
-export const useFeedReader = (initialFeedUrls: Feed[]) => {
+export const useFeedReader = (initialFeedUrls: FeedConfig[]) => {
   const [feedUrls, setFeedUrls] = useState(initialFeedUrls);
   const [feedItems, setFeedItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
@@ -20,15 +19,17 @@ export const useFeedReader = (initialFeedUrls: Feed[]) => {
         )
           .then((response) => response.json())
           .then((json) => {
-            json["_feed"] = feed;
+            json["feedConfig"] = feed;
             return json;
-          })
-          .then((json) => modifyFeed(json)),
+          }),
       );
       const results: Rss2JsonResponse[] = await Promise.all(feedPromises);
       const allItems = results.flatMap((result) => {
         if (result.status === "ok") {
-          return result.items.map((item) => ({ ...item, feed: result.feed }));
+          const modified = modifyFeed(result);
+          console.log("before modified", result);
+          console.log("after modified", modified);
+          return modified.items;
         } else {
           // console.log(
           //   `result.status is not ok. result: ${JSON.stringify(result, null, 2)}`,

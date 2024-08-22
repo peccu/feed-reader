@@ -2,6 +2,7 @@ export interface Rss2JsonResponse {
   status: string;
   feed: Feed;
   items: Item[];
+  feedConfig?: FeedConfig;
 }
 
 interface Feed {
@@ -25,6 +26,7 @@ export interface Item {
   enclosure: Enclosure;
   categories: string[];
   feed?: Feed;
+  feedConfig?: FeedConfig;
 }
 
 export interface ReadStatuses {
@@ -35,7 +37,7 @@ export interface BookmarkStatuses {
   [key: string]: boolean;
 }
 
-interface Enclosure {
+export interface Enclosure {
   link: string;
   type: string;
   length?: string; // Optional as it might not be present in all responses
@@ -49,3 +51,8 @@ export interface MenuItem {
   icon?: JSX.Element;
   onClick: () => void;
 }
+
+export type FeedConfig = {
+  url: string;
+  type: string;
+};
