@@ -23,6 +23,7 @@ const FeedReader: React.FC = () => {
     { url: "https://github.blog/feed/", type: "RSS" },
     { url: "https://www.publickey1.jp/atom.xml", type: "Atom" },
     { url: "https://dev.to/feed", type: "RSS" },
+    { url: "https://openrss.org/https://techcrunch.com/", type: "RSS" },
   ]);
   const {
     readStatus,
