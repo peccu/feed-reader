@@ -120,7 +120,10 @@ const FeedReader: React.FC = () => {
           feedUrls={feedUrls}
           setFeedUrls={setFeedUrls}
           setError={setError}
-          fetchFeeds={fetchFeeds}
+          fetchFeeds={() => {
+            fetchFeeds();
+            setCurrentIndex(0);
+          }}
           loading={loading}
           displayMode={displayMode}
           toggleDisplayMode={toggleDisplayMode}
