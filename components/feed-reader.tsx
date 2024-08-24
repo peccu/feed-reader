@@ -15,8 +15,6 @@ const FeedReader: React.FC = () => {
     setFeedUrls,
     feedItems,
     loading,
-    error,
-    setError,
     fetchFeeds,
   } = useFeedReader([
     { url: "https://www.lifehacker.jp/feed/index.xml", type: "RSS" },
@@ -119,7 +117,6 @@ const FeedReader: React.FC = () => {
         <FeedSettings
           feedUrls={feedUrls}
           setFeedUrls={setFeedUrls}
-          setError={setError}
           fetchFeeds={() => {
             fetchFeeds();
             setCurrentIndex(0);
@@ -130,8 +127,6 @@ const FeedReader: React.FC = () => {
           toggleSettings={toggleSettings}
         />
       )}
-
-      {error && <p className="mb-4 text-red-500">{error}</p>}
 
       {!showSettings && (
         <FeedReaderCarousel

@@ -7,11 +7,9 @@ export const useFeedReader = (initialFeedUrls: FeedConfig[]) => {
   const [feedUrls, setFeedUrls] = useState(initialFeedUrls);
   const [feedItems, setFeedItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const fetchFeeds = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const feedPromises = feedUrls.map((feed) =>
         fetch(
@@ -49,7 +47,6 @@ export const useFeedReader = (initialFeedUrls: FeedConfig[]) => {
         `Fetched ${allItems.length} items from ${feedUrls.length} feeds`,
       );
     } catch (err: any) {
-      setError("An error occurred. Please check the URL or try again later.");
       console.log(
         `An error occurred. Please check the URL or try again later. ${err.message}`,
       );
@@ -84,8 +81,6 @@ export const useFeedReader = (initialFeedUrls: FeedConfig[]) => {
     setFeedUrls,
     feedItems,
     loading,
-    error,
-    setError,
     fetchFeeds,
   };
 };

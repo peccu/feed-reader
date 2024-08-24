@@ -24,7 +24,6 @@ type FeedType = string;
 interface FeedSettingsProps {
   feedUrls: FeedUrl[];
   setFeedUrls: (urls: FeedUrl[]) => void;
-  setError: (message: string) => void;
   fetchFeeds: () => void;
   loading: boolean;
   displayMode: DisplayMode;
@@ -35,7 +34,6 @@ interface FeedSettingsProps {
 const FeedSettings: React.FC<FeedSettingsProps> = ({
   feedUrls,
   setFeedUrls,
-  setError,
   fetchFeeds,
   loading,
   displayMode,
@@ -88,7 +86,6 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
           }
         } catch (error) {
           console.error("Failed to parse settings file", error);
-          setError("Failed to import settings. Please check the file format.");
           toast.error(
             "Failed to import settings. Please check the file format.",
           );
