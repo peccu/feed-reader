@@ -89,9 +89,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
         </CardHeader>
         <CardContent className="">
           <p className="text-sm text-gray-500 mb-2">
-            {item.feed?.author || "Unknown Author"}
-          </p> from
-          <p className="text-sm text-gray-500 mb-2">
+            {item.author || "Unknown Author"}
+            from
             {item.feed?.title || "Unknown Feed"}
           </p>
           <p className="text-sm text-gray-500 mb-2">
