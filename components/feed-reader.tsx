@@ -1,4 +1,4 @@
-import { Repeat, Settings } from "lucide-react";
+import { ArrowRightLeft, Repeat, Settings } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import ActionButtons from "./ActionButtons";
 import FeedSettings from "./FeedSettings";
@@ -88,7 +88,7 @@ const FeedReader: React.FC = () => {
     {
       id: 2,
       label: "Reverse direction",
-      icon: <Repeat className="h-4 w-4" />,
+      icon: <ArrowRightLeft className="h-4 w-4" />,
       onClick() {
         toggleDirection();
       },
@@ -104,6 +104,14 @@ const FeedReader: React.FC = () => {
     },
     {
       id: 4,
+      label: "Reload all feeds",
+      icon: <Repeat className="h-4 w-4" />,
+      onClick() {
+        fetchFeeds();
+      }
+    },
+    {
+      id: 5,
       label: "Help",
       onClick() {
         alert("help");
