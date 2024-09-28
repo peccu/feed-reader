@@ -1,5 +1,5 @@
 run = "bun run dev"
-modules = ["nodejs-18:v3-20230608-f4cd419"]
+modules = ["nodejs-22"]
 hidden = [".config", "package-lock.json"]
 
 disableInstallBeforeRun = true
