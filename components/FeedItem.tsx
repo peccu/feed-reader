@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 // import { toast } from "sonner";
-import React from "react";
 import DynamicSyntaxHighlighter from "./DynamicSyntaxHighlighter";
+import { articleImages } from "@/lib/articleImages";
 import { Item, ReadStatuses } from "./types";
 import { sanitize } from "./utils";
 
@@ -36,12 +36,37 @@ const pickDescription = (
   return "";
 };
 
+const enclosure = async (item: Item) => {
+  if (item.enclosure?.link) {
+    return item.enclosure?.link;
+  }
+  const urls = await articleImages(item.link);
+  if (urls == null) {
+    return false;
+  }
+  // console.log(`found urls for ${item.link}
+  // ${urls.join("\n")}`);
+  return urls[0];
+};
+
 const FeedItem: React.FC<FeedItemProps> = ({
   item,
   isReversed,
   readStatus,
   onRead,
 }) => {
+  window.enclosure = enclosure;
+  window.articleImages = articleImages;
+  const [enc, setEnc] = useState("");
+  const ensureImage = useCallback(async () => {
+    const enc = await enclosure(item);
+    if (enc) {
+      setEnc(enc);
+    }
+  }, [item]);
+  useEffect(() => {
+    ensureImage();
+  }, [item]);
   /*
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -89,8 +114,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         </CardHeader>
         <CardContent className="">
           <p className="text-sm text-gray-500 mb-2">
-            {item.author || "Unknown Author"}
-            {" "}from{" "}
+            {item.author || "Unknown Author"} from{" "}
             {item.feed?.title || "Unknown Feed"}
           </p>
           <p className="text-sm text-gray-500 mb-2">
@@ -111,13 +135,9 @@ const FeedItem: React.FC<FeedItemProps> = ({
             Status: {readStatus[item.link] ? "Read" : "Unread"}
           </p>
           {/* show enclosure */}
-          {item.enclosure?.link && (
+          {enc && (
             <div className="w-screen -mx-3 md:-mx-6 mb-2 md:mb-4">
-              <img
-                className="w-screen"
-                src={item.enclosure?.link}
-                alt="enclosure"
-              />
+              <img className="w-screen" src={enc} alt="enclosure" />
             </div>
           )}
           {/* show the description and content */}
