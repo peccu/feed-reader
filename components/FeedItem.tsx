@@ -55,8 +55,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
   readStatus,
   onRead,
 }) => {
-  window.enclosure = enclosure;
-  window.articleImages = articleImages;
+  // window.enclosure = enclosure;
+  // window.articleImages = articleImages;
   const [enc, setEnc] = useState("");
   const ensureImage = useCallback(async () => {
     const enc = await enclosure(item);
