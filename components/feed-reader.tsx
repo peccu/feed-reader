@@ -117,13 +117,20 @@ const FeedReader: React.FC = () => {
     },
     {
       id: 5,
+      label: "Toggle all or unreads only",
+      onClick() {
+        toggleDisplayMode();
+      },
+    },
+    {
+      id: 6,
       label: "Toggle using SourceCodeFont",
       onClick() {
         toggleSourceCodeFont();
       },
     },
     {
-      id: 6,
+      id: 7,
       label: "Help",
       onClick() {
         alert("help");
