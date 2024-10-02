@@ -37,12 +37,15 @@ export const useFeedReader = (initialFeedUrls: FeedConfig[]) => {
           return [];
         }
       });
-      setFeedItems(
-        allItems.sort(
+      setFeedItems([
+        ...allItems.sort(
           (a, b) =>
             new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime(),
         ),
-      );
+        {
+          end: true,
+        } as Item,
+      ]);
       toast.success(
         `Fetched ${allItems.length} items from ${feedUrls.length} feeds`,
       );

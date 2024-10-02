@@ -27,6 +27,7 @@ export interface Item {
   categories: string[];
   feed?: Feed;
   feedConfig?: FeedConfig;
+  end?: boolean;
 }
 
 export interface ReadStatuses {

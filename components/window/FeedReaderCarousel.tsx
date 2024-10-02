@@ -119,7 +119,7 @@ const FeedReaderCarousel = ({
         className="flex-shrink-0 w-full h-full snap-center overflow-hidden"
       >
         <div className="w-full h-full overflow-y-auto bg-green">
-          {isVisible && (
+          {isVisible && !article.end && (
             <FeedItem
               key={index}
               item={article}
@@ -129,10 +129,22 @@ const FeedReaderCarousel = ({
               onRead={() => onRead(index)}
             />
           )}
+          {article.end && renderLastPage()}
         </div>
       </div>
     );
   };
+
+  const renderLastPage = () => (
+    <div className="flex items-center justify-center mx-auto">
+      <div className="text-center">
+        <div className="mb-2 p-6 rounded-lg shadow-md">
+          <h1 className="text-2xl font-bold mb-2">You read all articles!</h1>
+          <p className="text-gray-400">This is the last page.</p>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="relative w-full">
