@@ -34,6 +34,7 @@ const FeedReader: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentIndexRef = useRef(currentIndex);
   const [isReversed, setIsReversed] = useState(false);
+  const [isSourceCodeFont, setIsSourceCodeFont] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const filteredItemsRef = useRef(filteredItems);
@@ -57,6 +58,10 @@ const FeedReader: React.FC = () => {
 
   const toggleDirection = () => {
     setIsReversed(!isReversed);
+  };
+
+  const toggleSourceCodeFont = () => {
+    setIsSourceCodeFont(!isSourceCodeFont);
   };
 
   const onIndexChanged = (prevIndex: number, newIndex: number) => {
@@ -112,6 +117,13 @@ const FeedReader: React.FC = () => {
     },
     {
       id: 5,
+      label: "Toggle using SourceCodeFont",
+      onClick() {
+        toggleSourceCodeFont();
+      },
+    },
+    {
+      id: 6,
       label: "Help",
       onClick() {
         alert("help");
@@ -144,6 +156,7 @@ const FeedReader: React.FC = () => {
           totalItems={feedItems.length}
           toggleDisplayMode={toggleDisplayMode}
           isReversed={isReversed}
+          isSourceCodeFont={isSourceCodeFont}
           readStatus={readStatus}
           onRead={(index: number) =>
             toggleReadStatus(filteredItems[index].link)

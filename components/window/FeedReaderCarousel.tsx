@@ -12,6 +12,7 @@ const FeedReaderCarousel = ({
   toggleDisplayMode,
   showPager = false,
   isReversed = false,
+  isSourceCodeFont = false,
   readStatus = {},
   onRead = (_index) => {},
   onIndexChanged = (_prevIndex, _newIndex) => {},
@@ -22,6 +23,7 @@ const FeedReaderCarousel = ({
   toggleDisplayMode: () => void;
   showPager: boolean;
   isReversed: boolean;
+  isSourceCodeFont: boolean;
   readStatus: ReadStatuses;
   onRead: (index: number) => void;
   onIndexChanged: (prevIndex: number, newIndex: number) => void;
@@ -106,6 +108,7 @@ const FeedReaderCarousel = ({
               key={index}
               item={article}
               isReversed={isReversed}
+              isSourceCodeFont={isSourceCodeFont}
               readStatus={readStatus}
               onRead={() => onRead(index)}
             />

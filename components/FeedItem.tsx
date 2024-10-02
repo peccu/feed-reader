@@ -1,14 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React, { useCallback, useEffect, useState } from "react";
 // import { toast } from "sonner";
-import DynamicSyntaxHighlighter from "./DynamicSyntaxHighlighter";
 import { articleImages } from "@/lib/articleImages";
+import DynamicSyntaxHighlighter from "./DynamicSyntaxHighlighter";
 import { Item, ReadStatuses } from "./types";
 import { sanitize } from "./utils";
 
 interface FeedItemProps {
   item: Item;
   isReversed: boolean;
+  isSourceCodeFont: boolean;
   readStatus: ReadStatuses;
   onRead: () => void;
 }
@@ -52,6 +53,7 @@ const enclosure = async (item: Item) => {
 const FeedItem: React.FC<FeedItemProps> = ({
   item,
   isReversed,
+  isSourceCodeFont,
   readStatus,
   onRead,
 }) => {
@@ -141,7 +143,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
             </div>
           )}
           {/* show the description and content */}
-          <DynamicSyntaxHighlighter>
+          <DynamicSyntaxHighlighter isSourceCodeFont={isSourceCodeFont}>
             <p
               className="mb-2 text-justify text-sm"
               dangerouslySetInnerHTML={sanitize(
