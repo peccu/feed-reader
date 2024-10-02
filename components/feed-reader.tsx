@@ -92,14 +92,6 @@ const FeedReader: React.FC = () => {
     },
     {
       id: 2,
-      label: "Reverse direction",
-      icon: <ArrowRightLeft className="h-4 w-4" />,
-      onClick() {
-        toggleDirection();
-      },
-    },
-    {
-      id: 3,
       label: "Settings",
       icon: <Settings className="h-4 w-4" />,
       onClick() {
@@ -108,11 +100,19 @@ const FeedReader: React.FC = () => {
       },
     },
     {
-      id: 4,
+      id: 3,
       label: "Reload all feeds",
       icon: <Repeat className="h-4 w-4" />,
       onClick() {
         fetchFeeds();
+      },
+    },
+    {
+      id: 4,
+      label: "Reverse direction",
+      icon: <ArrowRightLeft className="h-4 w-4" />,
+      onClick() {
+        toggleDirection();
       },
     },
     {
