@@ -152,7 +152,7 @@ const FeedReaderCarousel = ({
         ref={carouselRef}
         className="flex w-screen h-screen overflow-x-scroll overflow-y-hidden snap-x snap-mandatory"
       >
-        {filteredItems.length == 0 && totalItems > 0
+        {filteredItems.length == 1 && totalItems > 1
           ? renderAllRead()
           : filteredItems.map(renderArticle)}
       </div>
