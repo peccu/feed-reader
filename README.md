@@ -27,7 +27,7 @@ Refer to the [ShadCN UI Documentation](https://ui.shadcn.com/docs) for component
 To install a new component into the `components/ui` directory:
 
 ```bash
-npx shadcn-ui@latest install <component>
+bunx shadcn@latest add <component>
 ```
 
 ## Learn More
