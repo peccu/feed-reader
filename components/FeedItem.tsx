@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React, { useCallback, useEffect, useState } from "react";
-// import { toast } from "sonner";
+/* import { logToast } from "@/lib/logToast"; */
 import { articleImages } from "@/lib/articleImages";
 import DynamicSyntaxHighlighter from "./DynamicSyntaxHighlighter";
 import { Item, ReadStatuses } from "./types";
@@ -74,7 +74,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !readStatus[item.link]) {
-          toast(`read: ${item.title}`);
+          logToast.log(`read: ${item.title}`);
           onRead();
         }
       },

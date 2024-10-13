@@ -1,5 +1,5 @@
+import { logToast } from "@/lib/logToast";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 import { modifyFeed } from "../feeds/modifier";
 import { FeedConfig, Item, Rss2JsonResponse } from "../types";
 
@@ -32,8 +32,7 @@ export const useFeedReader = (initialFeedUrls: FeedConfig[]) => {
           // console.log(
           //   `result.status is not ok. result: ${JSON.stringify(result, null, 2)}`,
           // );
-          console.error(`Failed to fetch feed: ${result?.feed?.url}`);
-          toast(`Failed to fetch feed: ${result?.feed?.url}`);
+          logToast.error(`Failed to fetch feed: ${result?.feed?.url}`);
           return [];
         }
       });
@@ -46,18 +45,13 @@ export const useFeedReader = (initialFeedUrls: FeedConfig[]) => {
           end: true,
         } as Item,
       ]);
-      toast.success(
+      logToast.success(
         `Fetched ${allItems.length} items from ${feedUrls.length} feeds`,
       );
     } catch (err: any) {
-      console.log(
-        `An error occurred. Please check the URL or try again later. ${err.message}`,
-      );
-      toast.error(
+      logToast.error(
         "An error occurred. Please check the URL or try again later.",
-        {
-          description: err.message,
-        },
+        err.message,
       );
     } finally {
       setLoading(false);

@@ -9,9 +9,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { logToast } from "@/lib/logToast";
 import { Download, Loader2, Plus, Upload, X } from "lucide-react";
 import React, { useRef, useState } from "react";
-import { toast } from "sonner";
 import { DisplayMode } from "./types";
 
 type FeedUrl = {
@@ -82,12 +82,12 @@ const FeedSettings: React.FC<FeedSettingsProps> = ({
           const settings = JSON.parse(e.target?.result as string);
           if (settings.feedUrls) {
             setFeedUrls(settings.feedUrls);
-            toast.success("Settings imported successfully");
+            logToast.success("Settings imported successfully");
           }
-        } catch (error) {
-          console.error("Failed to parse settings file", error);
-          toast.error(
+        } catch (error: any) {
+          logToast.error(
             "Failed to import settings. Please check the file format.",
+            error.message,
           );
         }
       };

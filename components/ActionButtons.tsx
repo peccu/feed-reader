@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { logToast } from "@/lib/logToast";
 import {
   Bookmark,
   Check,
@@ -8,7 +9,6 @@ import {
   ThumbsUp,
 } from "lucide-react";
 import React from "react";
-import { toast } from "sonner";
 import { useBookmarkStatus } from "./hooks/useBookmark";
 import { Item, ReadStatuses } from "./types";
 
@@ -41,7 +41,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     console.log(
       `Feedback "${type}" for item ${index}, title: ${filteredItems[index].title}`,
     );
-    toast(`Feedback "${type}"`);
+    logToast.log(`Feedback "${type}"`);
     // Here you would typically send this feedback to a server
   };
 
@@ -54,17 +54,17 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       console.log(
         `Removed item ${index}, title: ${filteredItems[index].title}`,
       );
-      toast("Removed");
+      logToast.log("Removed");
     } else {
       console.log(`Saved item ${index}, title: ${filteredItems[index].title}`);
-      toast("Saved");
+      logToast.log("Saved");
     }
   };
 
   const handleRead = (index: number) => {
     console.log(`Read item ${index}, title: ${filteredItems[index].title}`);
     // read status is shown as dark shadow
-    /* toast(`Read item ${index}, title: ${filteredItems[index].title}`); */
+    /* logToast.log(`Read item ${index}, title: ${filteredItems[index].title}`); */
     // Here you would typically mark this item as read in local storage or a server
     toggleReadStatus(filteredItems[index]?.link);
   };

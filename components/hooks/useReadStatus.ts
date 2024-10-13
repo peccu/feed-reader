@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { DisplayMode, Item, ReadStatuses } from "../types";
-// import { toast } from "sonner";
+// import { logToast } from "@/lib/logToast";
 
 export const useReadStatus = (feedItems: Item[]) => {
   const [displayMode, setDisplayMode] = useState<DisplayMode>("unread");
@@ -16,20 +16,20 @@ export const useReadStatus = (feedItems: Item[]) => {
     const savedReadStatus = JSON.parse(
       localStorage.getItem("readStatus") || "{}",
     );
-    // toast(`restored read status: ${JSON.stringify(savedReadStatus, null, 2)}`);
+    // logToast.log(`restored read status: ${JSON.stringify(savedReadStatus, null, 2)}`);
     setReadStatus(savedReadStatus);
   }, [feedItems]);
 
   // if read status is updated, save it
   useEffect(() => {
     if (Object.keys(readStatus).length > 0) {
-      // toast(`saving: ${JSON.stringify(readStatus, null, 2)}`);
+      // logToast.log(`saving: ${JSON.stringify(readStatus, null, 2)}`);
       localStorage.setItem("readStatus", JSON.stringify(readStatus));
     }
   }, [readStatus]);
 
   const toggleReadStatus = (id: string) => {
-    // toast(`toggle read status: ${id}`);
+    // logToast.log(`toggle read status: ${id}`);
     setReadStatus((prev) => {
       const newReadStatus = { ...prev };
       newReadStatus[id] = !prev[id];
@@ -38,7 +38,7 @@ export const useReadStatus = (feedItems: Item[]) => {
   };
 
   const markAsRead = (id: string) => {
-    // toast(`set as read: ${id}`);
+    // logToast.log(`set as read: ${id}`);
     setReadStatus((prev) => {
       const newReadStatus = { ...prev };
       newReadStatus[id] = true;
@@ -47,7 +47,7 @@ export const useReadStatus = (feedItems: Item[]) => {
   };
 
   const markAsReadIfNotSetUnread = (id: string) => {
-    // toast(`mark as read if not set unread: ${id}`);
+    // logToast.log(`mark as read if not set unread: ${id}`);
     if (
       readStatusRef.current.hasOwnProperty(id) &&
       readStatusRef.current[id] === false
@@ -60,7 +60,7 @@ export const useReadStatus = (feedItems: Item[]) => {
   };
 
   const markAsUnread = (id: string) => {
-    // toast(`set as unread: ${id}`);
+    // logToast.log(`set as unread: ${id}`);
     setReadStatus((prev) => {
       const newReadStatus = { ...prev };
       newReadStatus[id] = false;
