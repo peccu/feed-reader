@@ -150,7 +150,7 @@ const FeedReaderCarousel = ({
     <div className="relative w-full">
       <div
         ref={carouselRef}
-        className="flex w-screen h-screen overflow-x-scroll overflow-y-hidden snap-x snap-mandatory"
+        className="flex w-screen h-dvh overflow-x-scroll overflow-y-hidden snap-x snap-mandatory"
       >
         {filteredItems.length == 1 && totalItems > 1
           ? renderAllRead()
