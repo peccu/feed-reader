@@ -5,6 +5,7 @@ import {
   Check,
   Circle,
   Menu,
+  Share,
   ThumbsDown,
   ThumbsUp,
 } from "lucide-react";
@@ -69,6 +70,23 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     toggleReadStatus(filteredItems[index]?.link);
   };
 
+  const shareItem = async (index: number) => {
+    console.log(
+      `sharing item ${index}, title: ${filteredItems[index].title}, url: ${filteredItems[index].link}`,
+    );
+    const shareData = {
+      title: filteredItems[index].title,
+      text: filteredItems[index].title,
+      url: filteredItems[index].link,
+    };
+    try {
+      await navigator.share(shareData);
+      logToast.success("Shared successfully");
+    } catch (err) {
+      logToast.error(`Error: ${err}`);
+    }
+  };
+
   return (
     <div
       className={`fixed bottom-4 z-30 bg-background/80 backdrop-blur-sm p-1 rounded-sm shadow-lg ${
@@ -93,6 +111,13 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           onClick={() => handleFeedback(currentIndex, "dislike")}
         >
           <ThumbsDown className="h-5 w-5" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => shareItem(currentIndex)}
+        >
+          <Share className="h-5 w-5" />
         </Button>
         <Button
           variant="outline"
