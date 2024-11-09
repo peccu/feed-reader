@@ -28,7 +28,7 @@ const ModalMenu: React.FC<ModalMenuProps> = ({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md rounded-lg shadow-lg text-foreground bg-background"
+            className="w-full max-w-md rounded-lg shadow-lg text-foreground bg-background max-h-full overflow-y-auto"
           >
             <div className="flex justify-between items-center p-4 border-b">
               <h2 className="text-xl font-bold">Multi-Feed Reader</h2>

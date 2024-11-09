@@ -1,14 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { logToast } from "@/lib/logToast";
-import {
-  Bookmark,
-  Check,
-  Circle,
-  Menu,
-  Share,
-  ThumbsDown,
-  ThumbsUp,
-} from "lucide-react";
+import { Bookmark, Check, Circle, Menu, Share, ThumbsUp } from "lucide-react";
 import React from "react";
 import { useBookmarkStatus } from "./hooks/useBookmark";
 import { Item, ReadStatuses } from "./types";
@@ -104,13 +96,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           onClick={() => handleFeedback(currentIndex, "like")}
         >
           <ThumbsUp className="h-5 w-5" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleFeedback(currentIndex, "dislike")}
-        >
-          <ThumbsDown className="h-5 w-5" />
         </Button>
         <Button
           variant="outline"

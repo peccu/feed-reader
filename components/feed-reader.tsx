@@ -1,4 +1,4 @@
-import { ArrowRightLeft, Repeat, Settings } from "lucide-react";
+import { ArrowRightLeft, Repeat, Settings, ThumbsDown } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import ActionButtons from "./ActionButtons";
 import FeedSettings from "./FeedSettings";
@@ -87,7 +87,7 @@ const FeedReader: React.FC = () => {
       id: 1,
       label: "Home",
       onClick() {
-        alert("home");
+        setCurrentIndex(0);
       },
     },
     {
@@ -95,7 +95,6 @@ const FeedReader: React.FC = () => {
       label: "Settings",
       icon: <Settings className="h-4 w-4" />,
       onClick() {
-        //alert("open settings");
         toggleSettings();
       },
     },
@@ -132,6 +131,28 @@ const FeedReader: React.FC = () => {
     },
     {
       id: 7,
+      label: "Stats",
+      onClick() {
+        // bookmarks per feed, items in duration..
+      },
+    },
+    {
+      id: 8,
+      label: "Bookmarks",
+      onClick() {
+        // Bookmarks(Pins, RIL)
+      },
+    },
+    {
+      id: 9,
+      label: "Thumbs down",
+      icon: <ThumbsDown className="h-5 w-5" />,
+      onClick() {
+        // ThumbsDown
+      },
+    },
+    {
+      id: 10,
       label: "Help",
       onClick() {
         alert("help");
