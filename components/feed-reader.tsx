@@ -105,6 +105,7 @@ const FeedReader: React.FC = () => {
       icon: <Repeat className="h-4 w-4" />,
       onClick() {
         fetchFeeds();
+        setCurrentIndex(0);
       },
     },
     {
