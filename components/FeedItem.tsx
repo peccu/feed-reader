@@ -50,6 +50,12 @@ const enclosure = async (item: Item) => {
   return urls[0];
 };
 
+const tags = (item: Item) =>
+  item.categories
+    ?.map((category) => category.split(",").map((tag) => tag.trim()))
+    .flat()
+    .filter(Boolean);
+
 const FeedItem: React.FC<FeedItemProps> = ({
   item,
   isReversed,
@@ -131,12 +137,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
           </p>
           {/* show categories */}
           <p className="text-sm text-gray-500 mb-2">
-            {item.categories?.map((category) => (
+            {tags(item).map((tag) => (
               <span
-                key={category}
+                key={tag}
                 className="inline-block bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded mb-2"
               >
-                {category}
+                {tag}
               </span>
             ))}
           </p>
