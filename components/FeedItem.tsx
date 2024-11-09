@@ -117,7 +117,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
         <CardContent className="">
           <p className="text-sm text-gray-500 mb-2">
             {item.author || "Unknown Author"} from{" "}
-            {item.feed?.title || "Unknown Feed"}
+            <a
+              href={item.feed?.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block"
+            >
+              {item.feed?.title || "Unknown Feed"}
+            </a>
           </p>
           <p className="text-sm text-gray-500 mb-2">
             {new Date(item.pubDate).toLocaleString()}
@@ -167,7 +174,9 @@ const FeedItem: React.FC<FeedItemProps> = ({
             </div>
             <div className="mt-4 flex gap-2 justify-center">
               <details>
-                <summary className="text-sm text-gray-500">Debug</summary>
+                <summary className="text-sm text-gray-500 cursor-pointer">
+                  Debug
+                </summary>
                 <pre className="text-xs">{JSON.stringify(item, null, 2)}</pre>
               </details>
             </div>
