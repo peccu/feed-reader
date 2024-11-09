@@ -108,6 +108,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
     >
       <div className="flex-grow overflow-x-hidden overflow-y-auto">
         <CardHeader>
+          {/* show enclosure */}
+          {enc && (
+            <div className="w-screen -mx-3 md:-mx-6 mb-2 md:mb-4">
+              <img className="w-screen" src={enc} alt="enclosure" />
+            </div>
+          )}
           <CardTitle>
             <a
               href={item.link}
@@ -149,12 +155,6 @@ const FeedItem: React.FC<FeedItemProps> = ({
           <p className="text-sm text-gray-500 mb-2">
             Status: {readStatus[item.link] ? "Read" : "Unread"}
           </p>
-          {/* show enclosure */}
-          {enc && (
-            <div className="w-screen -mx-3 md:-mx-6 mb-2 md:mb-4">
-              <img className="w-screen" src={enc} alt="enclosure" />
-            </div>
-          )}
           {/* show the description and content */}
           <DynamicSyntaxHighlighter isSourceCodeFont={isSourceCodeFont}>
             <p
