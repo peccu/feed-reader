@@ -12,7 +12,7 @@ export async function loadContent(url: string): Promise<string | null> {
       console.log("content not found");
       return null;
     }
-    console.log('response', data);
+    console.log("response", data);
     return data.content;
   } catch (err) {
     console.error("Error fetching or parsing the page:", err);
