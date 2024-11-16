@@ -83,12 +83,9 @@ const FeedItem: React.FC<FeedItemProps> = ({
   );
 
   const loadMore = async () => {
-    alert(item.link);
     const content = await loadContent(item.link);
-    alert(content);
     if (content) {
       setContent(content);
-      alert('content updated');
     }
     return false;
   };
