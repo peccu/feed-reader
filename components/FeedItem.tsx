@@ -189,7 +189,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
               >
                 Read More
               </a>
-              <a className="mt-2 inline-block" onClick={loadMore}>
+              <a className="mt-2 inline-block cursor-pointer" onClick={loadMore}>
                 Load More
               </a>
             </div>
