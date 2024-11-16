@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React, { useCallback, useEffect, useState } from "react";
 /* import { logToast } from "@/lib/logToast"; */
 import { articleImages } from "@/lib/articleImages";
+import { loadContent } from "@/lib/loadContent";
 import DynamicSyntaxHighlighter from "./DynamicSyntaxHighlighter";
 import { Item, ReadStatuses } from "./types";
 import { sanitize } from "./utils";
@@ -75,6 +76,23 @@ const FeedItem: React.FC<FeedItemProps> = ({
   useEffect(() => {
     ensureImage();
   }, [item]);
+
+  const [content, setContent] = useState(
+    pickDescription(item.description, item.content),
+    // .replace(/<[^>]*>?/gm, '')
+  );
+
+  const loadMore = async () => {
+    alert(item.link);
+    const content = await loadContent(item.link);
+    alert(content);
+    if (content) {
+      setContent(content);
+      alert('content updated');
+    }
+    return false;
+  };
+
   /*
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -159,10 +177,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
           <DynamicSyntaxHighlighter isSourceCodeFont={isSourceCodeFont}>
             <p
               className="mb-2 text-justify text-sm"
-              dangerouslySetInnerHTML={sanitize(
-                pickDescription(item.description, item.content),
-                // .replace(/<[^>]*>?/gm, '')
-              )}
+              dangerouslySetInnerHTML={sanitize(content)}
             ></p>
           </DynamicSyntaxHighlighter>
           {/* read more */}
@@ -176,6 +191,9 @@ const FeedItem: React.FC<FeedItemProps> = ({
                 onClick={onRead}
               >
                 Read More
+              </a>
+              <a className="mt-2 inline-block" onClick={loadMore}>
+                Load More
               </a>
             </div>
             <div className="mt-4 flex gap-2 justify-center">
