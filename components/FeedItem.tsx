@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React, { useCallback, useEffect, useState } from "react";
 /* import { logToast } from "@/lib/logToast"; */
+import { LoadingOverlay } from "@/components/icon/loading";
 import { articleImages } from "@/lib/articleImages";
 import { loadContent } from "@/lib/loadContent";
 import DynamicSyntaxHighlighter from "./DynamicSyntaxHighlighter";
@@ -82,11 +83,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
     // .replace(/<[^>]*>?/gm, '')
   );
 
+  const [loading, setLoading] = useState(false);
   const loadMore = async () => {
+    setLoading(true);
     const content = await loadContent(item.link);
     if (content) {
       setContent(content);
     }
+    setLoading(false);
     return false;
   };
 
@@ -121,6 +125,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         readStatus[item.link] ? "opacity-50" : ""
       }`}
     >
+      {loading && <LoadingOverlay />}
       <div className="flex-grow overflow-x-hidden overflow-y-auto">
         <CardHeader>
           {/* show enclosure */}
