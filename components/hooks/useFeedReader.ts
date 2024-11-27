@@ -17,10 +17,10 @@ export const useFeedReader = (initialFeedUrls: FeedConfig[]) => {
   const fetchFeeds = useCallback(async () => {
     setLoading(true);
     try {
-      const key = process.env.RSS2JSON_KEY
-        ? `&api_key=${process.env.RSS2JSON_KEY}`
+      const key = process.env.NEXT_PUBLIC_RSS2JSON_KEY
+        ? `&api_key=${process.env.NEXT_PUBLIC_RSS2JSON_KEY}`
         : "";
-      logToast.success(key);
+      // logToast.success(key);
       const feedPromises = feedUrls.map(async (feed) => {
         try {
           const result = await fetch(
