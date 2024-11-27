@@ -1,5 +1,6 @@
 export interface Rss2JsonResponse {
   status: string;
+  message: string | undefined;
   feed: Feed;
   items: Item[];
   feedConfig?: FeedConfig;

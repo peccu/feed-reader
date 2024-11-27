@@ -3,6 +3,12 @@ import { useCallback, useEffect, useState } from "react";
 import { modifyFeed } from "../feeds/modifier";
 import { FeedConfig, Item, Rss2JsonResponse } from "../types";
 
+interface FetchResult {
+  feed: FeedConfig;
+  result: Rss2JsonResponse | Response;
+  error: Error | null;
+}
+
 export const useFeedReader = (initialFeedUrls: FeedConfig[]) => {
   const [feedUrls, setFeedUrls] = useState(initialFeedUrls);
   const [feedItems, setFeedItems] = useState<Item[]>([]);
@@ -11,28 +17,50 @@ export const useFeedReader = (initialFeedUrls: FeedConfig[]) => {
   const fetchFeeds = useCallback(async () => {
     setLoading(true);
     try {
-      const feedPromises = feedUrls.map((feed) =>
-        fetch(
-          `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`,
-        )
-          .then((response) => response.json())
-          .then((json) => {
-            json["feedConfig"] = feed;
-            return json;
-          }),
-      );
-      const results: Rss2JsonResponse[] = await Promise.all(feedPromises);
+      const feedPromises = feedUrls.map(async (feed) => {
+        try {
+          const result = await fetch(
+            `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`,
+          )
+            .then((response) => response.json())
+            .then((json) => {
+              json["feedConfig"] = feed;
+              return { result: json, error: null };
+            })
+            .catch((error) => {
+              return {
+                result: new Response(null, { status: 500 }),
+                error: error,
+              };
+            });
+          return { feed, ...result };
+        } catch (error) {
+          return {
+            feed,
+            result: new Response(null, { status: 500 }),
+            error: error as Error,
+          };
+        }
+      });
+      const results: FetchResult[] = await Promise.all(feedPromises);
       const allItems = results.flatMap((result) => {
-        if (result.status === "ok") {
-          const modified = modifyFeed(result);
+        if (
+          !(result.result instanceof Response) &&
+          result.result.status === "ok"
+        ) {
+          const modified = modifyFeed(result.result);
           console.log("before modified", result);
           console.log("after modified", modified);
           return modified.items;
+        } else if (result.result instanceof Response) {
+          logToast.error(
+            `Failed to fetch feed ( ${result.feed?.url} ) : ${result.error} : ${JSON.stringify(result)}`,
+          );
+          return [];
         } else {
-          // console.log(
-          //   `result.status is not ok. result: ${JSON.stringify(result, null, 2)}`,
-          // );
-          logToast.error(`Failed to fetch feed: ${result?.feed?.url}`);
+          logToast.error(
+            `Failed to fetch feed ( ${result.feed?.url} ) : ${result.result.message}`,
+          );
           return [];
         }
       });
