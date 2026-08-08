@@ -9,40 +9,31 @@
 
 ### コンテナ構成（Docker Compose）
 
-```
-┌─────────────────┐      ┌──────────────────────────┐
-│   ingester      │      │    app                   │
-│   (Bun)         │      │    (Hono / Bun)          │
-│                 │      │                          │
-│ - RSSポーリング  │      │ - REST API               │
-│ - URL/HTML取込  │      │ - Vue.js静的ファイル配信  │
-│ - スクレイピング │      │ - スコアリング           │
-│ - Jina API呼出し│      │ - フィードバック受取     │
-│ - ベクトル保存   │      │ - 嗜好ベクトル更新       │
-│ - クラスタリング │      │ - カテゴリ管理           │
-└────────┬────────┘      └──────────┬───────────────┘
-         │                          │
-         └──────────┬───────────────┘
-                    │ HTTP
-                    ↓
-         ┌─────────────────────┐
-         │   claude-worker     │
-         │   (Bun)             │
-         │                     │
-         │ - claude -p 呼出し  │
-         │ - 記事要約・分析    │
-         │ - ユーザー対話      │
-         │ - ノート生成        │
-         └─────────────────────┘
+```mermaid
+graph TD
+  subgraph Docker Compose
+    ingester["ingester (Bun)\n- RSSポーリング\n- URL/HTML取込\n- スクレイピング\n- Jina API呼出し\n- ベクトル保存\n- クラスタリング"]
+    app["app (Hono / Bun)\n- REST API\n- Vue.js静的ファイル配信\n- スコアリング\n- フィードバック受取\n- 嗜好ベクトル更新\n- カテゴリ管理"]
+    claude["claude-worker (Bun)\n- claude -p 呼出し\n- 記事要約・分析\n- ユーザー対話\n- ノート生成"]
+    subgraph 共有ボリューム
+      db[(feed-reader.db\nSQLite + sqlite-vec)]
+      kuzu[(kuzu/\nKuzuグラフ)]
+      sessions[(sessions/\nClaude会話履歴 JSONL)]
+    end
+  end
 
-         ┌──────────────────────────────────────────┐
-         │  共有Dockerボリューム                      │
-         │  db/                                      │
-         │    feed-reader.db  (SQLite + sqlite-vec)  │
-         │    kuzu/           (Kuzuグラフ)           │
-         │  sessions/                                │
-         │    {sessionId}.jsonl  (Claude会話履歴)    │
-         └──────────────────────────────────────────┘
+  jina["Jina AI API（外部）"]
+  user["ユーザー（Tailscale経由）"]
+
+  user -->|HTTP| app
+  app -->|HTTP| claude
+  ingester -->|HTTP| claude
+  ingester -->|read/write| db
+  ingester -->|read/write| kuzu
+  app -->|read/write| db
+  app -->|read/write| kuzu
+  claude -->|read/write| sessions
+  ingester -->|API呼出し| jina
 ```
 
 ### コンテナの役割分担
@@ -102,11 +93,9 @@ feed-reader/                    # GitHub: peccu/feed-reader
 │       ├── src/
 │       └── package.json
 ├── docker-compose.yml
-├── docker-compose.test.yml     # テスト用コンポーズ
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml              # PR時: lint・unit test・VRT
-│       └── vrt-report.yml      # スクリーンショットをPRコメントに投稿
+│       └── ci.yml              # PR時: lint・unit test・VRT
 ├── package.json                # Bun workspacesルート
 └── biome.json                  # Linter / Formatter
 ```
@@ -138,12 +127,15 @@ feed-reader/                    # GitHub: peccu/feed-reader
 
 ### ドメイン依存関係
 
-```
-Content（基盤ドメイン）
-    ↑
-Reader（コアドメイン）─依存→ Content
-    ↑
-Knowledge（サポートドメイン）─依存→ Content, Reader
+```mermaid
+graph BT
+  content["Content\n（基盤ドメイン）\nArticle / Feed / Embedding"]
+  reader["Reader\n（コアドメイン）\nQueueItem / PreferenceProfile / Feedback"]
+  knowledge["Knowledge\n（サポートドメイン）\nNote / Category"]
+
+  reader -->|依存| content
+  knowledge -->|依存| content
+  knowledge -->|依存| reader
 ```
 
 ### Contentドメイン
@@ -173,14 +165,23 @@ Knowledge（サポートドメイン）─依存→ Content, Reader
 - `FeedbackType`: `'like' | 'dislike'`
 
 **QueueStatus 遷移ルール:**
-```
-unread  → reading  （記事を開く）
-reading → read     （Like/Dislike/明示的「読んだ」）
-reading → skipped  （スワイプでスキップ）
-unread  → skipped  （記事を開かずスキップ）
-skipped → unread   （取り消し）
-read    → archived
-skipped → archived
+
+```mermaid
+stateDiagram-v2
+  [*] --> unread : 記事取込
+
+  unread --> reading : 記事を開く
+  unread --> skipped : 開かずスキップ
+
+  reading --> read : Like / Dislike / 読了
+  reading --> skipped : スワイプでスキップ
+
+  skipped --> unread : 取り消し
+
+  read --> archived : アーカイブ
+  skipped --> archived : アーカイブ
+
+  archived --> [*]
 ```
 
 **Repository Interfaces:** QueueRepository, PreferenceRepository, FeedbackRepository
@@ -208,80 +209,95 @@ skipped → archived
 
 ## 5. データベーススキーマ
 
-### SQLite テーブル
+### ERダイアグラム
 
-**feeds**
-```sql
-id TEXT PRIMARY KEY,  url TEXT UNIQUE NOT NULL,  title TEXT,
-last_polled_at INTEGER,  polling_interval_seconds INTEGER DEFAULT 3600,
-is_active INTEGER DEFAULT 1,  created_at INTEGER,  updated_at INTEGER
-```
+```mermaid
+erDiagram
+  feeds {
+    TEXT id PK
+    TEXT url UK
+    TEXT title
+    INTEGER polling_interval_seconds
+    INTEGER last_polled_at
+    INTEGER is_active
+  }
+  articles {
+    TEXT id PK
+    TEXT feed_id FK
+    TEXT url UK
+    TEXT title
+    TEXT author
+    TEXT full_text
+    TEXT summary
+    TEXT source_type
+    INTEGER published_at
+    INTEGER word_count
+  }
+  pending_jobs {
+    TEXT id PK
+    TEXT job_type
+    TEXT payload
+    TEXT status
+    INTEGER created_at
+    TEXT error
+  }
+  queue_items {
+    TEXT id PK
+    TEXT article_id FK
+    TEXT status
+    REAL relevance_score
+    INTEGER added_at
+    INTEGER read_at
+  }
+  preference_profiles {
+    TEXT id PK
+    TEXT name UK
+    REAL learning_rate
+    REAL decay_rate
+    INTEGER article_count
+  }
+  feedback {
+    TEXT id PK
+    TEXT article_id FK
+    TEXT feedback_type
+    TEXT vector_target
+    INTEGER created_at
+  }
+  categories {
+    TEXT id PK
+    TEXT name UK
+    TEXT description
+    INTEGER is_auto_cluster
+    TEXT color
+  }
+  article_categories {
+    TEXT article_id FK
+    TEXT category_id FK
+    TEXT assigned_by
+    INTEGER assigned_at
+  }
+  notes {
+    TEXT id PK
+    TEXT article_id FK
+    TEXT content
+    TEXT note_type
+    TEXT claude_session_id
+  }
+  actions {
+    TEXT id PK
+    TEXT article_id FK
+    TEXT action_type
+    TEXT metadata
+    INTEGER created_at
+  }
 
-**articles**
-```sql
-id TEXT PRIMARY KEY,  feed_id TEXT REFERENCES feeds(id),
-url TEXT UNIQUE NOT NULL,  title TEXT NOT NULL,  author TEXT,
-full_text TEXT,  summary TEXT,  published_at INTEGER,  scraped_at INTEGER,
-source_type TEXT NOT NULL,  word_count INTEGER,
-created_at INTEGER,  updated_at INTEGER
-```
-
-**pending_jobs**（ingester ↔ app の非同期キュー）
-```sql
-id TEXT PRIMARY KEY,  job_type TEXT NOT NULL,  -- 'url'|'html'|'bookmark'
-payload TEXT NOT NULL,  -- JSON
-status TEXT DEFAULT 'pending',  -- 'pending'|'processing'|'done'|'failed'
-created_at INTEGER,  processed_at INTEGER,  error TEXT
-```
-
-**queue_items**
-```sql
-id TEXT PRIMARY KEY,  article_id TEXT NOT NULL REFERENCES articles(id) UNIQUE,
-status TEXT NOT NULL DEFAULT 'unread',
-relevance_score REAL,  added_at INTEGER,  updated_at INTEGER,  read_at INTEGER
-```
-インデックス: `(status, relevance_score DESC)`, `(status, added_at DESC)`
-
-**preference_profiles**
-```sql
-id TEXT PRIMARY KEY,  name TEXT UNIQUE DEFAULT 'default',
-learning_rate REAL DEFAULT 0.05,  decay_rate REAL DEFAULT 0.95,
-article_count INTEGER DEFAULT 0,  created_at INTEGER,  updated_at INTEGER
-```
-
-**feedback**
-```sql
-id TEXT PRIMARY KEY,  article_id TEXT NOT NULL REFERENCES articles(id),
-feedback_type TEXT NOT NULL,  vector_target TEXT NOT NULL,
--- 'preference'|'shareable'|'knowledge'
-created_at INTEGER
-```
-
-**actions**（監査ログ）
-```sql
-id TEXT PRIMARY KEY,  article_id TEXT NOT NULL,
-action_type TEXT NOT NULL,  metadata TEXT,  created_at INTEGER
-```
-
-**categories**
-```sql
-id TEXT PRIMARY KEY,  name TEXT UNIQUE NOT NULL,  description TEXT,
-is_auto_cluster INTEGER DEFAULT 0,  color TEXT DEFAULT '#6B7280',
-created_at INTEGER,  updated_at INTEGER
-```
-
-**article_categories**
-```sql
-article_id TEXT,  category_id TEXT,
-assigned_by TEXT DEFAULT 'manual',  assigned_at INTEGER,
-PRIMARY KEY (article_id, category_id)
-```
-
-**notes**
-```sql
-id TEXT PRIMARY KEY,  article_id TEXT REFERENCES articles(id),
-content TEXT NOT NULL,  note_type TEXT DEFAULT 'manual',
-claude_session_id TEXT,  created_at INTEGER,  updated_at INTEGER
+  feeds ||--o{ articles : "has"
+  articles ||--o| queue_items : "queued as"
+  articles ||--o{ feedback : "receives"
+  articles ||--o{ article_categories : "tagged with"
+  articles ||--o{ notes : "has"
+  articles ||--o{ actions : "logged in"
+  categories ||--o{ article_categories : "applied to"
 ```
 
 ### sqlite-vec 仮想テーブル（vec0）
@@ -294,29 +310,21 @@ CREATE VIRTUAL TABLE note_embeddings USING vec0(
   note_id TEXT PRIMARY KEY, embedding FLOAT[1024]
 );
 CREATE VIRTUAL TABLE preference_embeddings USING vec0(
-  -- profile_id + vector_target をキーとする
-  -- 例: 'default:preference', 'default:shareable', 'default:knowledge'
+  -- キー例: 'default:preference', 'default:shareable', 'default:knowledge'
   profile_key TEXT PRIMARY KEY, embedding FLOAT[1024]
 );
 ```
 
 ### Kuzu グラフスキーマ
 
-**ノード:**
-```cypher
-CREATE NODE TABLE Article(id STRING, title STRING, url STRING, PRIMARY KEY(id));
-CREATE NODE TABLE Note(id STRING, note_type STRING, PRIMARY KEY(id));
-CREATE NODE TABLE Category(id STRING, name STRING, PRIMARY KEY(id));
-CREATE NODE TABLE Feed(id STRING, url STRING, title STRING, PRIMARY KEY(id));
-```
-
-**エッジ:**
-```cypher
-CREATE REL TABLE ORIGINATED_FROM(FROM Article TO Feed);
-CREATE REL TABLE GENERATED_FROM(FROM Note TO Article);
-CREATE REL TABLE REFERENCES(FROM Note TO Article);
-CREATE REL TABLE BELONGS_TO(FROM Article TO Category);
-CREATE REL TABLE SIMILAR_TO(FROM Article TO Article, score DOUBLE);
+```mermaid
+graph LR
+  Article -->|ORIGINATED_FROM| Feed
+  Note -->|GENERATED_FROM| Article
+  Note -->|REFERENCES| Article
+  Article -->|BELONGS_TO| Category
+  Note -->|NOTE_CATEGORIZED| Category
+  Article -->|"SIMILAR_TO (score)"| Article
 ```
 
 SQLiteが権威的ストア。Kuzuは補助グラフインデックス。ノードIDはSQLiteのUUIDと一致させる。
@@ -396,28 +404,34 @@ SQLiteが権威的ストア。Kuzuは補助グラフインデックス。ノー�
 - モバイルファースト・レスポンシブ
 
 ### ルーティング
-```
-/                 → QueueView（デフォルト：未読キュー）
-/reader/:id       → ReaderView（全画面リーダー）
-/train            → TrainingView（スコア0.4〜0.6の評価）
-/discover         → DiscoverView（カテゴリ・類似探索）
-/notes            → NotesView
-/notes/:id        → NoteDetailView
-/categories       → CategoryView
-/settings         → SettingsView
+
+```mermaid
+graph TD
+  root["/\nQueueView\n未読キュー"]
+  reader["/reader/:id\nReaderView\n全画面リーダー"]
+  train["/train\nTrainingView\n際どい記事の評価"]
+  discover["/discover\nDiscoverView\nカテゴリ・類似探索"]
+  notes["/notes\nNotesView"]
+  note_detail["/notes/:id\nNoteDetailView"]
+  categories["/categories\nCategoryView"]
+  settings["/settings\nSettingsView"]
+
+  root --> reader
+  notes --> note_detail
 ```
 
 ### Pinia Stores
-```
-queue       - キューアイテム、フィルタ、ページネーション
-articles    - 記事キャッシュ、現在記事
-preferences - 嗜好プロファイル統計
-feedback    - フィードバック送信・履歴
-categories  - カテゴリ一覧・割り当て
-notes       - ノートCRUD
-feeds       - フィード管理
-claude      - チャットセッション・ストリーミング状態
-```
+
+| Store | 主な責務 |
+|---|---|
+| `queue` | キューアイテム・フィルタ・ページネーション |
+| `articles` | 記事キャッシュ・現在記事 |
+| `preferences` | 嗜好プロファイル統計 |
+| `feedback` | フィードバック送信・履歴 |
+| `categories` | カテゴリ一覧・割り当て |
+| `notes` | ノートCRUD |
+| `feeds` | フィード管理 |
+| `claude` | チャットセッション・ストリーミング状態 |
 
 ---
 
@@ -426,16 +440,21 @@ claude      - チャットセッション・ストリーミング状態
 ingesterはHTTPサーバーを持たない常時ループプロセス。
 
 ### ループ構造
-```
-起動
-  └─ 初期化（DB接続・マイグレーション確認）
-  └─ ループ開始（setInterval的な軽量スケジューラ）
-       ├─ 毎30秒: pending_jobs確認 → 新規ジョブを処理
-       ├─ 毎60分: アクティブなRSSフィードをポーリング
-       └─ 毎24時間: クラスタリングジョブ実行
+
+```mermaid
+flowchart TD
+  start([起動]) --> init[DB接続・マイグレーション確認]
+  init --> loop{スケジューラループ}
+  loop -->|毎30秒| pending[pending_jobs確認\n新規ジョブを処理]
+  loop -->|毎60分| rss[RSSフィードポーリング]
+  loop -->|毎24時間| cluster[クラスタリングジョブ]
+  pending --> loop
+  rss --> loop
+  cluster --> loop
 ```
 
 ### ジョブ種別
+
 | ジョブ | トリガー | 処理 |
 |---|---|---|
 | `PendingJobRunner` | 毎30秒 | pending_jobsのURL/HTMLを処理 |
@@ -444,18 +463,26 @@ ingesterはHTTPサーバーを持たない常時ループプロセス。
 | `ClusteringJob` | 毎24時間 | k-meansクラスタリング・カテゴリ自動生成 |
 
 ### 記事取込フロー（共通）
-```
-1. URL重複確認（articlesテーブル）
-2. @postlight/parser で本文スクレイプ
-3. Jina AI でエンベディング（全文、失敗時はタイトルのみ）
-4. articles・article_embeddings に保存
-5. 嗜好ベクトルとのコサイン類似度でスコア計算
-6. queue_items に status='unread' でINSERT
-7. Kuzu: Articleノード追加
-8. オプション: claude-worker に要約依頼（非同期）
+
+```mermaid
+flowchart TD
+  A([URL受取]) --> B{URLが\nDB済みか?}
+  B -->|Yes| Z([スキップ])
+  B -->|No| C["@postlight/parser\n本文スクレイプ"]
+  C --> D{スクレイプ\n成功?}
+  D -->|Yes| E[Jina AI\nエンベディング（全文）]
+  D -->|No| F[Jina AI\nエンベディング（タイトルのみ）]
+  E --> G[articles +\narticle_embeddings 保存]
+  F --> G
+  G --> H[嗜好ベクトルとの\nコサイン類似度でスコア計算]
+  H --> I[queue_items に\nstatus=unread でINSERT]
+  I --> J[Kuzu: Articleノード追加]
+  J --> K([完了])
+  J -.->|非同期・任意| L[claude-worker\nに要約依頼]
 ```
 
 ### 嗜好ベクトル更新（EMAアルゴリズム）
+
 ```typescript
 // Like の場合
 profile = normalize(profile * 0.95 + articleVec * 0.05)
@@ -482,26 +509,35 @@ profile = normalize(profile * 0.95 - articleVec * 0.05)
 - Repositoryの実装は `packages/db` でインメモリ実装をテスト用に用意
 
 ### テスト構成
-```
-Bun test（ユニット・統合）
-  packages/domain/tests/   ← 最初に整備
-  packages/db/tests/       ← SQLite統合テスト（実DBを使用、モック禁止）
-  apps/app/tests/          ← Honoのルーターテスト
-  apps/ingester/tests/     ← ジョブのユニットテスト
 
-Playwright（E2E・VRT）
-  e2e/                     ← 各画面のスクリーンショット・インタラクション
+```mermaid
+graph TD
+  unit["Bun test（ユニット・統合）"]
+  domain["packages/domain/tests/\n← 最初に整備"]
+  db["packages/db/tests/\nSQLite統合テスト\n（実DBを使用・モック禁止）"]
+  app_test["apps/app/tests/\nHonoルーターテスト"]
+  ingester_test["apps/ingester/tests/\nジョブユニットテスト"]
+  e2e["Playwright（E2E・VRT）"]
+  e2e_dir["e2e/\n各画面スクリーンショット\nインタラクション"]
+
+  unit --> domain
+  unit --> db
+  unit --> app_test
+  unit --> ingester_test
+  e2e --> e2e_dir
 ```
 
 ### CI（GitHub Actions）
 
-**PR時（ci.yml）:**
+PR時に以下を並列実行：
 1. Biome lint・format チェック
-2. Bun test（全パッケージ並列）
-3. Playwright VRTスクリーンショット撮影
-4. スクリーンショットをPRコメントに投稿
+2. Type Check（bunx tsc）
+3. Bun test（全パッケージ）
+4. Docker Build（3コンテナ並列）
+5. Playwright VRT
 
 ### Docker Composeボリューム
+
 ```yaml
 volumes:
   db-data:       # sqlite-vec + Kuzu
