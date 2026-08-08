@@ -26,9 +26,10 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    command: "bun run apps/app/src/server/index.ts",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
-  },
+  // webServer will be configured when E2E tests are added
+  // webServer: {
+  //   command: "bun run apps/app/src/server/index.ts",
+  //   url: "http://localhost:3000",
+  //   reuseExistingServer: !process.env.CI,
+  // },
 });
