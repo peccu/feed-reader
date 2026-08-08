@@ -7,8 +7,48 @@ on:
     branches: [v2]
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      source: ${{ steps.filter.outputs.source }}
+      docker_app: ${{ steps.filter.outputs.docker_app }}
+      docker_ingester: ${{ steps.filter.outputs.docker_ingester }}
+      docker_claude_worker: ${{ steps.filter.outputs.docker_claude_worker }}
+      e2e: ${{ steps.filter.outputs.e2e }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            source:
+              - 'apps/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'tsconfig.json'
+              - 'biome.json'
+            docker_app:
+              - 'apps/app/**'
+              - 'packages/**'
+              - 'docker-compose.yml'
+            docker_ingester:
+              - 'apps/ingester/**'
+              - 'packages/**'
+              - 'docker-compose.yml'
+            docker_claude_worker:
+              - 'apps/claude-worker/**'
+              - 'packages/**'
+              - 'docker-compose.yml'
+            e2e:
+              - 'e2e/**'
+              - 'playwright.config.ts'
+              - 'apps/app/src/client/**'
+
   lint:
     name: Lint & Format
+    needs: changes
+    if: needs.changes.outputs.source == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,6 +60,8 @@ jobs:
 
   typecheck:
     name: Type Check
+    needs: changes
+    if: needs.changes.outputs.source == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +73,8 @@ jobs:
 
   test:
     name: Unit Tests
+    needs: changes
+    if: needs.changes.outputs.source == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -46,24 +90,52 @@ jobs:
           name: coverage
           path: coverage/
 
-  docker-build:
-    name: Docker Build
+  docker-build-app:
+    name: Docker Build (app)
+    needs: changes
+    if: needs.changes.outputs.docker_app == 'true'
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        app: [app, ingester, claude-worker]
     steps:
       - uses: actions/checkout@v4
-      - name: Build ${{ matrix.app }}
-        uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v6
         with:
           context: .
-          file: apps/${{ matrix.app }}/Dockerfile
+          file: apps/app/Dockerfile
           push: false
-          tags: feed-reader/${{ matrix.app }}:ci
+          tags: feed-reader/app:ci
+
+  docker-build-ingester:
+    name: Docker Build (ingester)
+    needs: changes
+    if: needs.changes.outputs.docker_ingester == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/ingester/Dockerfile
+          push: false
+          tags: feed-reader/ingester:ci
+
+  docker-build-claude-worker:
+    name: Docker Build (claude-worker)
+    needs: changes
+    if: needs.changes.outputs.docker_claude_worker == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/claude-worker/Dockerfile
+          push: false
+          tags: feed-reader/claude-worker:ci
 
   vrt:
     name: Visual Regression Test
+    needs: changes
+    if: needs.changes.outputs.e2e == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -91,7 +163,6 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const path = require('path');
             const screenshotDir = 'test-results';
             if (!fs.existsSync(screenshotDir)) return;
             const files = fs.readdirSync(screenshotDir, { recursive: true })
