@@ -33,9 +33,7 @@ export function createArticle(input: CreateArticleInput): Article {
     throw new Error(`Invalid URL: ${input.url}`);
   }
   const now = new Date();
-  const wordCount = input.fullText
-    ? input.fullText.split(/\s+/).filter(Boolean).length
-    : null;
+  const wordCount = input.fullText ? input.fullText.split(/\s+/).filter(Boolean).length : null;
   return {
     id: input.id,
     feedId: input.feedId ?? null,
