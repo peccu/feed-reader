@@ -8,7 +8,9 @@ export interface FeedRepository {
   save(feed: Feed): Promise<void>;
   update(
     id: FeedId,
-    patch: Partial<Pick<Feed, "title" | "description" | "pollingIntervalSeconds" | "lastPolledAt" | "isActive">>,
+    patch: Partial<
+      Pick<Feed, "title" | "description" | "pollingIntervalSeconds" | "lastPolledAt" | "isActive">
+    >,
   ): Promise<void>;
   delete(id: FeedId): Promise<void>;
 }

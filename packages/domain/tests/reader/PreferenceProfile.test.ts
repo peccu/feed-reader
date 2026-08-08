@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { PreferenceProfileId } from "../../src/shared.ts";
-import { applyFeedback, createPreferenceProfile } from "../../src/reader/PreferenceProfile.ts";
 import { createEmbedding } from "../../src/content/Embedding.ts";
+import { applyFeedback, createPreferenceProfile } from "../../src/reader/PreferenceProfile.ts";
+import { PreferenceProfileId } from "../../src/shared.ts";
 
 const DIMENSIONS = 1024;
 

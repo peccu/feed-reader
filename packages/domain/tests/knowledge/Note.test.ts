@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { ArticleId, NoteId } from "../../src/shared.ts";
 import { createNote } from "../../src/knowledge/Note.ts";
+import { ArticleId, NoteId } from "../../src/shared.ts";
 
 describe("createNote", () => {
   test("creates a note with content", () => {

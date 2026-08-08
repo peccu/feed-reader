@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { ArticleId, QueueItemId } from "../../src/shared.ts";
 import { createQueueItem, transitionStatus } from "../../src/reader/QueueItem.ts";
 import { createRelevanceScore } from "../../src/reader/RelevanceScore.ts";
+import { ArticleId, QueueItemId } from "../../src/shared.ts";
 
 const makeItem = () =>
   createQueueItem({

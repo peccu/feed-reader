@@ -1,6 +1,6 @@
-import type { PreferenceProfileId } from "../shared.ts";
 import type { Embedding } from "../content/Embedding.ts";
 import { normalize } from "../content/Embedding.ts";
+import type { PreferenceProfileId } from "../shared.ts";
 import type { FeedbackType, VectorTarget } from "./FeedbackType.ts";
 
 const DIMENSIONS = 1024;

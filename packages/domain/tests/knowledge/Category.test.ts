@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { CategoryId } from "../../src/shared.ts";
 import { createCategory } from "../../src/knowledge/Category.ts";
+import { CategoryId } from "../../src/shared.ts";
 
 describe("createCategory", () => {
   test("creates with defaults", () => {
@@ -17,7 +17,12 @@ describe("createCategory", () => {
 
   test("stores centroidVector when provided", () => {
     const vec = new Float32Array(1024).fill(0.5);
-    const c = createCategory({ id: CategoryId("c1"), name: "Cluster", centroidVector: vec, isAutoCluster: true });
+    const c = createCategory({
+      id: CategoryId("c1"),
+      name: "Cluster",
+      centroidVector: vec,
+      isAutoCluster: true,
+    });
     expect(c.centroidVector).not.toBeNull();
     expect(c.isAutoCluster).toBe(true);
   });
