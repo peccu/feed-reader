@@ -8,6 +8,8 @@
     "exactOptionalPropertyTypes": true,
     "lib": ["ESNext"],
     "types": ["bun-types"],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true
   }
 }

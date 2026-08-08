@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "bun run src/index.ts",
     "test": "bun test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "bunx tsc --noEmit"
   },
   "dependencies": {
     "@feed-reader/types": "workspace:*",
