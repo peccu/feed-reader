@@ -1,2 +1,11 @@
-// Reader domain exports will be added as files are created
-export {};
+export * from "./Feedback.ts";
+export * from "./FeedbackRepository.ts";
+export * from "./FeedbackType.ts";
+export * from "./PreferenceProfile.ts";
+export * from "./PreferenceRepository.ts";
+export * from "./PreferenceUpdateService.ts";
+export * from "./QueueItem.ts";
+export * from "./QueueRepository.ts";
+export * from "./QueueStatus.ts";
+export * from "./RelevanceScore.ts";
+export * from "./ScoringService.ts";
