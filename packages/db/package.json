@@ -13,6 +13,7 @@
     "./kuzu": "./src/kuzu/index.ts"
   },
   "dependencies": {
-    "@feed-reader/domain": "workspace:*"
+    "@feed-reader/domain": "workspace:*",
+    "sqlite-vec": "^0.1.9"
   }
 }

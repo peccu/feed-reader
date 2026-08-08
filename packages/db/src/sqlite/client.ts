@@ -1,4 +1,5 @@
 import { Database } from "bun:sqlite";
+import * as sqliteVec from "sqlite-vec";
 
 const SCHEMA = `
 PRAGMA journal_mode = WAL;
@@ -125,10 +126,39 @@ CREATE INDEX IF NOT EXISTS idx_notes_article_id ON notes(article_id);
 CREATE INDEX IF NOT EXISTS idx_pending_jobs_status ON pending_jobs(status);
 `;
 
+const VEC_SCHEMA = `
+CREATE TABLE IF NOT EXISTS article_embedding_meta (
+  id      INTEGER PRIMARY KEY,
+  article_id TEXT NOT NULL UNIQUE REFERENCES articles(id),
+  model   TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS article_embeddings USING vec0(
+  embedding FLOAT[1024]
+);
+`;
+
 export function createDatabase(path = ":memory:"): Database {
   const db = new Database(path, { create: true });
   db.exec(SCHEMA);
   return db;
+}
+
+/**
+ * Load sqlite-vec and create vec0 virtual tables.
+ * Must be called after createDatabase() when vector search is needed.
+ * Returns true if vec support is available.
+ */
+export function initVec(db: Database): boolean {
+  try {
+    (sqliteVec as { load: (db: Database) => void }).load(db);
+    db.exec(VEC_SCHEMA);
+    return true;
+  } catch (e) {
+    console.warn("[db] sqlite-vec not available:", e);
+    return false;
+  }
 }
 
 /** Dynamic UPDATE helper for partial patch methods */

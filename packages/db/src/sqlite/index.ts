@@ -2,6 +2,7 @@ export * from "./ArticleCategoryRepo.ts";
 export * from "./ArticleRepo.ts";
 export * from "./CategoryRepo.ts";
 export * from "./client.ts";
+export * from "./EmbeddingRepo.ts";
 export * from "./FeedbackRepo.ts";
 export * from "./FeedRepo.ts";
 export * from "./NoteRepo.ts";
