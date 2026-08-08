@@ -1,0 +1,61 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: apps/app/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_PATH=/data/db/feed-reader.db
+      - KUZU_PATH=/data/db/kuzu
+      - CLAUDE_WORKER_URL=http://claude-worker:3001
+      - JINA_API_KEY=${JINA_API_KEY}
+    volumes:
+      - db-data:/data/db
+    depends_on:
+      claude-worker:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ingester:
+    build:
+      context: .
+      dockerfile: apps/ingester/Dockerfile
+    environment:
+      - DATABASE_PATH=/data/db/feed-reader.db
+      - KUZU_PATH=/data/db/kuzu
+      - CLAUDE_WORKER_URL=http://claude-worker:3001
+      - JINA_API_KEY=${JINA_API_KEY}
+      - RSS_POLL_INTERVAL_MINUTES=60
+      - PENDING_JOB_CHECK_INTERVAL_SECONDS=30
+      - PREFERENCE_DEBOUNCE_MINUTES=5
+    volumes:
+      - db-data:/data/db
+    depends_on:
+      claude-worker:
+        condition: service_healthy
+    restart: unless-stopped
+
+  claude-worker:
+    build:
+      context: .
+      dockerfile: apps/claude-worker/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - SESSION_PATH=/data/sessions
+      - CLAUDE_API_KEY=${CLAUDE_API_KEY}
+    volumes:
+      - session-data:/data/sessions
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  db-data:
+    driver: local
+  session-data:
+    driver: local

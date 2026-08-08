@@ -1,0 +1,15 @@
+{
+  "name": "@feed-reader/claude-worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@feed-reader/types": "workspace:*",
+    "hono": "^4.6.0"
+  }
+}

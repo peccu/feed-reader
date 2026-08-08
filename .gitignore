@@ -1,0 +1,13 @@
+legacy/
+node_modules/
+dist/
+.env
+.env.local
+coverage/
+playwright-report/
+test-results/
+*.db
+*.db-shm
+*.db-wal
+**/kuzu-data/
+**/sessions/

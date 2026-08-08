@@ -1,0 +1,15 @@
+{
+  "name": "feed-reader",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "test": "bun run --filter '*' test",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "typecheck": "bun run --filter '*' typecheck"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4"
+  }
+}

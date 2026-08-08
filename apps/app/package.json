@@ -1,0 +1,17 @@
+{
+  "name": "@feed-reader/app",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/server/index.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@feed-reader/domain": "workspace:*",
+    "@feed-reader/db": "workspace:*",
+    "@feed-reader/types": "workspace:*",
+    "hono": "^4.6.0"
+  }
+}

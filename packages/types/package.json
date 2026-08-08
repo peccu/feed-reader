@@ -1,0 +1,13 @@
+{
+  "name": "@feed-reader/types",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./api": "./src/api/index.ts"
+  }
+}
