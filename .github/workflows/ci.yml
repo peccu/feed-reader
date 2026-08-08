@@ -11,15 +11,16 @@ jobs:
     name: Detect Changes
     runs-on: ubuntu-latest
     outputs:
-      source: ${{ steps.filter.outputs.source }}
-      docker_app: ${{ steps.filter.outputs.docker_app }}
-      docker_ingester: ${{ steps.filter.outputs.docker_ingester }}
-      docker_claude_worker: ${{ steps.filter.outputs.docker_claude_worker }}
-      e2e: ${{ steps.filter.outputs.e2e }}
+      source: ${{ steps.result.outputs.source }}
+      docker_app: ${{ steps.result.outputs.docker_app }}
+      docker_ingester: ${{ steps.result.outputs.docker_ingester }}
+      docker_claude_worker: ${{ steps.result.outputs.docker_claude_worker }}
+      e2e: ${{ steps.result.outputs.e2e }}
     steps:
       - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
         id: filter
+        if: github.event_name == 'pull_request'
         with:
           filters: |
             source:
@@ -44,6 +45,21 @@ jobs:
               - 'e2e/**'
               - 'playwright.config.ts'
               - 'apps/app/src/client/**'
+      - id: result
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "source=true"          >> $GITHUB_OUTPUT
+            echo "docker_app=true"      >> $GITHUB_OUTPUT
+            echo "docker_ingester=true" >> $GITHUB_OUTPUT
+            echo "docker_claude_worker=true" >> $GITHUB_OUTPUT
+            echo "e2e=true"             >> $GITHUB_OUTPUT
+          else
+            echo "source=${{ steps.filter.outputs.source }}"                     >> $GITHUB_OUTPUT
+            echo "docker_app=${{ steps.filter.outputs.docker_app }}"             >> $GITHUB_OUTPUT
+            echo "docker_ingester=${{ steps.filter.outputs.docker_ingester }}"   >> $GITHUB_OUTPUT
+            echo "docker_claude_worker=${{ steps.filter.outputs.docker_claude_worker }}" >> $GITHUB_OUTPUT
+            echo "e2e=${{ steps.filter.outputs.e2e }}"                           >> $GITHUB_OUTPUT
+          fi
 
   lint:
     name: Lint & Format
