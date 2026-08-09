@@ -8,6 +8,9 @@
 - [x] 再読ライブラリ画面を追加する。既読（read）記事などをステータス別に一覧し、タップでリーダーを開いて再読できる
 - [x] お気に入り（★ ブックマーク）を追加する。Like とは独立した「保存して見返す」フラグ。お気に入りのみの一覧参照も可能にする（学習には影響しない）
 - [x] トレーニングモード `/train`（TrainingView）を追加する。スコアが際どい記事を評価してベクトル精度を上げる専用画面。評価のみで既読にしない
+- [x] トレーニングキューは**評価済み（like/dislike のフィードバックがある）記事を除外**する。訓練は判断が未確定の記事にベクトルを教える用途なので、一度評価した記事は再提示しない（`findBorderline` に `NOT EXISTS(feedback)` を追加）
+  - 補足（今回合意した2軸の整理）: **status（未読/既読/skip＝読書進捗）** と **feedback（like/neutral/dislike＝訓練シグナル）** は直交する2軸。UI は画面（モード）で分離する＝ Home `/`＝享受モード（読む。主役は Done/Skip）、`/train`＝訓練モード（評価する。主役は Like/Dislike）。
+  - Home 未読カルーセルの結線は現状維持で確定: **like は評価のみで未読に残す**（＝「後でじっくり読む」）、**dislike は評価＋既読化で未読から抜く**（＝「もう読まない」）。「評価済みは再提示しない」は訓練キューのみで担保する。
 
 ## 以前からのメモ
 
@@ -120,26 +123,54 @@ Proxy {__v_skip: true}
 - [x] 設定のエクスポートインポートにも対応してください。JSONでダウンロード、アップロードを想定。フィードURL郡の出力と、嗜好ベクトルの出力をイメージしています
 - [x] ヘッダーの矢印は不要です手のアイコンがついたので
 - [x] ライブラリのreadタブにunreadボタンは不要です。開いたら変更できるので
-- [ ] ノートをつけているかどうかも記事を開いた時、一覧でのアイコンともにわかるようにしたい
+- [x] ノートをつけているかどうかも記事を開いた時、一覧でのアイコンともにわかるようにしたい（記事ヘッダーのメタと Library 行に StickyNote アイコンを表示。API に hasNote を追加）
 - [x] ノートの編集削除アクションがヘッダにある。アクションはボトムがきほん
 - [x] adminパネルのサービス一覧のラベルが黒い文字で読めない(ダークモードの時)
 - [x] adminパネルのrefreshボタンがヘッダにある。操作ようボタンは全てボトム
-- [ ] 戻るボタンとメニューボタン(ボトムから少し浮いたボタン)はもう少し目立たせたい
+- [x] 戻るボタンとメニューボタン(ボトムから少し浮いたボタン)はもう少し目立たせたい（BackButton をカード＋影＋リングで強調、メニュー FAB を primary 色に。押下フィードバック追加）
 - [x] 全体的に、インプットフォームなどがダークモードの時に黒い文字で読めない
-- [ ] ノートはmarkdownで記述します。maeked.jsでレンダリングしてもらえますか？他にいいものがあれば私に聞いて欲しいです
-- [ ] ライブラリなど、記事を一覧する場所では記事のドメイン名を記載して欲しいです。情報源のカテゴリとして視認したいです
+- [x] ノートはmarkdownで記述します。maeked.jsでレンダリングしてもらえますか？他にいいものがあれば私に聞いて欲しいです（marked.js でパース→DOMPurify でサニタイズして NoteDetail 表示モードにレンダリング。marked は軽量・実績十分で採用）
+- [x] ライブラリなど、記事を一覧する場所では記事のドメイン名を記載して欲しいです。情報源のカテゴリとして視認したいです（Library 行・Discover 結果・記事ヘッダーに hostname を表示）
 - [ ] dislike, readのように操作すると消えるものはundoするためのバナーか何かを一定時間表示してもらえますか。可能ならiphoneをshakeしてundoできるとさらに良いです
 - [x] discoverの検索フォームにフォーカスするとズームしてしまったので文字が小さすぎるかもしれません。iphone safariでズームしないようなフォームにして欲しいです。この画面に限らず全体に適用して
 - [ ] ホーム画面に追加するとボトムのボタンの下に無駄に余白があります
 - [x] スワイプできなくなってる
-- [ ] RSSの場合、記事のメタデータ表示領域にホスト名、フィードの名前などフィードのメタデータも表示して欲しいです。どのフィードから出てきた記事か、という情報も欲しいです
-- [ ] discoverで検索して記事を見て戻ると検索ワードが消えているので、復元してリストを再表示して欲しいです。
-- [ ] 日本語変換を確定した時のEnterキーでsubmitされないようにして欲しいです(discoverの検索て見つけましたが同様のものがあれば一緒に修正したい)
-- [ ] note入力時、command + enterでsaveしたい
+- [x] RSSの場合、記事のメタデータ表示領域にホスト名、フィードの名前などフィードのメタデータも表示して欲しいです。どのフィードから出てきた記事か、という情報も欲しいです（記事ヘッダーに RSS バッジ＋feedTitle＋host を表示。API に feedTitle を追加）
+- [x] discoverで検索して記事を見て戻ると検索ワードが消えているので、復元してリストを再表示して欲しいです。（検索語を URL クエリ ?q= に保存し、mount 時に復元して再検索）
+- [x] 日本語変換を確定した時のEnterキーでsubmitされないようにして欲しいです(discoverの検索て見つけましたが同様のものがあれば一緒に修正したい)（Discover の Enter ハンドラで e.isComposing / keyCode===229 を判定して確定中は無視）
+- [x] note入力時、command + enterでsaveしたい（ArticleFeed のノート入力と NoteDetail 編集の textarea に Cmd/Ctrl+Enter で保存を追加）
 - [ ] vrtでこけるものが残っている。エラーは以下の通り
 ```
+26) [Desktop Chrome] › e2e/settings.spec.ts:17:7 › Settings View › shows feed URL input and add button
 
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('input[placeholder*=\'URL\']')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for locator('input[placeholder*=\'URL\']')
+
+
+      17 |   test("shows feed URL input and add button", async ({ page }) => {
+      18 |     const input = page.locator("input[placeholder*='URL']");
+    > 19 |     await expect(input).toBeVisible();
+         |                         ^
+      20 |   });
+      21 |
+      22 |   test("can navigate back to queue", async ({ page }) => {
+        at /work/e2e/settings.spec.ts:19:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/settings-Settings-View-shows-feed-URL-input-and-add-button-Desktop-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/settings-Settings-View-shows-feed-URL-input-and-add-button-Desktop-Chrome/error-context.md
 ```
+- [ ] discoverの検索フォームもios26のようにボトムに移動してもらえますか。丸い感じで
 
 
 ---
