@@ -1,0 +1,22 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "packages/domain/src/index.ts",
+    "packages/types/src/index.ts",
+    "packages/db/src/index.ts"
+  ],
+  "tsconfig": "tsconfig.json",
+  "out": "site/api",
+  "skipErrorChecking": true,
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "includeVersion": false,
+  "hideGenerator": true,
+  "name": "Feed Reader — Domain & API Reference",
+  "readme": "docs/domain-model.md",
+  "navigationLinks": {
+    "Docs home": "../index.html",
+    "Screen catalog": "../screens/index.html"
+  },
+  "categorizeByGroup": true
+}

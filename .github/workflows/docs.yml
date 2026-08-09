@@ -1,0 +1,65 @@
+name: Docs
+
+# Build the documentation site (Domain & API reference + screen catalog) and
+# publish it to GitHub Pages.
+on:
+  push:
+    branches: [v2]
+    paths:
+      - "packages/**"
+      - "apps/app/src/client/**"
+      - "e2e/catalog/**"
+      - "scripts/build-docs-site.ts"
+      - "typedoc.json"
+      - "docs/**"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+# Allow the workflow to publish to Pages via the deploy-pages action.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two Pages deploys at once; let a newer run cancel an in-flight one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: bun install
+      - run: bunx playwright install --with-deps chromium
+
+      - name: Domain & API reference (TypeDoc)
+        run: bun run docs:api
+      - name: Screen catalog (Playwright)
+        run: bun run catalog
+      - name: Assemble site
+        run: bun run docs:site
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 /**
- * Screen catalog generator (画面定義書).
+ * Screen catalog generator.
  *
  * Boots the seeded E2E server, walks every screen/state of the SPA in both a
  * mobile and a desktop viewport, captures a screenshot of each, and emits a
  * self-contained `screens/index.html` gallery plus `screens/manifest.json`.
  *
- * Run: `bun run catalog` (from repo root). Used by the CI "Screen Catalog" job,
- * which uploads `screens/` as an artifact.
+ * Run: `bun run catalog` (from repo root). Used by the docs site build, which
+ * publishes `screens/` to GitHub Pages.
  */
 import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
@@ -28,10 +28,10 @@ interface Screen {
 const screens: Screen[] = [
   {
     id: "queue",
-    name: "未読キュー（カルーセル）",
+    name: "Unread queue (carousel)",
     route: "/",
     description:
-      "メイン画面。スコア順の未読記事を横スクロールカルーセルで消化する。左右端タップ／スワイプで前後の記事へ移動、上部の位置表示タップで進行方向を切り替え、下部のアクションバーでスキップ／いいね／メモ等を行う。",
+      "The main screen. Work through unread articles, highest score first, in a horizontal carousel. Tap the left/right edge or swipe to move between articles, tap the position indicator at the top to flip the reading direction, and use the bottom action bar to skip / like / take a note.",
     setup: async (page) => {
       // Wait until the first seeded article renders inside the carousel.
       await page.getByText("TypeScript Advances").first().waitFor({ state: "visible" });
@@ -39,33 +39,34 @@ const screens: Screen[] = [
   },
   {
     id: "reader",
-    name: "リーダー（全文表示）",
+    name: "Reader (full text)",
     route: "/reader/e2e-art-0",
     description:
-      "記事本文をアプリ内で全画面表示するリーダーモード。元サイトへ遷移せず本文を読み、下部でいいね／興味なし／メモの各アクションを記録する。",
+      "Full-screen in-app reader. Read the article body without leaving for the original site, and record like / not-interested / note actions from the bottom bar.",
   },
   {
     id: "reader-note",
-    name: "リーダー：ノート入力",
+    name: "Reader: note entry",
     route: "/reader/e2e-art-0?note=1",
-    description: "リーダーでメモ入力フォームを開いた状態。記事に対する引用・メモを記録する。",
+    description:
+      "The reader with the note entry form open, for capturing a quote or comment about the article.",
     setup: async (page) => {
       await page.getByText("Add note").waitFor({ state: "visible" });
     },
   },
   {
     id: "discover",
-    name: "Discover（検索・初期状態）",
+    name: "Discover (search, initial)",
     route: "/discover",
     description:
-      "記事の検索・探索画面。ベクトル検索（sqlite-vec KNN）を第一に試み、失敗時は全文LIKE検索にフォールバックする。初期状態。",
+      "Search and exploration screen. It tries vector search first (sqlite-vec KNN) and falls back to full-text LIKE search on failure. Shown here in its initial state.",
   },
   {
     id: "discover-results",
-    name: "Discover：検索結果",
+    name: "Discover: search results",
     route: "/discover",
     description:
-      "キーワード検索を実行した状態。各結果に類似度スコア（ベクトル検索時）と vector/text のモードバッジを表示し、タップでリーダーへ遷移する。",
+      "After running a keyword search. Each result shows a similarity score (for vector search) and a vector/text mode badge, and tapping it opens the reader.",
     setup: async (page) => {
       const box = page.getByRole("searchbox");
       await box.waitFor({ state: "visible" });
@@ -76,28 +77,29 @@ const screens: Screen[] = [
   },
   {
     id: "notes",
-    name: "ノート一覧",
+    name: "Notes list",
     route: "/notes",
-    description: "保存済みノートの一覧。各ノートは生成元記事のリーダーへリンクする。",
+    description:
+      "A list of saved notes. Each note links back to the reader for the article it came from.",
   },
   {
     id: "note-detail",
-    name: "ノート詳細",
+    name: "Note detail",
     route: "/notes/e2e-note-1",
-    description: "個別ノートの詳細表示。メモ本文・種別・関連記事を確認する。",
+    description: "A single note: its Markdown body, type, and the related article.",
   },
   {
     id: "categories",
-    name: "カテゴリ一覧（空状態）",
+    name: "Categories (empty state)",
     route: "/categories",
     description:
-      "カテゴリ管理画面。自動クラスタリング（Auto バッジ）と手動カテゴリを一覧し、作成・編集・削除を行う。ここではカテゴリ未登録の空状態。",
+      "Category management. Lists auto-clustered categories (Auto badge) and manual ones, and supports create / edit / delete. Shown here with no categories yet.",
   },
   {
     id: "categories-new",
-    name: "カテゴリ：新規作成フォーム",
+    name: "Categories: new category form",
     route: "/categories",
-    description: "「+ Add」を押してカテゴリ新規作成フォーム（名前・説明・カラー）を開いた状態。",
+    description: 'The new-category form (name, description, colour) opened via "+ Add".',
     setup: async (page) => {
       await page.getByRole("button", { name: "Add" }).click();
       await page.getByText("New Category").waitFor({ state: "visible" });
@@ -105,10 +107,10 @@ const screens: Screen[] = [
   },
   {
     id: "settings",
-    name: "設定 / フィード管理",
+    name: "Settings / feed management",
     route: "/settings",
     description:
-      "フィードの追加・一覧・削除、URL / HTML の手動投入、嗜好プロファイル（学習率）の調整、取込ジョブの処理状況表示を行う設定画面。",
+      "Settings: add / list / delete feeds, manually submit a URL or HTML, adjust the preference profile (learning rate), and see the status of ingest jobs.",
   },
 ];
 
@@ -167,11 +169,11 @@ function buildHtml(): string {
     .join("");
 
   return `<!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Feed Reader — 画面定義書</title>
+<title>Feed Reader — Screen Catalog</title>
 <style>
   :root { color-scheme: light dark; }
   * { box-sizing: border-box; }
@@ -208,8 +210,8 @@ function buildHtml(): string {
 </head>
 <body>
 <header class="top">
-  <h1>Feed Reader — 画面定義書</h1>
-  <p>Playwright により自動生成 · ${screens.length} 画面 × ${viewports.length} ビューポート · 生成日時 ${new Date().toISOString()}</p>
+  <h1>Feed Reader — Screen Catalog</h1>
+  <p><a href="../index.html" style="color:#a5b4fc">← Docs home</a> · Auto-generated with Playwright · ${screens.length} screens × ${viewports.length} viewports · ${new Date().toISOString()}</p>
 </header>
 <div class="layout">
   <nav class="toc">${nav}</nav>

@@ -14,7 +14,10 @@
     "reingest": "bun run scripts/reingest.ts",
     "e2e": "bunx playwright test",
     "e2e:ui": "bunx playwright test --ui",
-    "catalog": "bun run e2e/catalog/generate.ts"
+    "catalog": "bun run e2e/catalog/generate.ts",
+    "docs:api": "bunx typedoc@0.28.20",
+    "docs:site": "bun run scripts/build-docs-site.ts",
+    "docs": "bun run catalog && bun run docs:api && bun run docs:site"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
