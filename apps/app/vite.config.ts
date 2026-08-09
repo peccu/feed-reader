@@ -12,6 +12,7 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    allowedHosts: ["zimaboard.jay-tegu.ts.net"],
     proxy: {
       "/api/v1": "http://localhost:3000",
     },
