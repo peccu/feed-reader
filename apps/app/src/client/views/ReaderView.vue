@@ -77,6 +77,7 @@
     >
       <button
         @click="sendFeedback('dislike')"
+        title="Dislike — train the preference vector down (does not change read status)"
         :class="[
           'flex flex-col items-center gap-1 transition-colors px-3 py-1 rounded-lg',
           evaluation === 'dislike' ? 'text-destructive' : 'text-muted-foreground hover:text-destructive',
@@ -88,6 +89,7 @@
 
       <button
         @click="sendFeedback('like')"
+        title="Like — train the preference vector up (does not change read status)"
         :class="[
           'flex flex-col items-center gap-1 transition-colors px-3 py-1 rounded-lg',
           evaluation === 'like' ? 'text-yellow-500' : 'text-muted-foreground hover:text-yellow-500',
@@ -99,6 +101,7 @@
 
       <button
         @click="markRead()"
+        title="Mark as read and return to the queue"
         class="flex flex-col items-center gap-1 text-muted-foreground hover:text-green-600 transition-colors px-3 py-1 rounded-lg"
       >
         <Check :size="22" />
@@ -107,6 +110,7 @@
 
       <button
         @click="showNoteForm = !showNoteForm"
+        title="Add a note about this article"
         class="flex flex-col items-center gap-1 text-primary px-3 py-1 rounded-lg"
       >
         <StickyNote :size="22" />
@@ -115,6 +119,7 @@
 
       <RouterLink
         to="/"
+        title="Back to the unread queue"
         class="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground transition-colors px-3 py-1 rounded-lg"
       >
         <LayoutList :size="22" />
