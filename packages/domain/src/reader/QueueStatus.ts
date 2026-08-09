@@ -1,10 +1,12 @@
 export type QueueStatus = "unread" | "reading" | "read" | "skipped" | "archived";
 
 const VALID_TRANSITIONS: Record<QueueStatus, readonly QueueStatus[]> = {
-  unread: ["reading", "skipped"],
-  reading: ["read", "skipped"],
+  // The carousel card is itself the reader, so like/dislike mark an unread
+  // item read directly (unread -> read), and skip goes unread -> skipped.
+  unread: ["reading", "read", "skipped", "archived"],
+  reading: ["read", "skipped", "archived"],
   read: ["archived"],
-  skipped: ["unread", "archived"],
+  skipped: ["unread", "read", "archived"],
   archived: [],
 };
 

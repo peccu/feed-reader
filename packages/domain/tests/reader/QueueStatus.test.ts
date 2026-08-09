@@ -10,8 +10,12 @@ describe("canTransitionTo", () => {
     expect(canTransitionTo("unread", "skipped")).toBe(true);
   });
 
-  test("unread → read: not allowed", () => {
-    expect(canTransitionTo("unread", "read")).toBe(false);
+  test("unread → read: allowed (card is the reader)", () => {
+    expect(canTransitionTo("unread", "read")).toBe(true);
+  });
+
+  test("read → reading: not allowed", () => {
+    expect(canTransitionTo("read", "reading")).toBe(false);
   });
 
   test("reading → read: allowed", () => {

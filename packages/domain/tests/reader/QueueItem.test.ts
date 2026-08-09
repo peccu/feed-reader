@@ -40,7 +40,8 @@ describe("transitionStatus", () => {
   });
 
   test("invalid transition throws", () => {
-    expect(() => transitionStatus(makeItem(), "read")).toThrow();
+    const reading = transitionStatus(makeItem(), "reading");
+    expect(() => transitionStatus(reading, "unread")).toThrow();
   });
 
   test("archived → unread throws", () => {
