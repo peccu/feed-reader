@@ -6,6 +6,6 @@ export default async function globalSetup() {
   const distIndex = "apps/app/dist/client/index.html";
   if (!existsSync(distIndex)) {
     console.log("[globalSetup] Building Vue frontend...");
-    execSync("bun --cwd apps/app run build", { stdio: "inherit" });
+    execSync("bun run --cwd apps/app build", { stdio: "inherit" });
   }
 }

@@ -14,7 +14,7 @@ RUN bun install --frozen-lockfile
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN bun --cwd apps/app run build
+RUN bun run --cwd apps/app build
 
 FROM base
 COPY --from=build /app .

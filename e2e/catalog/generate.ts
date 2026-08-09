@@ -33,7 +33,8 @@ const screens: Screen[] = [
     description:
       "メイン画面。スコア順の未読記事を横スクロールカルーセルで消化する。左右端タップ／スワイプで前後の記事へ移動、上部の位置表示タップで進行方向を切り替え、下部のアクションバーでスキップ／いいね／メモ等を行う。",
     setup: async (page) => {
-      await page.waitForSelector("text=/\\d+\\s*\\/\\s*\\d+/").catch(() => {});
+      // Wait until the first seeded article renders inside the carousel.
+      await page.getByText("TypeScript Advances").first().waitFor({ state: "visible" });
     },
   },
   {
@@ -49,7 +50,7 @@ const screens: Screen[] = [
     route: "/reader/e2e-art-0?note=1",
     description: "リーダーでメモ入力フォームを開いた状態。記事に対する引用・メモを記録する。",
     setup: async (page) => {
-      await page.waitForSelector("text=Add note").catch(() => {});
+      await page.getByText("Add note").waitFor({ state: "visible" });
     },
   },
   {
@@ -66,9 +67,11 @@ const screens: Screen[] = [
     description:
       "キーワード検索を実行した状態。各結果に類似度スコア（ベクトル検索時）と vector/text のモードバッジを表示し、タップでリーダーへ遷移する。",
     setup: async (page) => {
-      await page.fill("input[type=search]", "TypeScript");
-      await page.press("input[type=search]", "Enter");
-      await page.waitForSelector("text=TypeScript Advances", { timeout: 5000 }).catch(() => {});
+      const box = page.getByRole("searchbox");
+      await box.waitFor({ state: "visible" });
+      await box.fill("TypeScript");
+      await box.press("Enter");
+      await page.getByText("TypeScript Advances").first().waitFor({ state: "visible" });
     },
   },
   {
@@ -96,8 +99,8 @@ const screens: Screen[] = [
     route: "/categories",
     description: "「+ Add」を押してカテゴリ新規作成フォーム（名前・説明・カラー）を開いた状態。",
     setup: async (page) => {
-      await page.click('button:has-text("Add")');
-      await page.waitForSelector("text=New Category").catch(() => {});
+      await page.getByRole("button", { name: "Add" }).click();
+      await page.getByText("New Category").waitFor({ state: "visible" });
     },
   },
   {
@@ -220,7 +223,7 @@ async function main() {
   // Ensure the frontend is built (mirrors e2e/globalSetup.ts).
   if (!existsSync(`${ROOT}/apps/app/dist/client/index.html`)) {
     console.log("[catalog] building frontend...");
-    execSync("bun --cwd apps/app run build", { stdio: "inherit" });
+    execSync("bun run --cwd apps/app build", { stdio: "inherit" });
   }
 
   rmSync(OUT, { recursive: true, force: true });
@@ -233,6 +236,7 @@ async function main() {
     stderr: "inherit",
   });
 
+  const failures: string[] = [];
   try {
     await waitForHealth(`${BASE}/health`, 60_000);
     const browser = await chromium.launch();
@@ -241,16 +245,29 @@ async function main() {
       const context = await browser.newContext({ ...vp.opts });
       for (const screen of screens) {
         const page = await context.newPage();
+        // Fail fast on missing elements — a broken screen must not stall the run.
+        page.setDefaultTimeout(10_000);
         try {
-          await page.goto(`${BASE}${screen.route}`, { waitUntil: "networkidle", timeout: 15_000 });
-        } catch {
-          await page.goto(`${BASE}${screen.route}`, { waitUntil: "load", timeout: 15_000 });
+          try {
+            await page.goto(`${BASE}${screen.route}`, {
+              waitUntil: "networkidle",
+              timeout: 15_000,
+            });
+          } catch {
+            await page.goto(`${BASE}${screen.route}`, { waitUntil: "load", timeout: 15_000 });
+          }
+          if (screen.setup) await screen.setup(page);
+          await page.waitForTimeout(400);
+          await page.screenshot({ path: `${OUT}/${vp.key}/${screen.id}.png` });
+          console.log(`[catalog] captured ${vp.key}/${screen.id}`);
+        } catch (err) {
+          // Best-effort: still capture whatever rendered, then keep going.
+          failures.push(`${vp.key}/${screen.id}: ${(err as Error).message.split("\n")[0]}`);
+          await page.screenshot({ path: `${OUT}/${vp.key}/${screen.id}.png` }).catch(() => {});
+          console.warn(`[catalog] FAILED ${vp.key}/${screen.id} — captured current state`);
+        } finally {
+          await page.close();
         }
-        if (screen.setup) await screen.setup(page);
-        await page.waitForTimeout(400);
-        await page.screenshot({ path: `${OUT}/${vp.key}/${screen.id}.png` });
-        console.log(`[catalog] captured ${vp.key}/${screen.id}`);
-        await page.close();
       }
       await context.close();
     }
@@ -279,6 +296,11 @@ async function main() {
   );
   writeFileSync(`${OUT}/index.html`, buildHtml());
   console.log(`[catalog] done → ${OUT}/index.html`);
+
+  if (failures.length > 0) {
+    console.warn(`[catalog] ${failures.length} screen(s) captured with errors:`);
+    for (const f of failures) console.warn(`  - ${f}`);
+  }
 }
 
 await main();
