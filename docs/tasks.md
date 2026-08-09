@@ -173,6 +173,7 @@ Proxy {__v_skip: true}
 - [ ] discoverの検索フォームもios26のようにボトムに移動してもらえますか。丸い感じで
 - [ ] 記事を見ている時に、その記事についているノートを確認するための動線が欲しいです。
 - [x] 記事中のaタグがアプリを上書きしてしまうので新しいタブで開くようにできますか（sanitize.ts の DOMPurify afterSanitizeAttributes フックで、記事HTML・ノートMarkdown 内の全リンクに target=_blank / rel=noopener noreferrer を付与）
+- [x] カテゴリの追加ボタンが上にあるので、ボトムに移動してください。ヘッダ行にあるボタンを全て調査してください（Categories の「+ Add」をボトム中央 FAB に移動。全ビュー調査結果＝ヘッダに独立アクションボタンが残っていたのは Categories のみ。Admin refresh・NoteDetail 編集/削除・Library タブは既にボトム、Settings の各ボタンはフォーム内、Discover の検索ボタンは入力欄とセットで別タスク「検索フォームをボトムへ」で対応予定）
 
 
 ---
