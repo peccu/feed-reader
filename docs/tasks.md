@@ -36,7 +36,7 @@
 
 # ユーザフィードバック
 
-- [ ] VRTベースのスクリーンショットを取ろうとmacのdockerで実行すると以下のようなエラーがたくさん出ていました。
+- [x] VRTベースのスクリーンショットを取ろうとmacのdockerで実行すると以下のようなエラーがたくさん出ていました。（原因: E2E spec が旧UI前提で古い＝日本語ラベル・上部ナビリンク・.snap-x・input[placeholder*='URL'] 等が現行UIに存在しない。4つの spec を現行UIに合わせ role/testid/英語テキストで書き直し。data-testid=carousel/empty-state/position-indicator を追加。旧VRTベースラインは削除し、CI(linux)でベースラインを再生成→コミットする手動ワークフロー .github/workflows/vrt-baselines.yml を追加。※このワークフローを一度実行してベースラインを作れば以降の VRT が通る）
 ```
  26) [Desktop Chrome] › e2e/settings.spec.ts:17:7 › Settings View › shows feed URL input and add button
 
@@ -139,7 +139,7 @@ Proxy {__v_skip: true}
 - [x] discoverで検索して記事を見て戻ると検索ワードが消えているので、復元してリストを再表示して欲しいです。（検索語を URL クエリ ?q= に保存し、mount 時に復元して再検索）
 - [x] 日本語変換を確定した時のEnterキーでsubmitされないようにして欲しいです(discoverの検索て見つけましたが同様のものがあれば一緒に修正したい)（Discover の Enter ハンドラで e.isComposing / keyCode===229 を判定して確定中は無視）
 - [x] note入力時、command + enterでsaveしたい（ArticleFeed のノート入力と NoteDetail 編集の textarea に Cmd/Ctrl+Enter で保存を追加）
-- [ ] vrtでこけるものが残っている。エラーは以下の通り
+- [x] vrtでこけるものが残っている。エラーは以下の通り（上のVRT項目と同一。spec を現行UIに書き直し＋ベースライン再生成ワークフローで対応）
 ```
 26) [Desktop Chrome] › e2e/settings.spec.ts:17:7 › Settings View › shows feed URL input and add button
 
@@ -220,7 +220,7 @@ Proxy {__v_skip: true}
 - [ ] ☐ F3. Discover のカテゴリ探索
 
 ### Epic G. 品質 / 運用 / ドキュメント
-- [ ] ☐ G1. E2E/VRT を新UIに更新＋ベースライン再生成（上の VRT メモと同一）
+- [x] ☑ G1. E2E/VRT を新UIに更新＋ベースライン再生成（上の VRT メモと同一。spec 書き直し＋ vrt-baselines.yml で再生成）
 - [ ] ☐ G2. デバッグクエリ強化（グラフDBクエリ欄＋SQLサンプル/プルダウン）※上のメモと同一
-- [ ] ☐ G3. 非エンジニア向けドキュメント生成（docs出力 or Actionsで参照可能に）＋画面設計図をGitHub上で参照
+- [x] ☑ G3. 非エンジニア向けドキュメント生成（docs出力 or Actionsで参照可能に）＋画面設計図をGitHub上で参照（GitHub Pages に TypeDoc＋画面カタログを自動デプロイ。docs.yml）
 
