@@ -147,6 +147,24 @@ const labelColor = computed(() => LIST_COLORS[props.listKey] ?? "#6366f1");
 const ui = useUiStore();
 const feed = useArticleFeed();
 
+// Undo state — declared before the (immediate) items watcher, which calls
+// clearUndo() during setup, so these bindings must already be initialized.
+type Snap = {
+  status: FeedItem["status"];
+  feedback: FeedItem["feedback"];
+  favorited: boolean;
+};
+type PendingUndo = { label: string; index: number; item: FeedItem; snap: Snap };
+const pendingUndo = ref<PendingUndo | null>(null);
+let undoTimer: ReturnType<typeof setTimeout> | undefined;
+const UNDO_MS = 6000;
+
+function clearUndo() {
+  if (undoTimer) clearTimeout(undoTimer);
+  undoTimer = undefined;
+  pendingUndo.value = null;
+}
+
 watch(
   () => props.items,
   (next) => {
@@ -274,25 +292,8 @@ async function saveNote() {
 }
 
 // --- Undo (for actions that remove the current item) ---
-type Snap = {
-  status: FeedItem["status"];
-  feedback: FeedItem["feedback"];
-  favorited: boolean;
-};
-type PendingUndo = { label: string; index: number; item: FeedItem; snap: Snap };
-
-const pendingUndo = ref<PendingUndo | null>(null);
-let undoTimer: ReturnType<typeof setTimeout> | undefined;
-const UNDO_MS = 6000;
-
 function snapshot(item: FeedItem): Snap {
   return { status: item.status, feedback: item.feedback, favorited: item.favorited };
-}
-
-function clearUndo() {
-  if (undoTimer) clearTimeout(undoTimer);
-  undoTimer = undefined;
-  pendingUndo.value = null;
 }
 
 /** Offer an undo only if the action actually removed the item from this list. */
