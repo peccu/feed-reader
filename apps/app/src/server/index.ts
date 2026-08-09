@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
+import { logger } from "hono/logger";
 import articlesRouter from "./routes/articles.ts";
 import categoriesRouter, { articleCategoryRouter } from "./routes/categories.ts";
 import claudeRouter from "./routes/claude.ts";
@@ -14,6 +15,9 @@ import queueRouter from "./routes/queue.ts";
 const app = new Hono();
 
 app.use("*", cors());
+// Log every API request (method, path, status, timing) so UI actions are
+// visible in the container/`bun run dev` output.
+app.use("/api/v1/*", logger());
 
 app.get("/health", (c) => c.json({ status: "ok" }));
 

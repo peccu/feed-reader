@@ -1,6 +1,6 @@
 <template>
-  <div class="flex-shrink-0 w-full h-full flex flex-col bg-background overflow-hidden">
-    <div class="flex-1 overflow-y-auto">
+  <div class="flex-shrink-0 w-full min-w-0 h-full flex flex-col bg-background overflow-hidden">
+    <div class="flex-1 overflow-y-auto overflow-x-hidden">
       <div v-if="article">
         <!-- Lead / eyecatch image (full-bleed) -->
         <img
@@ -68,7 +68,7 @@
               :href="article.url"
               target="_blank"
               rel="noopener"
-              class="truncate hover:text-foreground transition-colors"
+              class="block break-all hover:text-foreground transition-colors"
             >{{ article.url }} ↗</a>
           </div>
         </div>

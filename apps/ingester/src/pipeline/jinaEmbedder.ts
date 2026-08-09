@@ -28,6 +28,9 @@ export async function embed(text: string): Promise<Embedding> {
       model: JINA_MODEL,
       task: "retrieval.passage",
       dimensions: JINA_DIMENSIONS,
+      // Auto-truncate inputs over the model's 8194-token limit until the
+      // ingest pipeline does its own chunking/preprocessing.
+      truncate: true,
       input: [text],
     }),
   });

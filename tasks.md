@@ -11,11 +11,11 @@
 
 ## 以前からのメモ
 
-- [ ] 画面上の操作をした時、コンテナ側でログが出るようにして欲しいです。bun run devの時に。操作した後正しくそれぞれの処理が進んでいるのか把握したいです
-- [ ] スマホでダブルタップしてもズームしないようにする
-- [ ] 横幅が記事よりも大きく、横スワイプで余白が表示される。どうやら画面最下部のURL部分が画面幅をはみ出している。折り返す必要がある。
-- [ ] skipボタンの意味がわからない
+- [x] 画面上の操作をした時、コンテナ側でログが出るようにして欲しいです。bun run devの時に。操作した後正しくそれぞれの処理が進んでいるのか把握したいです
+- [x] スマホでダブルタップしてもズームしないようにする
+- [x] 横幅が記事よりも大きく、横スワイプで余白が表示される。どうやら画面最下部のURL部分が画面幅をはみ出している。折り返す必要がある。
+- [x] skipボタンの意味がわからない（各アクションボタンに説明ツールチップを追加）
 - [ ] 画面の上端と下端に操作可能なボタンがあり、スマホだと操作しにくい。legacyのUIを確認もしくは再現してほしい
 - [ ] submitしたURLがどうなったのか確認できる場所が欲しい。何件登録されたとか、それがどういうランキングづけされたのか、もしくは低スコアだけどここにいる、など
-- [ ] ingest側をパイプラインにするまでは、truncate : trueのオプションをつけてください。パイプラインとは、前処理でclaude -pでようやくするとか、キーワードだけ抽出するとかの処理を並べられるようにするところです。(エラーメッセージへの対処です error: Jina API error 400: {"detail":{"message":"Input text exceeds the model's maximum of 8194 tokens. Use 'truncate: true' to automatically truncate, or split into smaller chunks.","request_id":"4a4e16aef8876f22c1a04dda9e5e638e","code":"INPUT_TOKEN_LIMIT_EXCEEDED"}})
+- [x] ingest側をパイプラインにするまでは、truncate : trueのオプションをつけてください。パイプラインとは、前処理でclaude -pでようやくするとか、キーワードだけ抽出するとかの処理を並べられるようにするところです。(エラーメッセージへの対処です error: Jina API error 400: {"detail":{"message":"Input text exceeds the model's maximum of 8194 tokens. Use 'truncate: true' to automatically truncate, or split into smaller chunks.","request_id":"4a4e16aef8876f22c1a04dda9e5e638e","code":"INPUT_TOKEN_LIMIT_EXCEEDED"}})
 - [ ] admin画面のようなものを用意して欲しいです。DBの登録数やバッチジョブの状態、コンテナの状態、デバッグ用クエリを投入できるフォームなど。

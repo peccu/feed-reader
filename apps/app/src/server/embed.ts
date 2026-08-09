@@ -24,6 +24,7 @@ export async function embedQuery(text: string): Promise<Embedding | null> {
         model: JINA_MODEL,
         task: "retrieval.query",
         dimensions: JINA_DIMENSIONS,
+        truncate: true,
         input: [text],
       }),
     });

@@ -13,6 +13,7 @@
         isActive(btn.type) ? btn.activeClass : btn.class,
       ]"
       :aria-label="btn.label"
+      :title="btn.title"
       :aria-pressed="isActive(btn.type)"
     >
       <component :is="btn.icon" :size="22" :stroke-width="2" />
@@ -44,6 +45,7 @@ function isActive(type: ActionType): boolean {
 const buttons: Array<{
   type: ActionType;
   label: string;
+  title: string;
   icon: Component;
   class: string;
   activeClass: string;
@@ -51,6 +53,7 @@ const buttons: Array<{
   {
     type: "dislike",
     label: "Dislike",
+    title: "Dislike — train the preference vector down (stays in the queue)",
     icon: ThumbsDown,
     class: "text-muted-foreground hover:text-destructive",
     activeClass: "text-destructive",
@@ -58,6 +61,7 @@ const buttons: Array<{
   {
     type: "like",
     label: "Like",
+    title: "Like — train the preference vector up (stays in the queue)",
     icon: ThumbsUp,
     class: "text-muted-foreground hover:text-yellow-500",
     activeClass: "text-yellow-500",
@@ -65,6 +69,7 @@ const buttons: Array<{
   {
     type: "done",
     label: "Read",
+    title: "Mark as read — remove from the unread queue",
     icon: Check,
     class: "text-muted-foreground hover:text-green-600",
     activeClass: "text-green-600",
@@ -72,6 +77,7 @@ const buttons: Array<{
   {
     type: "skip",
     label: "Skip",
+    title: "Skip for now — remove from the unread queue without reading",
     icon: SkipForward,
     class: "text-muted-foreground hover:text-foreground",
     activeClass: "text-foreground",
@@ -79,6 +85,7 @@ const buttons: Array<{
   {
     type: "favorite",
     label: "Save",
+    title: "Bookmark — save to Library › Favorites (independent of Like)",
     icon: Bookmark,
     class: "text-muted-foreground hover:text-amber-500",
     activeClass: "text-amber-500",
@@ -86,6 +93,7 @@ const buttons: Array<{
   {
     type: "note",
     label: "Note",
+    title: "Add a note about this article",
     icon: StickyNote,
     class: "text-muted-foreground hover:text-primary",
     activeClass: "text-primary",
