@@ -218,7 +218,7 @@ Proxy {__v_skip: true}
 
 ### Epic F. 発見・共有
 - [x] ☑ F1. 「この路線でもっと」= 類似記事UI（`GET /articles/:id/similar` は実装済み・導線無し）→ エンドポイントに title/url を追加し、記事下部に「More like this」（ベクトル類似 top5・リンク付き）を表示。埋め込み無し記事では非表示
-- [ ] ☐ F2. SNSシェア（`navigator.share` ＋ 読了記録＋外部公開）
+- [~] ◑ F2. SNSシェア（`navigator.share` ＋ 読了記録＋外部公開）→ 記事下部に Share ボタンを追加（Web Share API、非対応時はリンクをクリップボードにコピー）。残: 読了記録との連動、外部公開（"公開"の意味＝shareable ベクトル/公開ページ等の方針決定が必要）
 - [ ] ☐ F3. Discover のカテゴリ探索
 
 ### Epic G. 品質 / 運用 / ドキュメント
