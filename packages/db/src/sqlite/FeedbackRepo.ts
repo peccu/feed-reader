@@ -73,4 +73,8 @@ export class FeedbackRepo implements FeedbackRepository {
     const placeholders = ids.map(() => "?").join(", ");
     this.db.run(`UPDATE feedback SET applied = 1 WHERE id IN (${placeholders})`, ids as string[]);
   }
+
+  async deleteByArticle(articleId: ArticleId): Promise<void> {
+    this.db.run("DELETE FROM feedback WHERE article_id = ?", [articleId]);
+  }
 }

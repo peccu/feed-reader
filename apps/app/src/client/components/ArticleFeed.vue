@@ -172,22 +172,27 @@ async function onAction(type: "dislike" | "like" | "done" | "skip" | "note" | "f
   const item = feed.currentItem.value;
   if (!item) return;
   switch (type) {
+    // Like/Dislike are toggles: pressing the active one clears the evaluation.
     case "like":
-      feed.evaluations.value.set(item.articleId, "like");
-      await api.post("/feedback", {
-        articleId: item.articleId,
-        feedbackType: "like",
-        vectorTarget: "preference",
-      });
+    case "dislike": {
+      const active = feed.currentEvaluation.value === type;
+      if (active) {
+        feed.evaluations.value.delete(item.articleId);
+        item.feedback = null;
+        await api.delete(`/feedback/${item.articleId}`);
+      } else {
+        feed.evaluations.value.set(item.articleId, type);
+        item.feedback = type;
+        await api.post("/feedback", {
+          articleId: item.articleId,
+          feedbackType: type,
+          vectorTarget: "preference",
+        });
+        // Dislike also marks read (won't read); like leaves status untouched.
+        if (type === "dislike") await setStatus("read");
+      }
       break;
-    case "dislike":
-      await api.post("/feedback", {
-        articleId: item.articleId,
-        feedbackType: "dislike",
-        vectorTarget: "preference",
-      });
-      await setStatus("read");
-      break;
+    }
     case "done":
       await setStatus(item.status === "read" ? "unread" : "read");
       break;

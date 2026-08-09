@@ -8,4 +8,5 @@ export interface FeedbackRepository {
   findUnappliedFor(target: VectorTarget): Promise<Feedback[]>;
   save(feedback: Feedback): Promise<void>;
   markApplied(ids: FeedbackId[]): Promise<void>;
+  deleteByArticle(articleId: ArticleId): Promise<void>;
 }
