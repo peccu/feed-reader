@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y curl && \
     curl -fsSL https://claude.ai/install.sh | sh || true
 
 FROM base AS deps
-COPY package.json bun.lockb* ./
+COPY package.json bun.lock* ./
 COPY apps/claude-worker/package.json ./apps/claude-worker/
 COPY packages/types/package.json ./packages/types/
 RUN bun install --frozen-lockfile

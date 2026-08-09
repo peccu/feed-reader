@@ -45,8 +45,10 @@ api.route("/search", searchRouter);
 app.route("/api/v1", api);
 
 // Serve built Vue frontend (only in production; dev uses Vite server)
-app.use("/*", serveStatic({ root: "./dist/client" }));
-app.get("/*", serveStatic({ path: "./dist/client/index.html" }));
+// Default path matches where `bun run build` outputs relative to repo root
+const distRoot = process.env.DIST_ROOT ?? "./apps/app/dist/client";
+app.use("/*", serveStatic({ root: distRoot }));
+app.get("/*", serveStatic({ path: `${distRoot}/index.html` }));
 
 export default {
   port: Number(process.env.PORT ?? 3000),
