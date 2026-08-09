@@ -42,6 +42,7 @@ export interface QueueListItem {
   url: string;
   leadImageUrl: string | null;
   publishedAt: Date | null;
+  feedback: "like" | "dislike" | null;
 }
 
 type QueueListRow = QueueItemRow & {
@@ -49,7 +50,24 @@ type QueueListRow = QueueItemRow & {
   url: string;
   lead_image_url: string | null;
   published_at: number | null;
+  feedback: string | null;
 };
+
+// Shared SELECT: queue item + article info + latest feedback for list views.
+const LIST_SELECT = `q.*, a.title, a.url, a.lead_image_url, a.published_at,
+  (SELECT f.feedback_type FROM feedback f WHERE f.article_id = a.id
+   ORDER BY f.created_at DESC LIMIT 1) AS feedback`;
+
+function toListItem(r: QueueListRow): QueueListItem {
+  return {
+    item: toItem(r),
+    title: r.title,
+    url: r.url,
+    leadImageUrl: r.lead_image_url,
+    publishedAt: r.published_at !== null ? new Date(r.published_at) : null,
+    feedback: r.feedback === "like" || r.feedback === "dislike" ? r.feedback : null,
+  };
+}
 
 export class QueueRepo implements QueueRepository {
   constructor(private readonly db: Database) {}
@@ -69,19 +87,13 @@ export class QueueRepo implements QueueRepository {
     const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
     const orderBy = filter?.sortBy === "relevance" ? "q.relevance_score DESC" : "q.added_at DESC";
     const limit = filter?.limit ? `LIMIT ${filter.limit}` : "";
-    const sql = `SELECT q.*, a.title, a.url, a.lead_image_url, a.published_at
+    const sql = `SELECT ${LIST_SELECT}
        FROM queue_items q JOIN articles a ON a.id = q.article_id
        ${where} ORDER BY ${orderBy} ${limit}`.trim();
     return this.db
       .prepare<QueueListRow, typeof params>(sql)
       .all(...params)
-      .map((r) => ({
-        item: toItem(r),
-        title: r.title,
-        url: r.url,
-        leadImageUrl: r.lead_image_url,
-        publishedAt: r.published_at !== null ? new Date(r.published_at) : null,
-      }));
+      .map(toListItem);
   }
 
   /**
@@ -90,21 +102,12 @@ export class QueueRepo implements QueueRepository {
    * preference vector. Enriched with article info.
    */
   async findBorderline(limit = 30): Promise<QueueListItem[]> {
-    const sql = `SELECT q.*, a.title, a.url, a.lead_image_url, a.published_at
+    const sql = `SELECT ${LIST_SELECT}
        FROM queue_items q JOIN articles a ON a.id = q.article_id
        WHERE q.status = 'unread'
        ORDER BY ABS(q.relevance_score - 0.5) ASC, q.added_at DESC
        LIMIT ?`;
-    return this.db
-      .prepare<QueueListRow, [number]>(sql)
-      .all(limit)
-      .map((r) => ({
-        item: toItem(r),
-        title: r.title,
-        url: r.url,
-        leadImageUrl: r.lead_image_url,
-        publishedAt: r.published_at !== null ? new Date(r.published_at) : null,
-      }));
+    return this.db.prepare<QueueListRow, [number]>(sql).all(limit).map(toListItem);
   }
 
   async findById(id: QueueItemId): Promise<QueueItem | null> {

@@ -67,7 +67,7 @@ const buttons: Array<{
   {
     type: "dislike",
     label: "Dislike",
-    title: "Dislike — train the preference vector down (stays in the queue)",
+    title: "Dislike — train the vector down and mark read (leaves the queue)",
     icon: ThumbsDown,
     class: "text-muted-foreground hover:text-destructive",
     activeClass: "text-destructive",

@@ -78,7 +78,7 @@
     >
       <button
         @click="sendFeedback('dislike')"
-        title="Dislike — train the preference vector down (does not change read status)"
+        title="Dislike — train the vector down and mark read"
         :class="[
           'flex flex-col items-center gap-1 transition-colors px-3 py-1 rounded-lg',
           evaluation === 'dislike' ? 'text-destructive' : 'text-muted-foreground hover:text-destructive',
@@ -190,10 +190,11 @@ onMounted(async () => {
   article.value = await queue.fetchArticle(articleId.value);
 });
 
-// Evaluation only — updates the preference vector, does not mark read/navigate.
 async function sendFeedback(type: "like" | "dislike") {
   evaluation.value = type;
   await feedback.sendFeedback(articleId.value, type);
+  // Dislike means "won't read" → also mark read and leave the reader.
+  if (type === "dislike") await markRead();
 }
 
 // Finished reading → mark read and leave the reader.

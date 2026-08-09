@@ -4,7 +4,6 @@
       class="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0"
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
     >
-      <RouterLink to="/" class="text-muted-foreground hover:text-foreground text-xl">←</RouterLink>
       <h1 class="text-base font-semibold flex-1">Library</h1>
     </div>
 
@@ -27,8 +26,11 @@
           <p class="text-sm font-medium text-foreground line-clamp-2">{{ it.title }}</p>
           <div class="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
             <span class="px-1.5 py-0.5 rounded bg-secondary">{{ it.status }}</span>
-            <span v-if="it.favorited" class="text-amber-500">★</span>
-            <span v-if="it.publishedAt">{{ formatDate(it.publishedAt) }}</span>
+            <span class="tabular-nums">{{ Math.round(it.relevanceScore * 100) }}%</span>
+            <ThumbsUp v-if="it.feedback === 'like'" :size="13" class="text-yellow-500" />
+            <ThumbsDown v-if="it.feedback === 'dislike'" :size="13" class="text-destructive" />
+            <Bookmark v-if="it.favorited" :size="13" class="text-amber-500" />
+            <span v-if="it.publishedAt" class="ml-auto">{{ formatDate(it.publishedAt) }}</span>
           </div>
         </div>
         <button
@@ -46,6 +48,16 @@
         Nothing here yet
       </p>
     </div>
+
+    <!-- Floating back button (thumb zone) -->
+    <RouterLink
+      to="/"
+      aria-label="Back"
+      class="absolute left-3 z-40 flex items-center justify-center w-11 h-11 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg text-muted-foreground hover:text-foreground"
+      style="bottom: calc(env(safe-area-inset-bottom) + 0.75rem)"
+    >
+      <ArrowLeft :size="20" />
+    </RouterLink>
 
     <!-- Floating filter tab bar (capsule, thumb zone) -->
     <div
@@ -67,7 +79,7 @@
 
 <script setup lang="ts">
 import type { QueueListItemResponse } from "@feed-reader/types";
-import { Undo2 } from "lucide-vue-next";
+import { ArrowLeft, Bookmark, ThumbsDown, ThumbsUp, Undo2 } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 import { api } from "../api/client.ts";
 

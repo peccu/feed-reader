@@ -27,4 +27,39 @@
 - [x] 既読を未読に戻す方法を用意してください（Library の各行に「↩ Unread」ボタン。read→unread 遷移を許可）
 - [x] ライブラリからどれかの記事を開くと表示されるキューのボタンの意味を教えて。（ReaderView。各ボタンに説明ツールチップを追加。意味は下記回答参照）
 - [x] 左右切り替えはUIも左右入れ替えます。（カルーセルの端矢印・タップ方向・スワイプ、下部メニューボタンの左右を direction に合わせて反転）
+- [x] ライブラリ画面から戻るボタンが画面上端にあるので、メニューのように右下または左下にボタンをおいてもらえますか（左下にフローティング戻るボタン、上端の←は撤去）
+- [x] likeは後でじっくり読む可能性はありますが dislikeは好みでない、もう読まないとの判断なので既読処理も一緒に実施してもらえますか（dislike＝評価＋既読化。likeは評価のみで未読維持）
+- [x] ライブラリなどの一覧表示にもスコアを表示してもらえますか、私のフィードバック(like, dislikeもマーク等で表現できていると嬉しいです)（一覧にスコア%＋like/dislikeアイコン＋★を表示）
+- [ ] VRTベースのスクリーンショットを取ろうとmacのdockerで実行すると以下のようなエラーがたくさん出ていました。
+```
+ 26) [Desktop Chrome] › e2e/settings.spec.ts:17:7 › Settings View › shows feed URL input and add button
 
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('input[placeholder*=\'URL\']')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for locator('input[placeholder*=\'URL\']')
+
+
+      17 |   test("shows feed URL input and add button", async ({ page }) => {
+      18 |     const input = page.locator("input[placeholder*='URL']");
+    > 19 |     await expect(input).toBeVisible();
+         |                         ^
+      20 |   });
+      21 |
+      22 |   test("can navigate back to queue", async ({ page }) => {
+        at /work/e2e/settings.spec.ts:19:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/settings-Settings-View-shows-feed-URL-input-and-add-button-Desktop-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/settings-Settings-View-shows-feed-URL-input-and-add-button-Desktop-Chrome/error-context.md
+```
+- [ ] カテゴリ追加のUIにテキスト入力欄が二つありますがそれぞれ何を入れるのかわかりませんでした
+- [ ] デバッグ用のクエリ入力欄にはグラフDBのクエリする場所も用意してください。SQLとそれの実行結果はなにがでてきますか？デフォルトで全検索かつ上限10件ほど、というようなサンプルを入れておいて欲しいです。もしくはいくつかサンプルを用意して、プルダウンで挿入して再利用したいです。

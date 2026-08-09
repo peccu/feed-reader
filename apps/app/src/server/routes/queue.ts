@@ -66,6 +66,7 @@ router.get("/list", async (c) => {
     url: r.url,
     leadImageUrl: r.leadImageUrl,
     publishedAt: r.publishedAt?.toISOString() ?? null,
+    feedback: r.feedback,
   }));
   return c.json({ items, total: items.length });
 });
@@ -80,6 +81,7 @@ router.get("/training", async (c) => {
     url: r.url,
     leadImageUrl: r.leadImageUrl,
     publishedAt: r.publishedAt?.toISOString() ?? null,
+    feedback: r.feedback,
   }));
   return c.json({ items, total: items.length });
 });

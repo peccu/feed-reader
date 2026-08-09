@@ -35,6 +35,8 @@ export interface QueueListItemResponse {
   url: string;
   leadImageUrl: string | null;
   publishedAt: string | null;
+  /** Latest like/dislike feedback for the article, if any. */
+  feedback: "like" | "dislike" | null;
 }
 
 export interface QueueStatsResponse {

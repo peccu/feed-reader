@@ -235,11 +235,18 @@ async function handleAction(type: "dislike" | "like" | "done" | "skip" | "note" 
   if (!item) return;
 
   switch (type) {
-    // Evaluation only: update the preference vector, keep the article unread.
+    // Like: evaluation only — train the vector, keep the article unread
+    // (you may still read it later).
     case "like":
+      evaluations.value.set(item.articleId, "like");
+      await feedback.sendFeedback(item.articleId, "like");
+      break;
+
+    // Dislike: "not for me / won't read" — train the vector AND mark read
+    // so it leaves the unread queue.
     case "dislike":
-      evaluations.value.set(item.articleId, type);
-      await feedback.sendFeedback(item.articleId, type);
+      await feedback.sendFeedback(item.articleId, "dislike");
+      await queue.updateStatus(item.id, "read");
       break;
 
     case "favorite":
