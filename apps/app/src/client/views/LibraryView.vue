@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full flex flex-col bg-background">
+  <div class="h-full flex flex-col bg-background relative">
     <div
       class="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0"
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
@@ -8,20 +8,7 @@
       <h1 class="text-base font-semibold flex-1">Library</h1>
     </div>
 
-    <!-- Tabs -->
-    <div class="flex gap-1 px-3 py-2 border-b border-border shrink-0 overflow-x-auto">
-      <button
-        v-for="t in tabs"
-        :key="t.key"
-        @click="select(t.key)"
-        :class="[
-          'px-3 py-1 rounded-full text-sm whitespace-nowrap transition-colors',
-          active === t.key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent',
-        ]"
-      >{{ t.label }}</button>
-    </div>
-
-    <div class="flex-1 overflow-y-auto p-3 space-y-2">
+    <div class="flex-1 overflow-y-auto p-3 pb-24 space-y-2">
       <RouterLink
         v-for="it in items"
         :key="it.id"
@@ -44,11 +31,33 @@
             <span v-if="it.publishedAt">{{ formatDate(it.publishedAt) }}</span>
           </div>
         </div>
+        <button
+          v-if="it.status !== 'unread'"
+          @click.prevent.stop="restore(it)"
+          title="Move back to the unread queue"
+          class="self-center shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-accent"
+        >↩ Unread</button>
       </RouterLink>
 
       <p v-if="!loading && items.length === 0" class="text-sm text-muted-foreground text-center py-10">
         Nothing here yet
       </p>
+    </div>
+
+    <!-- Floating filter tab bar (capsule, thumb zone) -->
+    <div
+      class="absolute left-1/2 -translate-x-1/2 z-40 flex gap-1 p-1 rounded-full bg-card/85 backdrop-blur border border-border shadow-lg"
+      style="bottom: calc(env(safe-area-inset-bottom) + 0.75rem)"
+    >
+      <button
+        v-for="t in tabs"
+        :key="t.key"
+        @click="select(t.key)"
+        :class="[
+          'px-3.5 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors',
+          active === t.key ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
+        ]"
+      >{{ t.label }}</button>
     </div>
   </div>
 </template>
@@ -99,6 +108,11 @@ function select(tab: TabKey) {
   if (active.value === tab) return;
   active.value = tab;
   load();
+}
+
+async function restore(it: QueueListItemResponse) {
+  await api.patch(`/queue/${it.id}/status`, { status: "unread" });
+  await load();
 }
 
 function formatDate(iso: string): string {

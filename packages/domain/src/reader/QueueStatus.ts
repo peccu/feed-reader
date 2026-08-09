@@ -5,7 +5,7 @@ const VALID_TRANSITIONS: Record<QueueStatus, readonly QueueStatus[]> = {
   // item read directly (unread -> read), and skip goes unread -> skipped.
   unread: ["reading", "read", "skipped", "archived"],
   reading: ["read", "skipped", "archived"],
-  read: ["archived"],
+  read: ["archived", "unread"],
   skipped: ["unread", "read", "archived"],
   archived: [],
 };
