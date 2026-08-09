@@ -18,6 +18,7 @@ type QueueItemRow = {
   article_id: string;
   status: string;
   relevance_score: number;
+  favorited: number;
   added_at: number;
   read_at: number | null;
 };
@@ -28,13 +29,60 @@ function toItem(r: QueueItemRow): QueueItem {
     articleId: mkArticleId(r.article_id),
     status: r.status as QueueStatus,
     relevanceScore: createRelevanceScore(r.relevance_score),
+    favorited: r.favorited === 1,
     addedAt: new Date(r.added_at),
     readAt: r.read_at !== null ? new Date(r.read_at) : null,
   };
 }
 
+/** Read model for list/library views: a queue item joined with article info. */
+export interface QueueListItem {
+  item: QueueItem;
+  title: string;
+  url: string;
+  leadImageUrl: string | null;
+  publishedAt: Date | null;
+}
+
+type QueueListRow = QueueItemRow & {
+  title: string;
+  url: string;
+  lead_image_url: string | null;
+  published_at: number | null;
+};
+
 export class QueueRepo implements QueueRepository {
   constructor(private readonly db: Database) {}
+
+  /** Queue items joined with their article, for list/library screens. */
+  async findListView(filter?: QueueFilter): Promise<QueueListItem[]> {
+    const conditions: string[] = [];
+    const params: (string | number)[] = [];
+    if (filter?.status) {
+      conditions.push("q.status = ?");
+      params.push(filter.status);
+    }
+    if (filter?.favorited !== undefined) {
+      conditions.push("q.favorited = ?");
+      params.push(filter.favorited ? 1 : 0);
+    }
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    const orderBy = filter?.sortBy === "relevance" ? "q.relevance_score DESC" : "q.added_at DESC";
+    const limit = filter?.limit ? `LIMIT ${filter.limit}` : "";
+    const sql = `SELECT q.*, a.title, a.url, a.lead_image_url, a.published_at
+       FROM queue_items q JOIN articles a ON a.id = q.article_id
+       ${where} ORDER BY ${orderBy} ${limit}`.trim();
+    return this.db
+      .prepare<QueueListRow, typeof params>(sql)
+      .all(...params)
+      .map((r) => ({
+        item: toItem(r),
+        title: r.title,
+        url: r.url,
+        leadImageUrl: r.lead_image_url,
+        publishedAt: r.published_at !== null ? new Date(r.published_at) : null,
+      }));
+  }
 
   async findById(id: QueueItemId): Promise<QueueItem | null> {
     const row =
@@ -57,6 +105,10 @@ export class QueueRepo implements QueueRepository {
     if (filter?.status) {
       conditions.push("status = ?");
       params.push(filter.status);
+    }
+    if (filter?.favorited !== undefined) {
+      conditions.push("favorited = ?");
+      params.push(filter.favorited ? 1 : 0);
     }
     const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
     const orderBy = filter?.sortBy === "relevance" ? "relevance_score DESC" : "added_at DESC";
@@ -81,20 +133,25 @@ export class QueueRepo implements QueueRepository {
 
   async save(item: QueueItem): Promise<void> {
     this.db.run(
-      `INSERT INTO queue_items (id, article_id, status, relevance_score, added_at, read_at)
-       VALUES (?, ?, ?, ?, ?, ?)
+      `INSERT INTO queue_items (id, article_id, status, relevance_score, favorited, added_at, read_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          status = excluded.status, relevance_score = excluded.relevance_score,
-         read_at = excluded.read_at`,
+         favorited = excluded.favorited, read_at = excluded.read_at`,
       [
         item.id,
         item.articleId,
         item.status,
         item.relevanceScore.value,
+        item.favorited ? 1 : 0,
         item.addedAt.getTime(),
         item.readAt?.getTime() ?? null,
       ],
     );
+  }
+
+  async setFavorite(id: QueueItemId, favorited: boolean): Promise<void> {
+    this.db.run("UPDATE queue_items SET favorited = ? WHERE id = ?", [favorited ? 1 : 0, id]);
   }
 
   async updateStatus(id: QueueItemId, status: QueueStatus, readAt?: Date): Promise<void> {

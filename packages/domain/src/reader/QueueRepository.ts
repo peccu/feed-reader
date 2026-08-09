@@ -4,6 +4,7 @@ import type { QueueStatus } from "./QueueStatus.ts";
 
 export interface QueueFilter {
   status?: QueueStatus;
+  favorited?: boolean;
   limit?: number;
   offset?: number;
   sortBy?: "relevance" | "addedAt";
@@ -17,4 +18,5 @@ export interface QueueRepository {
   save(item: QueueItem): Promise<void>;
   updateStatus(id: QueueItemId, status: QueueStatus, readAt?: Date): Promise<void>;
   updateRelevanceScore(id: QueueItemId, score: number): Promise<void>;
+  setFavorite(id: QueueItemId, favorited: boolean): Promise<void>;
 }

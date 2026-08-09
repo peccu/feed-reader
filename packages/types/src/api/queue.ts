@@ -13,8 +13,28 @@ export interface QueueItemResponse {
   articleId: string;
   status: string;
   relevanceScore: number;
+  favorited: boolean;
   addedAt: string;
   readAt: string | null;
+}
+
+export interface UpdateFavoriteRequest {
+  favorited: boolean;
+}
+
+/** Queue item enriched with article info, for list/library screens. */
+export interface QueueListItemResponse {
+  id: string;
+  articleId: string;
+  status: string;
+  relevanceScore: number;
+  favorited: boolean;
+  addedAt: string;
+  readAt: string | null;
+  title: string;
+  url: string;
+  leadImageUrl: string | null;
+  publishedAt: string | null;
 }
 
 export interface QueueStatsResponse {

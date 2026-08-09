@@ -8,6 +8,8 @@ export interface QueueItem {
   readonly articleId: ArticleId;
   readonly status: QueueStatus;
   readonly relevanceScore: RelevanceScore;
+  /** User bookmark — independent of like/dislike and reading status. */
+  readonly favorited: boolean;
   readonly addedAt: Date;
   readonly readAt: Date | null;
 }
@@ -24,6 +26,7 @@ export function createQueueItem(input: CreateQueueItemInput): QueueItem {
     articleId: input.articleId,
     status: "unread",
     relevanceScore: input.relevanceScore,
+    favorited: false,
     addedAt: new Date(),
     readAt: null,
   };

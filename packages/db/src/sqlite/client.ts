@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS queue_items (
   status TEXT NOT NULL DEFAULT 'unread'
     CHECK(status IN ('unread','reading','read','skipped','archived')),
   relevance_score REAL NOT NULL DEFAULT 0.0,
+  favorited INTEGER NOT NULL DEFAULT 0,
   added_at INTEGER NOT NULL,
   read_at INTEGER
 );
@@ -162,6 +163,14 @@ function migrate(db: Database): void {
   if (!cols.includes("ingest_version")) {
     // Existing rows predate versioning → 0, so reingest picks them up.
     db.run("ALTER TABLE articles ADD COLUMN ingest_version INTEGER NOT NULL DEFAULT 0");
+  }
+
+  const queueCols = db
+    .query<{ name: string }, []>("PRAGMA table_info(queue_items)")
+    .all()
+    .map((r) => r.name);
+  if (!queueCols.includes("favorited")) {
+    db.run("ALTER TABLE queue_items ADD COLUMN favorited INTEGER NOT NULL DEFAULT 0");
   }
 }
 
