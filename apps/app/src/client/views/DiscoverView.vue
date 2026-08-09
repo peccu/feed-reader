@@ -11,23 +11,7 @@
       </span>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-4 space-y-4">
-      <!-- Search -->
-      <div class="flex gap-2">
-        <input
-          v-model="query"
-          @keydown.enter="onEnter"
-          type="search"
-          placeholder="Search articles..."
-          class="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-        />
-        <button
-          @click="search()"
-          :disabled="searching"
-          class="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm disabled:opacity-50"
-        >{{ searching ? '…' : 'Search' }}</button>
-      </div>
-
+    <div class="flex-1 overflow-y-auto p-4 pb-24 space-y-4">
       <!-- Results -->
       <div v-if="results.length > 0" class="space-y-2">
         <RouterLink
@@ -50,10 +34,31 @@
         No articles found
       </p>
     </div>
+
+    <!-- Floating search bar (bottom, thumb zone; rounded capsule) -->
+    <div
+      class="absolute left-3 right-3 z-40 flex items-center gap-2 p-1.5 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg"
+      style="bottom: calc(env(safe-area-inset-bottom) + 0.75rem)"
+    >
+      <Search :size="18" class="ml-2 shrink-0 text-muted-foreground" />
+      <input
+        v-model="query"
+        @keydown.enter="onEnter"
+        type="search"
+        placeholder="Search articles..."
+        class="flex-1 min-w-0 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+      />
+      <button
+        @click="search()"
+        :disabled="searching"
+        class="shrink-0 px-3.5 py-1.5 rounded-full bg-primary text-primary-foreground text-sm disabled:opacity-50 active:scale-95 transition-transform"
+      >{{ searching ? '…' : 'Search' }}</button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Search } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "../api/client.ts";

@@ -10,6 +10,16 @@
     </div>
 
     <div class="flex-1 overflow-y-auto p-4 space-y-3">
+      <!-- When arriving from an article's note indicator, show only that
+           article's notes with a way back to the full list. -->
+      <div
+        v-if="articleId"
+        class="flex items-center justify-between gap-2 text-xs text-muted-foreground"
+      >
+        <span>Notes for this article</span>
+        <RouterLink to="/notes" class="text-primary underline underline-offset-2">Show all notes</RouterLink>
+      </div>
+
       <RouterLink
         v-for="note in notes"
         :key="note.id"
@@ -25,7 +35,7 @@
         </div>
       </RouterLink>
       <p v-if="notes.length === 0" class="text-sm text-muted-foreground text-center py-8">
-        No notes yet
+        {{ articleId ? 'No notes for this article' : 'No notes yet' }}
       </p>
     </div>
   </div>
@@ -33,16 +43,27 @@
 
 <script setup lang="ts">
 import type { NoteResponse } from "@feed-reader/types";
-import { onMounted, ref } from "vue";
+import { computed, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import { api } from "../api/client.ts";
 import BackButton from "../components/BackButton.vue";
 
+const route = useRoute();
 const notes = ref<NoteResponse[]>([]);
+const articleId = computed(() =>
+  typeof route.query.article === "string" ? route.query.article : undefined,
+);
 
-onMounted(async () => {
-  const res = await api.get<{ items: NoteResponse[] }>("/notes");
+async function load() {
+  const path = articleId.value
+    ? `/notes?articleId=${encodeURIComponent(articleId.value)}`
+    : "/notes";
+  const res = await api.get<{ items: NoteResponse[] }>(path);
   notes.value = res.items;
-});
+}
+
+// Reload when the article filter changes (and on first mount).
+watch(articleId, load, { immediate: true });
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {

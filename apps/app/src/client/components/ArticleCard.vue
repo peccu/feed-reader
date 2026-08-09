@@ -24,7 +24,15 @@
             <span v-if="article.author">{{ article.author }}</span>
             <span v-if="formattedDate">{{ formattedDate }}</span>
             <span v-if="article.wordCount">{{ article.wordCount.toLocaleString() }} words</span>
-            <StickyNote v-if="article.hasNote" :size="13" class="text-primary" title="Has a note" />
+            <RouterLink
+              v-if="article.hasNote"
+              :to="`/notes?article=${article.id}`"
+              class="inline-flex items-center gap-1 text-primary"
+              title="View note"
+            >
+              <StickyNote :size="13" />
+              <span class="text-[11px]">Note</span>
+            </RouterLink>
             <span class="ml-auto tabular-nums">
               Score {{ Math.round((item?.relevanceScore ?? 0) * 100) }}%
             </span>
