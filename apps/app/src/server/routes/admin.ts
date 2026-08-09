@@ -53,22 +53,23 @@ router.get("/stats", (c) => {
 
 router.get("/jobs", (c) => {
   const limit = Number(c.req.query("limit") ?? 30);
-  const rows = db
-    .query<
-      {
-        id: string;
-        job_type: string;
-        status: string;
-        payload: string;
-        error: string | null;
-        created_at: number;
-        updated_at: number;
-      },
-      [number]
-    >(
-      "SELECT id, job_type, status, payload, error, created_at, updated_at FROM pending_jobs ORDER BY created_at DESC LIMIT ?",
-    )
-    .all(limit);
+  const type = c.req.query("type");
+  type Row = {
+    id: string;
+    job_type: string;
+    status: string;
+    payload: string;
+    error: string | null;
+    created_at: number;
+    updated_at: number;
+  };
+  const base =
+    "SELECT id, job_type, status, payload, error, created_at, updated_at FROM pending_jobs";
+  const rows = type
+    ? db
+        .query<Row, [string, number]>(`${base} WHERE job_type = ? ORDER BY created_at DESC LIMIT ?`)
+        .all(type, limit)
+    : db.query<Row, [number]>(`${base} ORDER BY created_at DESC LIMIT ?`).all(limit);
   const items: PendingJobResponse[] = rows.map((r) => ({
     id: r.id,
     jobType: r.job_type,

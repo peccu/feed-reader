@@ -41,19 +41,27 @@
             class="flex items-center gap-3 p-3 rounded-lg border border-border bg-card"
           >
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-foreground truncate">{{ feed.title }}</p>
-              <p class="text-xs text-muted-foreground truncate">{{ feed.url }}</p>
-              <p v-if="feed.lastPolledAt" class="text-xs text-muted-foreground/60">
-                Last fetched: {{ new Date(feed.lastPolledAt).toLocaleString('en-US') }}
+              <p class="text-sm font-medium text-foreground">{{ feed.title }}</p>
+              <p v-if="feed.description" class="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                {{ feed.description }}
               </p>
+              <p class="text-xs text-muted-foreground/70 break-all mt-0.5">{{ feed.url }}</p>
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1 text-xs text-muted-foreground/60">
+                <span>{{ feed.articleCount }} articles</span>
+                <span v-if="feed.lastPolledAt">
+                  fetched {{ new Date(feed.lastPolledAt).toLocaleString('en-US') }}
+                </span>
+                <span v-else>not fetched yet</span>
+              </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-col items-end gap-2 shrink-0">
               <span
                 class="text-xs px-1.5 py-0.5 rounded"
                 :class="feed.isActive ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-secondary text-muted-foreground'"
               >{{ feed.isActive ? 'Active' : 'Inactive' }}</span>
               <button
                 @click="feedsStore.deleteFeed(feed.id)"
+                aria-label="Delete feed"
                 class="text-muted-foreground hover:text-destructive transition-colors text-sm"
               >✕</button>
             </div>
@@ -118,18 +126,84 @@
         </div>
         <p v-if="ingestMessage" class="text-xs text-green-600 dark:text-green-400 mt-2">{{ ingestMessage }}</p>
       </section>
+
+      <!-- Submitted URL history -->
+      <section>
+        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+          Submitted URLs ({{ submissions.length }})
+        </h2>
+        <div class="space-y-1.5">
+          <div
+            v-for="job in submissions"
+            :key="job.id"
+            class="p-2 rounded-lg border border-border bg-card text-xs"
+          >
+            <div class="flex items-center gap-2">
+              <span :class="jobStatusClass(job.status)">{{ job.status }}</span>
+              <span class="ml-auto text-muted-foreground/60">{{ shortTime(job.createdAt) }}</span>
+            </div>
+            <p class="mt-0.5 text-muted-foreground break-all">{{ jobUrl(job.payload) }}</p>
+            <p v-if="job.error" class="mt-0.5 text-destructive break-all">{{ job.error }}</p>
+          </div>
+          <p v-if="submissions.length === 0" class="text-xs text-muted-foreground text-center py-2">
+            No submitted URLs yet
+          </p>
+        </div>
+      </section>
+
+      <!-- Tools (from the legacy reader) -->
+      <section>
+        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Tools</h2>
+        <div class="flex flex-col gap-2 text-sm">
+          <a v-for="t in tools" :key="t.url" :href="t.url" target="_blank" rel="noopener"
+            class="text-primary underline underline-offset-4">{{ t.label }}</a>
+        </div>
+      </section>
+
+      <!-- Backup / migration -->
+      <section>
+        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Backup</h2>
+        <div class="flex flex-wrap gap-2">
+          <button
+            @click="exportSettings()"
+            class="px-3 py-1.5 rounded-lg border border-border text-sm text-foreground hover:bg-accent"
+          >Export JSON</button>
+          <label class="px-3 py-1.5 rounded-lg border border-border text-sm text-foreground hover:bg-accent cursor-pointer">
+            Import feeds
+            <input type="file" accept="application/json,.json" class="hidden" @change="importSettings" />
+          </label>
+          <span v-if="importMessage" class="text-xs text-muted-foreground self-center">{{ importMessage }}</span>
+        </div>
+        <p class="text-xs text-muted-foreground mt-1">
+          Export includes feed URLs and the preference vector. Import adds new feeds (existing URLs skipped).
+        </p>
+      </section>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { IngestJobResponse, PreferenceResponse } from "@feed-reader/types";
+import type {
+  IngestJobResponse,
+  PendingJobResponse,
+  PreferenceResponse,
+  SettingsExport,
+  SettingsImportResponse,
+} from "@feed-reader/types";
 import { onMounted, onUnmounted, ref } from "vue";
 import { api } from "../api/client.ts";
 import BackButton from "../components/BackButton.vue";
 import { useFeedsStore } from "../stores/feeds.ts";
 
 const feedsStore = useFeedsStore();
+
+const submissions = ref<PendingJobResponse[]>([]);
+const importMessage = ref("");
+const tools = [
+  { label: "Feed URL Extractor (article-images)", url: "https://article-images.netlify.app/" },
+  { label: "GenFeed — generate RSS from a page", url: "https://genfeed.netlify.app/" },
+  { label: "Open RSS", url: "https://openrss.org/" },
+];
 const newFeedUrl = ref("");
 const ingestUrl = ref("");
 const ingestMessage = ref("");
@@ -145,7 +219,68 @@ onMounted(() => {
   feedsStore.fetchFeeds();
   fetchPendingCount();
   loadPref();
+  loadSubmissions();
 });
+
+async function loadSubmissions() {
+  try {
+    const res = await api.get<{ items: PendingJobResponse[] }>(
+      "/admin/jobs?type=ingest_url&limit=20",
+    );
+    submissions.value = res.items;
+  } catch {
+    // ignore
+  }
+}
+
+function jobUrl(payload: string): string {
+  try {
+    return (JSON.parse(payload) as { url?: string }).url ?? payload;
+  } catch {
+    return payload;
+  }
+}
+function jobStatusClass(status: string): string {
+  if (status === "failed") return "text-destructive";
+  if (status === "done") return "text-green-600";
+  if (status === "processing") return "text-yellow-500";
+  return "text-muted-foreground";
+}
+function shortTime(iso: string): string {
+  return new Date(iso).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+async function exportSettings() {
+  const data = await api.get<SettingsExport>("/feeds/export");
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `feed-reader-settings-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function importSettings(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+  importMessage.value = "…";
+  try {
+    const parsed = JSON.parse(await file.text()) as { feeds?: unknown };
+    const res = await api.post<SettingsImportResponse>("/feeds/import", {
+      feeds: parsed.feeds ?? [],
+    });
+    importMessage.value = `Added ${res.added}, skipped ${res.skipped}`;
+    await feedsStore.fetchFeeds();
+  } catch (err) {
+    importMessage.value = `Import failed: ${err instanceof Error ? err.message : String(err)}`;
+  }
+}
 
 async function loadPref() {
   try {
