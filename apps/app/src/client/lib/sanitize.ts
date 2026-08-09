@@ -40,6 +40,16 @@ const OPTIONS = {
   ALLOWED_ATTR: ["href", "src", "target", "rel", "title", "alt", "width", "height"],
 };
 
+// Force every link in sanitized content to open in a new tab, so tapping a
+// link inside article HTML or a note never navigates away from (overwrites)
+// the SPA. rel=noopener/noreferrer avoids leaking the opener to the target.
+DOMPurify.addHook("afterSanitizeAttributes", (node) => {
+  if (node.tagName === "A" && node.getAttribute("href")) {
+    node.setAttribute("target", "_blank");
+    node.setAttribute("rel", "noopener noreferrer");
+  }
+});
+
 /** Sanitize source HTML for rendering via v-html. */
 export function sanitizeHtml(dirty: string): string {
   return DOMPurify.sanitize(dirty, { ...OPTIONS });
