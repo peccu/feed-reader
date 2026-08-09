@@ -110,6 +110,15 @@ export class QueueRepo implements QueueRepository {
     return this.db.prepare<QueueListRow, [number]>(sql).all(limit).map(toListItem);
   }
 
+  /** Single list item (queue + article + feedback) for a given article. */
+  async findListItemByArticle(articleId: ArticleId): Promise<QueueListItem | null> {
+    const sql = `SELECT ${LIST_SELECT}
+       FROM queue_items q JOIN articles a ON a.id = q.article_id
+       WHERE a.id = ? LIMIT 1`;
+    const row = this.db.query<QueueListRow, [string]>(sql).get(articleId) ?? null;
+    return row ? toListItem(row) : null;
+  }
+
   async findById(id: QueueItemId): Promise<QueueItem | null> {
     const row =
       this.db.query<QueueItemRow, [string]>("SELECT * FROM queue_items WHERE id = ?").get(id) ??

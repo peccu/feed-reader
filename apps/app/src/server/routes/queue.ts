@@ -1,4 +1,4 @@
-import { QueueItemId, type QueueStatus, transitionStatus } from "@feed-reader/domain";
+import { ArticleId, QueueItemId, type QueueStatus, transitionStatus } from "@feed-reader/domain";
 import type {
   ListResponse,
   QueueItemResponse,
@@ -71,6 +71,21 @@ router.get("/list", async (c) => {
     feedback: r.feedback,
   }));
   return c.json({ items, total: items.length });
+});
+
+// Single enriched list item for a given article (for the single-article feed).
+router.get("/by-article/:articleId", async (c) => {
+  const row = await queueRepo.findListItemByArticle(ArticleId(c.req.param("articleId")));
+  if (!row) return c.json({ error: "not found" }, 404);
+  const item: QueueListItemResponse = {
+    ...toResponse(row.item),
+    title: row.title,
+    url: row.url,
+    leadImageUrl: row.leadImageUrl,
+    publishedAt: row.publishedAt?.toISOString() ?? null,
+    feedback: row.feedback,
+  };
+  return c.json(item);
 });
 
 // Borderline-score unread items for the training screen.
