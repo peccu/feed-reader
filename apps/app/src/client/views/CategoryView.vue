@@ -26,7 +26,7 @@
             v-model="newName"
             placeholder="Category name"
             required
-            class="mt-1 w-full px-3 py-1.5 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            class="mt-1 w-full px-3 py-1.5 rounded border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </label>
         <label class="block">
@@ -34,7 +34,7 @@
           <input
             v-model="newDesc"
             placeholder="Optional description"
-            class="mt-1 w-full px-3 py-1.5 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            class="mt-1 w-full px-3 py-1.5 rounded border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </label>
         <div class="flex items-center gap-2">
@@ -88,7 +88,7 @@
               v-model="editName"
               placeholder="Category name"
               required
-              class="mt-1 w-full px-3 py-1.5 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              class="mt-1 w-full px-3 py-1.5 rounded border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </label>
           <label class="block">
@@ -96,7 +96,7 @@
             <input
               v-model="editDesc"
               placeholder="Optional description"
-              class="mt-1 w-full px-3 py-1.5 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              class="mt-1 w-full px-3 py-1.5 rounded border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </label>
           <div class="flex items-center gap-2">

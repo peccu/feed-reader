@@ -29,7 +29,7 @@ export function useArticleFeed() {
     // Seed evaluation highlights from stored feedback so already-liked/disliked
     // articles show their state (not "unevaluated") when reopened.
     for (const it of next) {
-      if (it.feedback) evaluations.value.set(it.articleId, it.feedback);
+      if (it?.feedback) evaluations.value.set(it.articleId, it.feedback);
     }
     const idx = startArticleId ? next.findIndex((i) => i.articleId === startArticleId) : 0;
     currentIndex.value = idx >= 0 ? idx : 0;
