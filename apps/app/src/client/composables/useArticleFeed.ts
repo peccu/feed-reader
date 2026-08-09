@@ -81,6 +81,17 @@ export function useArticleFeed() {
     prefetchAround(currentIndex.value);
   }
 
+  /**
+   * Re-insert an item at a given position and focus it — used to undo a
+   * removal (dislike/read/skip) so the article snaps back into place.
+   */
+  function restoreItem(item: FeedItem, index: number) {
+    const at = Math.min(Math.max(0, index), items.value.length);
+    items.value = [...items.value.slice(0, at), item, ...items.value.slice(at)];
+    currentIndex.value = at;
+    prefetchAround(at);
+  }
+
   return {
     items,
     currentIndex,
@@ -93,5 +104,6 @@ export function useArticleFeed() {
     articleFor,
     navigate,
     removeCurrent,
+    restoreItem,
   };
 }

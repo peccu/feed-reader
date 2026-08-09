@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full flex flex-col bg-background">
+  <div class="relative h-full flex flex-col bg-background">
     <!-- Position indicator (tap to toggle reading direction) -->
     <div
       class="relative flex items-center justify-center px-4 py-2 border-b border-border bg-background z-20 shrink-0"
@@ -66,6 +66,24 @@
       @action="onAction"
     />
 
+    <!-- Undo banner: shown after an action removes the current item
+         (dislike / read / skip). Tap Undo, or shake the phone. -->
+    <transition name="undo-fade">
+      <div
+        v-if="pendingUndo"
+        class="absolute left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 pl-4 pr-2 py-2 rounded-full bg-foreground text-background shadow-xl"
+        style="bottom: calc(env(safe-area-inset-bottom) + 4.75rem)"
+      >
+        <span class="text-sm whitespace-nowrap">{{ pendingUndo.label }}</span>
+        <button
+          @click="runUndo"
+          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-sm font-semibold bg-background/15 active:scale-95 transition-transform"
+        >
+          <Undo2 :size="15" /> Undo
+        </button>
+      </div>
+    </transition>
+
     <!-- Note overlay -->
     <div
       v-if="showNoteForm"
@@ -94,8 +112,8 @@
 
 <script setup lang="ts">
 import type { CreateNoteRequest, NoteResponse } from "@feed-reader/types";
-import { Hand, Inbox } from "lucide-vue-next";
-import { computed, ref, watch } from "vue";
+import { Hand, Inbox, Undo2 } from "lucide-vue-next";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { api } from "../api/client.ts";
 import { type FeedItem, useArticleFeed } from "../composables/useArticleFeed.ts";
 import { useUiStore } from "../stores/ui.ts";
@@ -131,7 +149,10 @@ const feed = useArticleFeed();
 
 watch(
   () => props.items,
-  (next) => feed.setItems(next, props.startArticleId),
+  (next) => {
+    clearUndo();
+    feed.setItems(next, props.startArticleId);
+  },
   { immediate: true },
 );
 
@@ -173,6 +194,9 @@ async function setStatus(status: "unread" | "read" | "skipped") {
 async function onAction(type: "dislike" | "like" | "done" | "skip" | "note" | "favorite") {
   const item = feed.currentItem.value;
   if (!item) return;
+  // Snapshot before mutating so a removal can be undone (dislike/read/skip).
+  const index = feed.currentIndex.value;
+  const snap = snapshot(item);
   switch (type) {
     // Like/Dislike are toggles: pressing the active one clears the evaluation.
     case "like":
@@ -191,15 +215,22 @@ async function onAction(type: "dislike" | "like" | "done" | "skip" | "note" | "f
           vectorTarget: "preference",
         });
         // Dislike also marks read (won't read); like leaves status untouched.
-        if (type === "dislike") await setStatus("read");
+        if (type === "dislike") {
+          await setStatus("read");
+          offerUndo(item, index, snap, "Marked not interested");
+        }
       }
       break;
     }
-    case "done":
-      await setStatus(item.status === "read" ? "unread" : "read");
+    case "done": {
+      const next = item.status === "read" ? "unread" : "read";
+      await setStatus(next);
+      offerUndo(item, index, snap, next === "read" ? "Marked read" : "Marked unread");
       break;
+    }
     case "skip":
       await setStatus("skipped");
+      offerUndo(item, index, snap, "Skipped");
       break;
     case "favorite": {
       const favorited = !item.favorited;
@@ -241,4 +272,111 @@ async function saveNote() {
     savingNote.value = false;
   }
 }
+
+// --- Undo (for actions that remove the current item) ---
+type Snap = {
+  status: FeedItem["status"];
+  feedback: FeedItem["feedback"];
+  favorited: boolean;
+};
+type PendingUndo = { label: string; index: number; item: FeedItem; snap: Snap };
+
+const pendingUndo = ref<PendingUndo | null>(null);
+let undoTimer: ReturnType<typeof setTimeout> | undefined;
+const UNDO_MS = 6000;
+
+function snapshot(item: FeedItem): Snap {
+  return { status: item.status, feedback: item.feedback, favorited: item.favorited };
+}
+
+function clearUndo() {
+  if (undoTimer) clearTimeout(undoTimer);
+  undoTimer = undefined;
+  pendingUndo.value = null;
+}
+
+/** Offer an undo only if the action actually removed the item from this list. */
+function offerUndo(item: FeedItem, index: number, snap: Snap, label: string) {
+  if (belongs(item)) return; // still visible → nothing was removed
+  ensureMotionPermission();
+  if (undoTimer) clearTimeout(undoTimer);
+  pendingUndo.value = { label, index, item, snap };
+  undoTimer = setTimeout(clearUndo, UNDO_MS);
+}
+
+async function runUndo() {
+  const p = pendingUndo.value;
+  if (!p) return;
+  clearUndo();
+  const { item, snap, index } = p;
+  // Reverse the preference feedback, if the action set one.
+  if (snap.feedback) {
+    feed.evaluations.value.set(item.articleId, snap.feedback);
+    item.feedback = snap.feedback;
+    await api.post("/feedback", {
+      articleId: item.articleId,
+      feedbackType: snap.feedback,
+      vectorTarget: "preference",
+    });
+  } else if (item.feedback) {
+    feed.evaluations.value.delete(item.articleId);
+    item.feedback = null;
+    await api.delete(`/feedback/${item.articleId}`);
+  }
+  // Reverse the status change.
+  if (item.status !== snap.status) {
+    await api.patch(`/queue/${item.id}/status`, { status: snap.status });
+    item.status = snap.status;
+  }
+  feed.restoreItem(item, index);
+}
+
+// --- Shake to undo (best-effort; iOS needs a permission grant) ---
+let motionRequested = false;
+let lastMag = 0;
+let lastShakeAt = 0;
+
+function ensureMotionPermission() {
+  // Requesting must happen during a user gesture (the action tap), once.
+  const DME = window.DeviceMotionEvent as unknown as {
+    requestPermission?: () => Promise<string>;
+  };
+  if (!motionRequested && DME && typeof DME.requestPermission === "function") {
+    motionRequested = true;
+    DME.requestPermission().catch(() => {});
+  }
+}
+
+function onMotion(e: DeviceMotionEvent) {
+  const a = e.accelerationIncludingGravity;
+  if (!a) return;
+  const mag = Math.hypot(a.x ?? 0, a.y ?? 0, a.z ?? 0);
+  const delta = Math.abs(mag - lastMag);
+  lastMag = mag;
+  const now = Date.now();
+  if (delta > 22 && now - lastShakeAt > 1200) {
+    lastShakeAt = now;
+    if (pendingUndo.value) runUndo();
+  }
+}
+
+onMounted(() => window.addEventListener("devicemotion", onMotion));
+onBeforeUnmount(() => {
+  window.removeEventListener("devicemotion", onMotion);
+  clearUndo();
+});
 </script>
+
+<style scoped>
+.undo-fade-enter-active,
+.undo-fade-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.undo-fade-enter-from,
+.undo-fade-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 0.5rem);
+}
+</style>
