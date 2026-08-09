@@ -2,7 +2,7 @@
   <button
     @click="onBack"
     aria-label="Back"
-    class="absolute z-40 flex items-center justify-center w-12 h-12 rounded-full bg-card border border-border shadow-xl ring-1 ring-black/5 text-foreground active:scale-95 transition-transform"
+    class="absolute z-40 flex items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-xl ring-1 ring-black/5 active:scale-95 transition-transform"
     :class="ui.sideClass"
     style="bottom: calc(env(safe-area-inset-bottom) + 4.75rem)"
   >
