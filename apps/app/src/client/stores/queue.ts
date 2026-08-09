@@ -85,6 +85,7 @@ export const useQueueStore = defineStore("queue", () => {
     currentIndex,
     direction,
     loading,
+    articleCache,
     currentItem,
     total,
     fetchQueue,

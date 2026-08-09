@@ -16,6 +16,7 @@ export function createTestRepos() {
   const db = createDatabase(":memory:");
   initVec(db);
   return {
+    db,
     feedRepo: new FeedRepo(db),
     articleRepo: new ArticleRepo(db),
     queueRepo: new QueueRepo(db),
