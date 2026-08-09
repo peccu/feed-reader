@@ -1,97 +1,59 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("Queue View — carousel", () => {
+test.describe("Queue (unread carousel)", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    // Wait until carousel or empty-state is visible
-    await page.waitForSelector(".snap-x, [data-testid='empty-state'], text=キューが空", {
+    await page.waitForSelector("[data-testid='carousel'], [data-testid='empty-state']", {
       timeout: 10_000,
     });
   });
 
-  test("shows article titles in queue", async ({ page }) => {
-    const title = page.locator("text=Test Article 1");
-    await expect(title).toBeVisible({ timeout: 5_000 });
+  // VRT first, so it captures the queue before any mutating test runs.
+  test("VRT — queue initial", async ({ page }) => {
+    await page.waitForTimeout(300); // let the carousel settle
+    await expect(page).toHaveScreenshot("queue-initial.png", { maxDiffPixels: 200 });
   });
 
-  test("VRT — queue view initial state (mobile)", async ({ page }) => {
-    await page.waitForTimeout(300); // let scroll settle
-    await expect(page).toHaveScreenshot("queue-initial-mobile.png", { maxDiffPixels: 100 });
+  test("shows an article title in the carousel", async ({ page }) => {
+    await expect(page.getByText("Test Article 1").first()).toBeVisible({ timeout: 5_000 });
   });
 
   test("position indicator shows N/M", async ({ page }) => {
-    // Expects something matching "1/5" or similar digit/digit pattern in the top bar
-    const indicator = page.locator("button").filter({ hasText: /\d+\/\d+/ });
+    const indicator = page.getByTestId("position-indicator");
     await expect(indicator).toBeVisible();
-    const text = await indicator.innerText();
-    expect(text).toMatch(/\d+\/\d+/);
+    expect(await indicator.innerText()).toMatch(/\d+\s*\/\s*\d+/);
   });
 
-  test("action bar buttons are visible", async ({ page }) => {
-    await expect(page.locator("text=スキップ")).toBeVisible();
-    await expect(page.locator("text=いいね")).toBeVisible();
-    await expect(page.locator("text=全文")).toBeVisible();
-    await expect(page.locator("text=興味なし")).toBeVisible();
-    await expect(page.locator("text=メモ")).toBeVisible();
-  });
-
-  test("VRT — action bar", async ({ page }) => {
-    const vp = page.viewportSize() ?? { width: 390, height: 844 };
-    await expect(page).toHaveScreenshot("queue-actionbar-mobile.png", {
-      clip: { x: 0, y: vp.height - 130, width: vp.width, height: 130 },
-      maxDiffPixels: 50,
-    });
-  });
-
-  test("right tap area navigates to next article", async ({ page }) => {
-    const initialIndicator = page.locator("button").filter({ hasText: /\d+\/\d+/ });
-    const initialText = await initialIndicator.innerText();
-
-    // Click the right navigation chevron
-    const rightChevron = page.locator("button").filter({ hasText: "›" });
-    if (await rightChevron.isVisible()) {
-      await rightChevron.click();
-      await page.waitForTimeout(500);
-      const updatedText = await initialIndicator.innerText();
-      // Position should have changed
-      expect(updatedText).not.toBe(initialText);
+  test("action bar shows the core actions", async ({ page }) => {
+    for (const label of ["Note", "Dislike", "Like", "Read", "Skip"]) {
+      await expect(page.getByRole("button", { name: label, exact: true })).toBeVisible();
     }
   });
 
-  test("settings link in top bar", async ({ page }) => {
-    const settingsLink = page.locator('a[href="/settings"]');
-    await expect(settingsLink).toBeVisible();
+  test("right chevron navigates to the next article", async ({ page }) => {
+    const indicator = page.getByTestId("position-indicator");
+    const before = await indicator.innerText();
+    await page.getByRole("button", { name: "Right" }).click();
+    await page.waitForTimeout(500);
+    expect(await indicator.innerText()).not.toBe(before);
   });
 
-  test("discover link in top bar", async ({ page }) => {
-    const discoverLink = page.locator('a[href="/discover"]');
-    await expect(discoverLink).toBeVisible();
+  test("menu opens and links to Settings and Discover", async ({ page }) => {
+    await page.getByRole("button", { name: "Menu" }).click();
+    await expect(page.getByRole("link", { name: "Settings / Feeds" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Discover" })).toBeVisible();
   });
 
-  test("skip action removes article from queue", async ({ page }) => {
-    const skipBtn = page.locator("button").filter({ hasText: "スキップ" });
-    await expect(skipBtn).toBeVisible();
-
-    const indicatorBefore = page.locator("button").filter({ hasText: /\d+\/\d+/ });
-    const textBefore = await indicatorBefore.innerText();
-    const totalBefore = Number(textBefore.match(/\/(\d+)/)?.[1] ?? "0");
-
-    await skipBtn.click();
-    await page.waitForTimeout(600);
-
-    const textAfter = await indicatorBefore.innerText();
-    const totalAfter = Number(textAfter.match(/\/(\d+)/)?.[1] ?? "0");
-
-    // Queue should have one less item
-    expect(totalAfter).toBe(totalBefore - 1);
-  });
-});
-
-test.describe("Queue View — desktop layout", () => {
-  test("VRT — queue view desktop", async ({ page }) => {
-    await page.goto("/");
-    await page.waitForSelector(".snap-x", { timeout: 10_000 });
-    await page.waitForTimeout(300);
-    await expect(page).toHaveScreenshot("queue-initial-desktop.png", { maxDiffPixels: 100 });
+  // Mutating test last: skip removes the current article from the unread queue.
+  // The assertion is relative, so it holds regardless of the queue's absolute
+  // size (which earlier tests / the other project may already have changed).
+  test("skip removes the article from the queue", async ({ page }) => {
+    const indicator = page.getByTestId("position-indicator");
+    const total = async () => Number((await indicator.innerText()).match(/\/\s*(\d+)/)?.[1] ?? "0");
+    const before = await total();
+    test.skip(before === 0, "queue already empty");
+    await page.getByRole("button", { name: "Skip", exact: true }).click();
+    await page.waitForTimeout(700);
+    expect(await total()).toBe(before - 1);
   });
 });

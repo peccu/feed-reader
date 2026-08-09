@@ -15,6 +15,7 @@
       </span>
       <button
         @click="ui.toggleDirection()"
+        data-testid="position-indicator"
         :title="ui.direction === 'forward' ? 'Right-hand mode (tap to switch)' : 'Left-hand mode (tap to switch)'"
         class="flex items-center gap-1.5 text-sm font-mono text-muted-foreground hover:text-foreground transition-colors"
       >
@@ -31,6 +32,7 @@
     <!-- Empty -->
     <div
       v-if="feed.total.value === 0"
+      data-testid="empty-state"
       class="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground px-8 text-center"
     >
       <Inbox :size="48" :stroke-width="1.5" />

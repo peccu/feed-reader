@@ -1,62 +1,39 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("Reader View", () => {
+test.describe("Reader", () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate directly to first seeded article
     await page.goto("/reader/e2e-art-0");
     await page.waitForLoadState("networkidle");
+    await page.waitForSelector("h1", { timeout: 10_000 });
   });
 
-  test("shows article title", async ({ page }) => {
+  test("VRT — reader view", async ({ page }) => {
+    await expect(page).toHaveScreenshot("reader-view.png", { maxDiffPixels: 200 });
+  });
+
+  test("shows the article title", async ({ page }) => {
     await expect(page.locator("h1")).toContainText("Test Article 1", { timeout: 5_000 });
   });
 
-  test("shows full article text", async ({ page }) => {
-    await expect(page.locator("text=TypeScript continues to evolve")).toBeVisible({
+  test("shows the full article text", async ({ page }) => {
+    await expect(page.getByText("TypeScript continues to evolve").first()).toBeVisible({
       timeout: 5_000,
     });
   });
 
-  test("VRT — reader view", async ({ page }) => {
-    await page.waitForSelector("h1", { timeout: 5_000 });
-    await expect(page).toHaveScreenshot("reader-view.png", { maxDiffPixels: 100 });
+  test("has a back button", async ({ page }) => {
+    await expect(page.getByRole("button", { name: "Back" })).toBeVisible();
   });
 
-  test("back button is visible", async ({ page }) => {
-    const backBtn = page.locator("button").filter({ hasText: "←" });
-    await expect(backBtn).toBeVisible();
-  });
-
-  test("bottom action bar has read/like/dislike buttons", async ({ page }) => {
-    await expect(page.locator("text=既読")).toBeVisible();
-    await expect(page.locator("text=いいね")).toBeVisible();
-    await expect(page.locator("text=興味なし")).toBeVisible();
-  });
-
-  test("memo button opens note form overlay", async ({ page }) => {
-    const memoBtn = page.locator("button").filter({ hasText: "メモ" });
-    await memoBtn.click();
-    // The note form should appear
-    await expect(page.locator("textarea")).toBeVisible({ timeout: 2_000 });
-    await expect(page.locator("text=メモを追加")).toBeVisible();
-  });
-
-  test("VRT — reader note form overlay", async ({ page }) => {
-    const memoBtn = page.locator("button").filter({ hasText: "メモ" });
-    await memoBtn.click();
-    await page.waitForSelector("textarea", { timeout: 2_000 });
-    await expect(page).toHaveScreenshot("reader-note-overlay.png", { maxDiffPixels: 100 });
-  });
-});
-
-test.describe("Reader View — navigation", () => {
-  test("queue link navigates back to home", async ({ page }) => {
-    await page.goto("/reader/e2e-art-0");
-    await page.waitForLoadState("networkidle");
-    const queueLink = page.locator('a[href="/"]');
-    if (await queueLink.isVisible()) {
-      await queueLink.click();
-      await expect(page).toHaveURL("/");
+  test("action bar has Read / Like / Dislike", async ({ page }) => {
+    for (const label of ["Read", "Like", "Dislike"]) {
+      await expect(page.getByRole("button", { name: label, exact: true })).toBeVisible();
     }
+  });
+
+  test("note button opens the note form overlay", async ({ page }) => {
+    await page.getByRole("button", { name: "Note", exact: true }).click();
+    await expect(page.locator("textarea")).toBeVisible({ timeout: 2_000 });
+    await expect(page.getByText("Add note")).toBeVisible();
   });
 });

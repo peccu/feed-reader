@@ -1,5 +1,5 @@
 <template>
-  <div class="relative h-full overflow-hidden select-none">
+  <div class="relative h-full overflow-hidden select-none" data-testid="carousel">
     <!-- Index-driven track. In reversed mode the whole strip is mirrored
          (flex-row-reverse) so index 0 sits on the right and advancing moves
          leftward — the next article enters from the left. -->
