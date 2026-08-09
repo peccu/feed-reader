@@ -4,7 +4,7 @@
     style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom))"
   >
     <button
-      v-for="btn in buttons"
+      v-for="btn in orderedButtons"
       :key="btn.type"
       @click="emit('action', btn.type)"
       :disabled="disabled"
@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { Bookmark, Check, SkipForward, StickyNote, ThumbsDown, ThumbsUp } from "lucide-vue-next";
-import type { Component } from "vue";
+import { type Component, computed } from "vue";
 
 type ActionType = "dislike" | "like" | "done" | "skip" | "note" | "favorite";
 
@@ -34,8 +34,14 @@ const props = defineProps<{
   evaluation?: "like" | "dislike" | null;
   /** Whether the visible article is bookmarked, to highlight the save button. */
   favorited?: boolean;
+  /** Mirror the button order to match left-hand (reversed) reading direction. */
+  reversed?: boolean;
 }>();
 const emit = defineEmits<{ action: [type: ActionType] }>();
+
+// Right-hand order (left→right): Note, Dislike, Like, Read, Save, Skip.
+// Left-hand mode mirrors it.
+const orderedButtons = computed(() => (props.reversed ? [...buttons].reverse() : buttons));
 
 function isActive(type: ActionType): boolean {
   if (type === "favorite") return !!props.favorited;
@@ -50,6 +56,14 @@ const buttons: Array<{
   class: string;
   activeClass: string;
 }> = [
+  {
+    type: "note",
+    label: "Note",
+    title: "Add a note about this article",
+    icon: StickyNote,
+    class: "text-muted-foreground hover:text-primary",
+    activeClass: "text-primary",
+  },
   {
     type: "dislike",
     label: "Dislike",
@@ -75,14 +89,6 @@ const buttons: Array<{
     activeClass: "text-green-600",
   },
   {
-    type: "skip",
-    label: "Skip",
-    title: "Skip for now — remove from the unread queue without reading",
-    icon: SkipForward,
-    class: "text-muted-foreground hover:text-foreground",
-    activeClass: "text-foreground",
-  },
-  {
     type: "favorite",
     label: "Save",
     title: "Bookmark — save to Library › Favorites (independent of Like)",
@@ -91,12 +97,12 @@ const buttons: Array<{
     activeClass: "text-amber-500",
   },
   {
-    type: "note",
-    label: "Note",
-    title: "Add a note about this article",
-    icon: StickyNote,
-    class: "text-muted-foreground hover:text-primary",
-    activeClass: "text-primary",
+    type: "skip",
+    label: "Skip",
+    title: "Skip for now — remove from the unread queue without reading",
+    icon: SkipForward,
+    class: "text-muted-foreground hover:text-foreground",
+    activeClass: "text-foreground",
   },
 ];
 </script>

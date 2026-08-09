@@ -69,6 +69,7 @@
       :disabled="queue.loading || !queue.currentItem"
       :evaluation="currentEvaluation"
       :favorited="queue.currentItem?.favorited ?? false"
+      :reversed="queue.direction === 'backward'"
       @action="handleAction"
     />
 
