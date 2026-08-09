@@ -121,7 +121,16 @@ import type {
   NoteResponse,
   QueueItemResponse,
 } from "@feed-reader/types";
-import { Compass, Gauge, Library, Menu, NotebookText, Settings, Target } from "lucide-vue-next";
+import {
+  Compass,
+  Gauge,
+  Library,
+  Menu,
+  NotebookText,
+  Settings,
+  Tags,
+  Target,
+} from "lucide-vue-next";
 import { type Component, computed, onMounted, ref, watch } from "vue";
 import { api } from "../api/client.ts";
 import ActionBar from "../components/ActionBar.vue";
@@ -136,6 +145,7 @@ const menuLinks: Array<{ to: string; label: string; icon: Component }> = [
   { to: "/train", label: "Train", icon: Target },
   { to: "/library", label: "Library", icon: Library },
   { to: "/notes", label: "Notes", icon: NotebookText },
+  { to: "/categories", label: "Categories", icon: Tags },
   { to: "/settings", label: "Settings / Feeds", icon: Settings },
   { to: "/admin", label: "Admin / Status", icon: Gauge },
 ];

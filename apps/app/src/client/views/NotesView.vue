@@ -13,7 +13,7 @@
       <RouterLink
         v-for="note in notes"
         :key="note.id"
-        :to="`/reader/${note.articleId}`"
+        :to="`/notes/${note.id}`"
         class="block p-3 rounded-lg border border-border bg-card hover:bg-accent transition-colors"
       >
         <p class="text-sm text-foreground whitespace-pre-wrap line-clamp-3">{{ note.content }}</p>
@@ -22,7 +22,6 @@
           <span class="px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">
             {{ note.noteType === 'claude_conversation' ? 'claude' : note.noteType }}
           </span>
-          <span class="ml-auto truncate max-w-[160px]">→ article</span>
         </div>
       </RouterLink>
       <p v-if="notes.length === 0" class="text-sm text-muted-foreground text-center py-8">
