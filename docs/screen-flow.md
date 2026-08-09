@@ -1,68 +1,72 @@
 # 画面一覧と画面遷移
 
-自動生成ではなく手動メンテのドキュメント。ルーターは `apps/app/src/client/router/index.ts`。
+手動メンテのドキュメント。ルーターは `apps/app/src/client/router/index.ts`。
+
+## アーキテクチャの要点（統合後）
+
+- **記事表示は 1 コンポーネントに統合**: `ArticleFeed.vue`（カルーセル＋文脈依存アクションバー＋ノート入力）。
+  ロジックは `composables/useArticleFeed.ts`、表示は `ArticleCard.vue`＋`ArticleCarousel.vue`。
+- **「リスト」を中心概念**に: `unread` / `read` / `favorites` / `skipped` / `training` / `single`。
+  どのリストも同じ `ArticleFeed` でカルーセル表示する。
+- アクションバーは文脈依存（既読リストでは Read→**Unread**、お気に入りは ★ トグル、Skip は未読キューのみ）。
 
 ## 画面一覧
 
-| ルート | ビュー | 役割 | 主な流入元 |
+| ルート | ビュー | 役割 | 記事表示 |
 |---|---|---|---|
-| `/` | QueueView | 未読キュー（横スクロールカルーセル）。**カード自体がリーダー**で本文HTML＋アイキャッチを表示。下部アクションバー＋フローティングメニュー | アプリ起点／各画面の「戻る」 |
-| `/reader/:id` | ReaderView | 全画面リーダー（再読・深掘り用）。本文HTML＋アイキャッチ | Library / Notes / Discover / Train |
-| `/discover` | DiscoverView | ベクトル＋全文ハイブリッド検索 | メニュー |
-| `/library` | LibraryView | 既読・お気に入り・スキップ等をタブ絞り込みで一覧、再読 | メニュー / Admin |
-| `/train` | TrainingView | スコアが際どい記事を Like/Dislike で評価（既読化しない） | メニュー |
-| `/admin` | AdminView | DB件数・キュー/ジョブ状態・サービスヘルス・読み取り専用SQL | メニュー |
-| `/notes` | NotesView | 保存済みノート一覧 | メニュー |
-| `/notes/:id` | NoteDetailView | ノート詳細（種別・日時＋元記事へのリンク） | Notes |
-| `/categories` | CategoryView | カテゴリ管理（作成/編集/削除） | メニュー |
-| `/settings` | SettingsView | フィード追加/一覧、URL投入、嗜好プロファイル、取込状況 | メニュー / 空キュー時 |
-
-**記事本文を表示する画面は2つ**: `QueueView` のカルーセルカード（キュー内リーダー）と `ReaderView`（全画面リーダー）。`NoteDetailView` はノート本文であって記事本文ではない。
+| `/` | QueueView | 未読キュー（=リストの一つ）を `ArticleFeed` で表示。下部フローティングメニューが起点 | ArticleFeed（unread） |
+| `/feed/:key` | FeedView | 任意リストのカルーセル（`unread`/`read`/`favorites`/`skipped`/`training`/`all`）。`?start=<記事ID>` で開始位置指定 | ArticleFeed |
+| `/reader/:id` | ReaderView | 単一記事（Notes/Discover から）。1件だけの `ArticleFeed` に委譲 | ArticleFeed（single） |
+| `/library` | LibraryView | ライブラリ＝ハブ。タブ（Unread/Train/Read/Favorites/Skipped/All）でサムネ一覧、タップで該当カルーセルへ | 一覧 |
+| `/discover` | DiscoverView | ベクトル＋全文ハイブリッド検索 | 一覧→Reader |
+| `/notes` | NotesView | ノート一覧 | — |
+| `/notes/:id` | NoteDetailView | ノート詳細＋元記事リンク | — |
+| `/categories` | CategoryView | カテゴリ管理（作成/編集/削除） | — |
+| `/settings` | SettingsView | フィード追加/一覧、URL投入、嗜好プロファイル、取込状況 | — |
+| `/admin` | AdminView | DB件数・キュー/ジョブ状態・サービスヘルス・読み取り専用SQL | — |
 
 ## 画面遷移図
 
 ```mermaid
 graph TD
-  Q["/#nbsp;QueueView<br/>未読カルーセル=リーダー"]
-  R["/reader/:id<br/>ReaderView"]
+  Q["/#nbsp;QueueView<br/>未読(ArticleFeed)"]
+  F["/feed/:key<br/>FeedView(ArticleFeed)"]
+  R["/reader/:id<br/>ReaderView(ArticleFeed)"]
+  L["/library<br/>ハブ(タブ一覧)"]
   D["/discover<br/>Discover"]
-  L["/library<br/>Library"]
-  T["/train<br/>Training"]
-  A["/admin<br/>Admin"]
   N["/notes<br/>Notes"]
   ND["/notes/:id<br/>NoteDetail"]
   C["/categories<br/>Categories"]
   S["/settings<br/>Settings"]
+  A["/admin<br/>Admin"]
 
   Q -->|メニュー| D
-  Q -->|メニュー| T
+  Q -->|メニュー: Train| F
   Q -->|メニュー| L
   Q -->|メニュー| N
-  Q -->|メニュー| S
   Q -->|メニュー| C
+  Q -->|メニュー| S
   Q -->|メニュー| A
-  Q -->|空キュー時| S
 
+  L -->|タブ→記事タップ| F
+  A -->|記事とスコア| L
   D -->|検索結果| R
-  L -->|記事を開く| R
-  T -->|全文を開く| R
   N -->|ノートを開く| ND
   ND -->|元記事を開く| R
-  A -->|記事とスコア| L
 
-  R -->|戻る/Queue| Q
+  F -->|戻る| Q
+  R -->|戻る| Q
   D -->|戻る| Q
   L -->|戻る| Q
-  T -->|戻る| Q
-  A -->|戻る| Q
   N -->|戻る| Q
   S -->|戻る| Q
   C -->|戻る| Q
+  A -->|戻る| Q
   ND -->|戻る| N
 ```
 
 ## 補足
 
-- ほとんどの画面は左上「←」で `router.back()` も行うため、実際の戻り先は遷移元に依存する（図では代表的に `/` へ集約）。
-- `QueueView` はカードがリーダーになったため、**キューから `/reader/:id` への遷移は無い**（「Full text」遷移は廃止済み）。
-- Notes → NoteDetail → 元記事(Reader) の順で辿れる。Categories は下部メニューから到達できる（孤立を解消済み）。
+- `ArticleFeed` は表示中リストのキー（`listKey`）で「その記事がまだこのリストに属するか」を判定し、状態変更（既読/スキップ/お気に入り解除）でリストから外れた項目を自動的に取り除く。
+- 読み方向トグル（右手/左手）で、カルーセルの並び・端タップ・スワイプ・アクションバーの並びが左右反転する。
+- `/reader/:id` はルート契約維持のため残置（Notes/Discover から利用）。将来 `/feed/single` 系へ寄せる余地あり。

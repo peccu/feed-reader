@@ -83,37 +83,41 @@ import { ArrowLeft, Bookmark, ThumbsDown, ThumbsUp, Undo2 } from "lucide-vue-nex
 import { onMounted, ref } from "vue";
 import { api } from "../api/client.ts";
 
-type TabKey = "read" | "favorites" | "skipped" | "all";
+type TabKey = "unread" | "training" | "read" | "favorites" | "skipped" | "all";
 const tabs: Array<{ key: TabKey; label: string }> = [
+  { key: "unread", label: "Unread" },
+  { key: "training", label: "Train" },
   { key: "read", label: "Read" },
   { key: "favorites", label: "Favorites" },
   { key: "skipped", label: "Skipped" },
   { key: "all", label: "All" },
 ];
 
-const active = ref<TabKey>("read");
+const active = ref<TabKey>("unread");
 const items = ref<QueueListItemResponse[]>([]);
 const loading = ref(false);
 
-function queryFor(tab: TabKey): string {
+function endpointFor(tab: TabKey): string {
   switch (tab) {
+    case "training":
+      return "/queue/training";
+    case "unread":
+      return "/queue/list?status=unread&sort=relevance";
     case "read":
-      return "?status=read";
+      return "/queue/list?status=read";
     case "skipped":
-      return "?status=skipped";
+      return "/queue/list?status=skipped";
     case "favorites":
-      return "?favorited=1";
+      return "/queue/list?favorited=1";
     default:
-      return "";
+      return "/queue/list";
   }
 }
 
 async function load() {
   loading.value = true;
   try {
-    const res = await api.get<{ items: QueueListItemResponse[] }>(
-      `/queue/list${queryFor(active.value)}`,
-    );
+    const res = await api.get<{ items: QueueListItemResponse[] }>(endpointFor(active.value));
     items.value = res.items;
   } finally {
     loading.value = false;
