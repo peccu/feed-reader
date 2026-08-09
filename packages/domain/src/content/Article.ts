@@ -8,6 +8,10 @@ export interface Article {
   readonly title: string;
   readonly author: string | null;
   readonly fullText: string | null;
+  /** Sanitizable HTML body from the source (RSS content / scraped article). */
+  readonly html: string | null;
+  /** Lead/eyecatch image URL, if the source provided one. */
+  readonly leadImageUrl: string | null;
   readonly summary: string | null;
   readonly publishedAt: Date | null;
   readonly scrapedAt: Date | null;
@@ -24,6 +28,8 @@ export interface CreateArticleInput {
   title: string;
   author?: string;
   fullText?: string;
+  html?: string;
+  leadImageUrl?: string;
   publishedAt?: Date;
   sourceType: SourceType;
 }
@@ -41,6 +47,8 @@ export function createArticle(input: CreateArticleInput): Article {
     title: input.title,
     author: input.author ?? null,
     fullText: input.fullText ?? null,
+    html: input.html ?? null,
+    leadImageUrl: input.leadImageUrl ?? null,
     summary: null,
     publishedAt: input.publishedAt ?? null,
     scrapedAt: input.fullText ? now : null,

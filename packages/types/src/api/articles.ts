@@ -31,6 +31,8 @@ export interface ArticleResponse {
 
 export interface ArticleDetailResponse extends ArticleResponse {
   fullText: string | null;
+  html: string | null;
+  leadImageUrl: string | null;
 }
 
 export interface SimilarArticleResponse {

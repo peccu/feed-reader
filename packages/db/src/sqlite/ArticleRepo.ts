@@ -11,6 +11,8 @@ type ArticleRow = {
   title: string;
   author: string | null;
   full_text: string | null;
+  html: string | null;
+  lead_image_url: string | null;
   summary: string | null;
   published_at: number | null;
   scraped_at: number | null;
@@ -28,6 +30,8 @@ function toArticle(r: ArticleRow): Article {
     title: r.title,
     author: r.author,
     fullText: r.full_text,
+    html: r.html,
+    leadImageUrl: r.lead_image_url,
     summary: r.summary,
     publishedAt: r.published_at !== null ? new Date(r.published_at) : null,
     scrapedAt: r.scraped_at !== null ? new Date(r.scraped_at) : null,
@@ -78,12 +82,13 @@ export class ArticleRepo implements ArticleRepository {
   async save(article: Article): Promise<void> {
     this.db.run(
       `INSERT INTO articles
-         (id, feed_id, url, title, author, full_text, summary, published_at, scraped_at,
-          source_type, word_count, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         (id, feed_id, url, title, author, full_text, html, lead_image_url, summary,
+          published_at, scraped_at, source_type, word_count, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          feed_id = excluded.feed_id, title = excluded.title, author = excluded.author,
-         full_text = excluded.full_text, summary = excluded.summary,
+         full_text = excluded.full_text, html = excluded.html,
+         lead_image_url = excluded.lead_image_url, summary = excluded.summary,
          published_at = excluded.published_at, scraped_at = excluded.scraped_at,
          word_count = excluded.word_count, updated_at = excluded.updated_at`,
       [
@@ -93,6 +98,8 @@ export class ArticleRepo implements ArticleRepository {
         article.title,
         article.author,
         article.fullText,
+        article.html,
+        article.leadImageUrl,
         article.summary,
         article.publishedAt?.getTime() ?? null,
         article.scrapedAt?.getTime() ?? null,

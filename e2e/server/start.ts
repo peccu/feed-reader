@@ -65,6 +65,10 @@ const articles = [
       "TypeScript continues to evolve with better type inference and faster compilation. This article explores the latest features in TypeScript 5.0 including decorators, const type parameters, and performance improvements that make large codebases more manageable. The TypeScript team has been hard at work improving both the language semantics and the developer experience.".repeat(
         3,
       ),
+    // Deterministic inline eyecatch (no external fetch → stable screenshots).
+    leadImageUrl: `data:image/svg+xml;utf8,${encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400"><rect width="800" height="400" fill="#3178c6"/><text x="400" y="210" font-family="sans-serif" font-size="48" fill="#fff" text-anchor="middle">TypeScript 5.0</text></svg>',
+    )}`,
     score: 0.95,
   },
   {
@@ -109,14 +113,31 @@ const articles = [
   },
 ];
 
-for (const { id, title, url, fullText, score } of articles) {
+/** Build simple formatted HTML from the plain seed text (headings + paragraphs). */
+function toHtml(text: string): string {
+  const paras = text
+    .split(". ")
+    .reduce<string[]>((acc, s, i) => {
+      const idx = Math.floor(i / 2);
+      acc[idx] = acc[idx] ? `${acc[idx]}. ${s}` : s;
+      return acc;
+    }, [])
+    .map((p) => `<p>${p}.</p>`)
+    .join("");
+  return `<h2>Overview</h2>${paras}<blockquote>Key takeaways for engineers.</blockquote>`;
+}
+
+for (const { id, title, url, fullText, score, ...rest } of articles) {
+  const leadImageUrl = (rest as { leadImageUrl?: string }).leadImageUrl;
   const article = createArticle({
     id,
     feedId: FeedId("e2e-feed-1"),
     url,
     title,
     fullText,
+    html: toHtml(fullText),
     sourceType: "rss",
+    ...(leadImageUrl ? { leadImageUrl } : {}),
     publishedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
   });
   await articleRepo.save(article);

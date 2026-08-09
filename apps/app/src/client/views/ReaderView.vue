@@ -17,37 +17,56 @@
     </div>
 
     <!-- Content -->
-    <div class="flex-1 overflow-y-auto px-4 py-4">
+    <div class="flex-1 overflow-y-auto">
       <div v-if="article">
-        <!-- Meta -->
-        <div class="flex flex-wrap items-center gap-2 mb-4 text-xs text-muted-foreground">
-          <span v-if="article.author" class="font-medium">{{ article.author }}</span>
-          <span v-if="article.publishedAt">{{ formattedDate }}</span>
-          <span v-if="article.wordCount">{{ article.wordCount.toLocaleString() }} words</span>
-        </div>
+        <!-- Lead / eyecatch image (full-bleed) -->
+        <img
+          v-if="article.leadImageUrl"
+          :src="article.leadImageUrl"
+          alt=""
+          class="w-full max-h-80 object-cover bg-secondary"
+          loading="lazy"
+          @error="onImageError"
+        />
 
-        <!-- Title -->
-        <h1 class="text-2xl font-bold leading-tight mb-4 text-foreground">{{ article.title }}</h1>
+        <div class="px-4 py-4">
+          <!-- Meta -->
+          <div class="flex flex-wrap items-center gap-2 mb-4 text-xs text-muted-foreground">
+            <span v-if="article.author" class="font-medium">{{ article.author }}</span>
+            <span v-if="article.publishedAt">{{ formattedDate }}</span>
+            <span v-if="article.wordCount">{{ article.wordCount.toLocaleString() }} words</span>
+          </div>
 
-        <!-- Summary -->
-        <blockquote v-if="article.summary" class="border-l-2 border-primary pl-4 mb-6 text-sm text-muted-foreground italic">
-          {{ article.summary }}
-        </blockquote>
+          <!-- Title -->
+          <h1 class="text-2xl font-bold leading-tight mb-4 text-foreground">{{ article.title }}</h1>
 
-        <!-- Full text -->
-        <div
-          v-if="article.fullText"
-          class="prose prose-sm max-w-none text-foreground leading-relaxed whitespace-pre-wrap text-sm"
-        >{{ article.fullText }}</div>
+          <!-- Summary -->
+          <blockquote v-if="article.summary" class="border-l-2 border-primary pl-4 mb-6 text-sm text-muted-foreground italic">
+            {{ article.summary }}
+          </blockquote>
 
-        <div v-else class="text-center py-8 text-muted-foreground">
-          <a :href="article.url" target="_blank" rel="noopener" class="text-primary underline underline-offset-4">
-            Open original article ↗
-          </a>
+          <!-- Rich HTML body -->
+          <div
+            v-if="article.html"
+            class="article-html text-sm leading-relaxed text-foreground"
+            v-html="renderedHtml"
+          />
+
+          <!-- Plain-text fallback -->
+          <div
+            v-else-if="article.fullText"
+            class="text-sm leading-relaxed text-foreground whitespace-pre-wrap"
+          >{{ article.fullText }}</div>
+
+          <div v-else class="text-center py-8 text-muted-foreground">
+            <a :href="article.url" target="_blank" rel="noopener" class="text-primary underline underline-offset-4">
+              Open original article ↗
+            </a>
+          </div>
         </div>
       </div>
       <div v-else class="flex items-center justify-center h-full text-muted-foreground text-sm">
-        Loading...
+        Loading…
       </div>
     </div>
 
@@ -60,40 +79,40 @@
         @click="sendFeedback('dislike')"
         class="flex flex-col items-center gap-1 text-muted-foreground hover:text-destructive transition-colors px-3 py-1 rounded-lg"
       >
-        <span class="text-xl">👎</span>
-        <span class="text-xs">Not interested</span>
+        <ThumbsDown :size="22" />
+        <span class="text-[11px]">Not interested</span>
       </button>
 
       <button
         @click="markRead()"
         class="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground px-3 py-1 rounded-lg"
       >
-        <span class="text-xl">✓</span>
-        <span class="text-xs">Read</span>
+        <Check :size="22" />
+        <span class="text-[11px]">Read</span>
       </button>
 
       <button
         @click="showNoteForm = !showNoteForm"
-        class="flex flex-col items-center gap-1 bg-primary text-primary-foreground px-4 py-1 rounded-lg"
+        class="flex flex-col items-center gap-1 text-primary px-3 py-1 rounded-lg"
       >
-        <span class="text-xl">📝</span>
-        <span class="text-xs font-medium">Note</span>
+        <StickyNote :size="22" />
+        <span class="text-[11px] font-medium">Note</span>
       </button>
 
       <button
         @click="sendFeedback('like')"
         class="flex flex-col items-center gap-1 text-muted-foreground hover:text-yellow-500 transition-colors px-3 py-1 rounded-lg"
       >
-        <span class="text-xl">👍</span>
-        <span class="text-xs">Like</span>
+        <ThumbsUp :size="22" />
+        <span class="text-[11px]">Like</span>
       </button>
 
       <RouterLink
         to="/"
         class="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground transition-colors px-3 py-1 rounded-lg"
       >
-        <span class="text-xl">≡</span>
-        <span class="text-xs">Queue</span>
+        <LayoutList :size="22" />
+        <span class="text-[11px]">Queue</span>
       </RouterLink>
     </div>
 
@@ -120,9 +139,11 @@
 
 <script setup lang="ts">
 import type { ArticleDetailResponse, CreateNoteRequest, NoteResponse } from "@feed-reader/types";
+import { Check, LayoutList, StickyNote, ThumbsDown, ThumbsUp } from "lucide-vue-next";
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "../api/client.ts";
+import { sanitizeHtml } from "../lib/sanitize.ts";
 import { useFeedbackStore } from "../stores/feedback.ts";
 import { useQueueStore } from "../stores/queue.ts";
 
@@ -135,6 +156,12 @@ const articleId = computed(() => route.params.id as string);
 const article = ref<ArticleDetailResponse | null>(null);
 const showNoteForm = ref(route.query.note === "1");
 const noteContent = ref("");
+
+const renderedHtml = computed(() => (article.value?.html ? sanitizeHtml(article.value.html) : ""));
+
+function onImageError(e: Event) {
+  (e.target as HTMLImageElement).style.display = "none";
+}
 
 const formattedDate = computed(() => {
   const date = article.value?.publishedAt;

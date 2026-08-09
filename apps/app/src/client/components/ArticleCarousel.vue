@@ -1,51 +1,42 @@
 <template>
   <div class="relative h-full overflow-hidden select-none">
-    <!-- Scroll container -->
+    <!-- Index-driven track: translateX by whole viewports for deterministic nav -->
     <div
-      ref="scrollEl"
-      class="flex h-full overflow-x-scroll snap-x snap-mandatory scroll-smooth"
-      style="scrollbar-width: none; -ms-overflow-style: none"
-      @scroll.passive="onScroll"
-      @touchstart.passive="onTouchStart"
-      @touchend.passive="onTouchEnd"
-      @mousedown="onMouseDown"
-      @mouseup="onMouseUp"
+      class="flex h-full will-change-transform touch-pan-y"
+      :class="{ 'transition-transform duration-300 ease-out': !dragging }"
+      :style="{ transform: `translateX(calc(${-currentIndex * 100}% + ${dragDx}px))` }"
+      @pointerdown="onPointerDown"
+      @pointermove="onPointerMove"
+      @pointerup="onPointerUp"
+      @pointercancel="onPointerUp"
     >
       <slot />
     </div>
 
     <!-- Left tap area -->
-    <div
-      class="absolute left-0 top-0 h-full w-16 z-10 cursor-pointer"
-      :class="{ 'opacity-0': !canGoBack }"
+    <button
+      v-if="canGoBack"
+      class="absolute left-0 top-0 h-full w-14 z-10 flex items-center justify-start pl-1 text-foreground/25 hover:text-foreground/50 bg-transparent"
+      aria-label="Previous"
       @click="emit('navigate', -1)"
     >
-      <div
-        class="absolute left-2 top-1/2 -translate-y-1/2 text-foreground/30 text-2xl"
-        v-if="canGoBack"
-      >
-        ‹
-      </div>
-    </div>
+      <span class="text-3xl leading-none">‹</span>
+    </button>
 
     <!-- Right tap area -->
-    <div
-      class="absolute right-0 top-0 h-full w-16 z-10 cursor-pointer"
-      :class="{ 'opacity-0': !canGoForward }"
+    <button
+      v-if="canGoForward"
+      class="absolute right-0 top-0 h-full w-14 z-10 flex items-center justify-end pr-1 text-foreground/25 hover:text-foreground/50 bg-transparent"
+      aria-label="Next"
       @click="emit('navigate', 1)"
     >
-      <div
-        class="absolute right-2 top-1/2 -translate-y-1/2 text-foreground/30 text-2xl"
-        v-if="canGoForward"
-      >
-        ›
-      </div>
-    </div>
+      <span class="text-3xl leading-none">›</span>
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, ref } from "vue";
 
 const props = defineProps<{
   currentIndex: number;
@@ -54,65 +45,53 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   navigate: [delta: number];
-  indexChange: [index: number];
 }>();
-
-const scrollEl = ref<HTMLElement | null>(null);
 
 const canGoBack = computed(() => props.currentIndex > 0);
 const canGoForward = computed(() => props.currentIndex < props.total - 1);
 
-// Sync scroll position when currentIndex changes externally
-watch(
-  () => props.currentIndex,
-  (idx) => {
-    nextTick(() => {
-      const el = scrollEl.value;
-      if (!el) return;
-      el.scrollTo({ left: idx * el.clientWidth, behavior: "smooth" });
-    });
-  },
-);
+// --- Horizontal swipe (pointer-based, threshold-driven) ---
+const SWIPE_THRESHOLD = 60; // px to commit a page turn
+const dragging = ref(false);
+const dragDx = ref(0);
+let startX = 0;
+let startY = 0;
+let horizontal = false;
+let decided = false;
 
-// Update store index when user scrolls manually
-function onScroll() {
-  const el = scrollEl.value;
-  if (!el) return;
-  const idx = Math.round(el.scrollLeft / el.clientWidth);
-  if (idx !== props.currentIndex) {
-    emit("indexChange", idx);
+function onPointerDown(e: PointerEvent) {
+  if (e.pointerType === "mouse" && e.button !== 0) return;
+  startX = e.clientX;
+  startY = e.clientY;
+  dragging.value = true;
+  horizontal = false;
+  decided = false;
+}
+
+function onPointerMove(e: PointerEvent) {
+  if (!dragging.value) return;
+  const dx = e.clientX - startX;
+  const dy = e.clientY - startY;
+  // Decide gesture axis once past a small deadzone; let vertical scroll pass through.
+  if (!decided && Math.abs(dx) + Math.abs(dy) > 8) {
+    decided = true;
+    horizontal = Math.abs(dx) > Math.abs(dy);
+  }
+  if (horizontal) {
+    e.preventDefault();
+    // Resist swiping past the ends.
+    const atEnd = (dx < 0 && !canGoForward.value) || (dx > 0 && !canGoBack.value);
+    dragDx.value = atEnd ? dx * 0.25 : dx;
   }
 }
 
-// Touch / mouse swipe detection
-let touchStartX = 0;
-const SWIPE_THRESHOLD = 50;
-
-function onTouchStart(e: TouchEvent) {
-  touchStartX = e.touches[0]?.clientX ?? 0;
-}
-
-function onTouchEnd(e: TouchEvent) {
-  const dx = (e.changedTouches[0]?.clientX ?? 0) - touchStartX;
-  if (Math.abs(dx) > SWIPE_THRESHOLD) {
-    emit("navigate", dx < 0 ? 1 : -1);
-  }
-}
-
-let mouseStartX = 0;
-function onMouseDown(e: MouseEvent) {
-  mouseStartX = e.clientX;
-}
-function onMouseUp(e: MouseEvent) {
-  const dx = e.clientX - mouseStartX;
-  if (Math.abs(dx) > SWIPE_THRESHOLD) {
+function onPointerUp() {
+  if (!dragging.value) return;
+  const dx = dragDx.value;
+  dragging.value = false;
+  dragDx.value = 0;
+  if (horizontal && Math.abs(dx) > SWIPE_THRESHOLD) {
     emit("navigate", dx < 0 ? 1 : -1);
   }
 }
 </script>
-
-<style scoped>
-div::-webkit-scrollbar {
-  display: none;
-}
-</style>

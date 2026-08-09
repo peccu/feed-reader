@@ -70,6 +70,93 @@
   }
 }
 
+/* Readable styling for sanitized article HTML rendered via v-html
+   (global because v-html content is not affected by scoped component styles). */
+.article-html p {
+  margin: 0 0 0.85rem;
+}
+.article-html h1,
+.article-html h2,
+.article-html h3,
+.article-html h4 {
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 1.25rem 0 0.6rem;
+}
+.article-html h2 {
+  font-size: 1.15rem;
+}
+.article-html h3 {
+  font-size: 1.05rem;
+}
+.article-html a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+.article-html img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 0.75rem 0;
+}
+.article-html ul,
+.article-html ol {
+  margin: 0 0 0.85rem;
+  padding-left: 1.4rem;
+}
+.article-html ul {
+  list-style: disc;
+}
+.article-html ol {
+  list-style: decimal;
+}
+.article-html li {
+  margin: 0.2rem 0;
+}
+.article-html blockquote {
+  border-left: 3px solid hsl(var(--border));
+  padding-left: 0.9rem;
+  margin: 0 0 0.85rem;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+.article-html pre {
+  background: hsl(var(--secondary));
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-size: 0.8rem;
+  margin: 0 0 0.85rem;
+}
+.article-html code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+.article-html :not(pre) > code {
+  background: hsl(var(--secondary));
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+}
+.article-html hr {
+  border: 0;
+  border-top: 1px solid hsl(var(--border));
+  margin: 1.2rem 0;
+}
+.article-html table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 0.85rem;
+  font-size: 0.8rem;
+}
+.article-html th,
+.article-html td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.4rem;
+  text-align: left;
+}
+
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));

@@ -41,23 +41,25 @@ export async function ingestUrl(
   const articleId = ArticleId(crypto.randomUUID());
 
   let title = options.overrideTitle ?? url;
-  let fullText: string | undefined;
+  let html: string | undefined;
   let author: string | undefined;
   let publishedAt: Date | undefined;
+  let leadImageUrl: string | undefined;
 
-  // 2. Scrape with @postlight/parser
+  // 2. Scrape with @postlight/parser (HTML content, so we keep formatting)
   try {
-    const parsed = await Parser.parse(url, { contentType: "text" });
-    if (parsed.title) title = parsed.title;
-    if (parsed.author) author = parsed.author;
-    if (parsed.date_published) publishedAt = new Date(parsed.date_published);
-    if (parsed.content) fullText = parsed.content;
+    const scraped = await Parser.parse(url, { contentType: "html" });
+    if (scraped.title) title = scraped.title;
+    if (scraped.author) author = scraped.author;
+    if (scraped.date_published) publishedAt = new Date(scraped.date_published);
+    if (scraped.content) html = scraped.content;
+    if (scraped.lead_image_url) leadImageUrl = scraped.lead_image_url;
   } catch (err) {
     console.warn(`[ingester] scrape failed for ${url}:`, err);
   }
 
-  // 3. Parse HTML → clean text + links
-  const parsed = fullText ? parseHtml(fullText) : null;
+  // 3. Parse HTML → clean text + links (used for embedding, word count)
+  const parsed = html ? parseHtml(html) : null;
   const cleanText = parsed?.text ?? title;
 
   // 4. Optional Claude enrichment (keywords/categories)
@@ -82,6 +84,8 @@ export async function ingestUrl(
     ...(options.feedId ? { feedId: options.feedId } : {}),
     ...(author != null ? { author } : {}),
     ...(parsed?.text != null ? { fullText: parsed.text } : {}),
+    ...(html != null ? { html } : {}),
+    ...(leadImageUrl != null ? { leadImageUrl } : {}),
     ...(publishedAt != null ? { publishedAt } : {}),
   });
   await articleRepo.save(article);

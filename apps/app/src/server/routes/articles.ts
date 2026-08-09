@@ -30,9 +30,14 @@ function toResponse(a: Awaited<ReturnType<typeof articleRepo.findById>>): Articl
 }
 
 function toDetailResponse(
-  a: Awaited<ReturnType<typeof articleRepo.findById>>,
+  a: NonNullable<Awaited<ReturnType<typeof articleRepo.findById>>>,
 ): ArticleDetailResponse {
-  return { ...toResponse(a), fullText: (a as { fullText: string | null }).fullText ?? null };
+  return {
+    ...toResponse(a),
+    fullText: a.fullText ?? null,
+    html: a.html ?? null,
+    leadImageUrl: a.leadImageUrl ?? null,
+  };
 }
 
 const router = new Hono();
@@ -85,6 +90,7 @@ router.post("/ingest/html", async (c) => {
     url: body.url,
     title: body.title ?? body.url,
     fullText: body.html,
+    html: body.html,
     sourceType: "html_post",
   });
   await articleRepo.save(article);

@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS articles (
   title TEXT NOT NULL,
   author TEXT,
   full_text TEXT,
+  html TEXT,
+  lead_image_url TEXT,
   summary TEXT,
   published_at INTEGER,
   scraped_at INTEGER,
@@ -142,7 +144,20 @@ CREATE VIRTUAL TABLE IF NOT EXISTS article_embeddings USING vec0(
 export function createDatabase(path = ":memory:"): Database {
   const db = new Database(path, { create: true });
   db.exec(SCHEMA);
+  migrate(db);
   return db;
+}
+
+/** Idempotent column additions for DBs created before a column existed. */
+function migrate(db: Database): void {
+  const cols = db
+    .query<{ name: string }, []>("PRAGMA table_info(articles)")
+    .all()
+    .map((r) => r.name);
+  if (!cols.includes("html")) db.run("ALTER TABLE articles ADD COLUMN html TEXT");
+  if (!cols.includes("lead_image_url")) {
+    db.run("ALTER TABLE articles ADD COLUMN lead_image_url TEXT");
+  }
 }
 
 /**

@@ -54,7 +54,6 @@
       :current-index="queue.currentIndex"
       :total="queue.total"
       @navigate="handleNavigate"
-      @index-change="queue.goTo($event)"
     >
       <ArticleCard
         v-for="(item, i) in visibleItems"
@@ -70,22 +69,52 @@
       :disabled="queue.loading || !queue.currentItem"
       @action="handleAction"
     />
+
+    <!-- Note overlay (card stays the reader; no navigation) -->
+    <div
+      v-if="showNoteForm"
+      class="absolute inset-0 bg-background/95 flex flex-col z-50"
+      style="padding-top: env(safe-area-inset-top)"
+    >
+      <div class="flex items-center gap-2 px-4 py-3 border-b border-border">
+        <button @click="showNoteForm = false" class="text-muted-foreground hover:text-foreground">✕</button>
+        <span class="flex-1 text-center font-medium text-sm">Add note</span>
+        <button
+          @click="saveNote()"
+          :disabled="savingNote || !noteContent.trim()"
+          class="text-primary text-sm font-medium disabled:opacity-40"
+        >{{ savingNote ? '…' : 'Save' }}</button>
+      </div>
+      <textarea
+        v-model="noteContent"
+        class="flex-1 p-4 resize-none bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
+        placeholder="Write a note about this article..."
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { ArticleDetailResponse, QueueItemResponse } from "@feed-reader/types";
-import { computed, onMounted, watch } from "vue";
-import { useRouter } from "vue-router";
+import type {
+  ArticleDetailResponse,
+  CreateNoteRequest,
+  NoteResponse,
+  QueueItemResponse,
+} from "@feed-reader/types";
+import { computed, onMounted, ref, watch } from "vue";
+import { api } from "../api/client.ts";
 import ActionBar from "../components/ActionBar.vue";
 import ArticleCard from "../components/ArticleCard.vue";
 import ArticleCarousel from "../components/ArticleCarousel.vue";
 import { useFeedbackStore } from "../stores/feedback.ts";
 import { useQueueStore } from "../stores/queue.ts";
 
-const router = useRouter();
 const queue = useQueueStore();
 const feedback = useFeedbackStore();
+
+const showNoteForm = ref(false);
+const noteContent = ref("");
+const savingNote = ref(false);
 
 // Prefetch current + adjacent articles
 const prefetchRange = 1;
@@ -133,7 +162,7 @@ function handleNavigate(delta: number) {
   queue.navigate(actual);
 }
 
-async function handleAction(type: "skip" | "like" | "dislike" | "read" | "note") {
+async function handleAction(type: "skip" | "like" | "dislike" | "note") {
   const item = queue.currentItem;
   if (!item) return;
 
@@ -152,14 +181,28 @@ async function handleAction(type: "skip" | "like" | "dislike" | "read" | "note")
       await queue.updateStatus(item.id, "read");
       break;
 
-    case "read":
-      await queue.updateStatus(item.id, "reading");
-      router.push(`/reader/${item.articleId}`);
-      break;
-
     case "note":
-      router.push(`/reader/${item.articleId}?note=1`);
+      noteContent.value = "";
+      showNoteForm.value = true;
       break;
+  }
+}
+
+async function saveNote() {
+  const item = queue.currentItem;
+  if (!item || !noteContent.value.trim() || savingNote.value) return;
+  savingNote.value = true;
+  try {
+    const req: CreateNoteRequest = {
+      articleId: item.articleId,
+      content: noteContent.value.trim(),
+      noteType: "manual",
+    };
+    await api.post<NoteResponse>("/notes", req);
+    showNoteForm.value = false;
+    noteContent.value = "";
+  } finally {
+    savingNote.value = false;
   }
 }
 </script>
