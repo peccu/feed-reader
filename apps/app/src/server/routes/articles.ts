@@ -79,15 +79,21 @@ router.post("/ingest/url", async (c) => {
 router.post("/ingest/html", async (c) => {
   const body = await c.req.json<IngestHtmlRequest>();
   if (!body.url || !body.html) return c.json({ error: "url and html required" }, 400);
-  const jobId = crypto.randomUUID();
+  const articleId = ArticleId(crypto.randomUUID());
   const article = createArticle({
-    id: ArticleId(jobId),
+    id: articleId,
     url: body.url,
     title: body.title ?? body.url,
     fullText: body.html,
     sourceType: "html_post",
   });
   await articleRepo.save(article);
+  const now = Date.now();
+  const jobId = crypto.randomUUID();
+  db.run(
+    "INSERT INTO pending_jobs (id, job_type, payload, status, created_at, updated_at) VALUES (?, 'ingest_html', ?, 'pending', ?, ?)",
+    [jobId, JSON.stringify({ url: body.url, articleId }), now, now],
+  );
   const resp: IngestJobResponse = { jobId };
   return c.json(resp, 202);
 });

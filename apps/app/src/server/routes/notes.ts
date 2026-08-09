@@ -32,7 +32,10 @@ const router = new Hono();
 
 router.get("/", async (c) => {
   const articleId = c.req.query("articleId");
-  const notes = articleId ? await noteRepo.findByArticleId(ArticleId(articleId)) : [];
+  const limit = Number(c.req.query("limit") ?? 100);
+  const notes = articleId
+    ? await noteRepo.findByArticleId(ArticleId(articleId))
+    : await noteRepo.findAll(limit);
   const body: ListResponse<NoteResponse> = { items: notes.map(toResponse), total: notes.length };
   return c.json(body);
 });

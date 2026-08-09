@@ -1,5 +1,5 @@
-import { mkdirSync } from "fs";
-import { resolve } from "path";
+import { mkdirSync } from "node:fs";
+import { resolve } from "node:path";
 
 const root = resolve(import.meta.dir, "..");
 const appDir = resolve(root, "apps/app");

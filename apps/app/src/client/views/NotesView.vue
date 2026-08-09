@@ -6,22 +6,25 @@
     >
       <RouterLink to="/" class="text-muted-foreground hover:text-foreground text-xl">←</RouterLink>
       <h1 class="text-base font-semibold flex-1">Notes</h1>
+      <span class="text-xs text-muted-foreground">{{ notes.length }}</span>
     </div>
 
     <div class="flex-1 overflow-y-auto p-4 space-y-3">
-      <div
+      <RouterLink
         v-for="note in notes"
         :key="note.id"
-        class="p-3 rounded-lg border border-border bg-card"
+        :to="`/reader/${note.articleId}`"
+        class="block p-3 rounded-lg border border-border bg-card hover:bg-accent transition-colors"
       >
         <p class="text-sm text-foreground whitespace-pre-wrap line-clamp-3">{{ note.content }}</p>
         <div class="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-          <span>{{ new Date(note.createdAt).toLocaleDateString('en-US') }}</span>
-          <span
-            class="px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground"
-          >{{ note.noteType }}</span>
+          <span>{{ formatDate(note.createdAt) }}</span>
+          <span class="px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">
+            {{ note.noteType === 'claude_conversation' ? 'claude' : note.noteType }}
+          </span>
+          <span class="ml-auto truncate max-w-[160px]">→ article</span>
         </div>
-      </div>
+      </RouterLink>
       <p v-if="notes.length === 0" class="text-sm text-muted-foreground text-center py-8">
         No notes yet
       </p>
@@ -40,4 +43,12 @@ onMounted(async () => {
   const res = await api.get<{ items: NoteResponse[] }>("/notes");
   notes.value = res.items;
 });
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 </script>

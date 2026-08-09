@@ -33,6 +33,13 @@ export class NoteRepo implements NoteRepository {
     return row ? toNote(row) : null;
   }
 
+  async findAll(limit = 100): Promise<Note[]> {
+    return this.db
+      .query<NoteRow, [number]>("SELECT * FROM notes ORDER BY created_at DESC LIMIT ?")
+      .all(limit)
+      .map(toNote);
+  }
+
   async findByArticleId(articleId: ArticleId): Promise<Note[]> {
     return this.db
       .query<NoteRow, [string]>("SELECT * FROM notes WHERE article_id = ? ORDER BY created_at ASC")
