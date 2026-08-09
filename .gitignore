@@ -6,6 +6,7 @@ dist/
 coverage/
 playwright-report/
 test-results/
+screens/
 *.db
 *.db-shm
 *.db-wal

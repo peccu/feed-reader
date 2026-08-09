@@ -191,3 +191,27 @@ jobs:
               repo: context.repo.repo,
               body
             });
+
+  screen-catalog:
+    name: Screen Catalog
+    needs: changes
+    if: needs.changes.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: bun install
+      - run: bunx playwright install --with-deps chromium
+      - run: bun run catalog
+      - name: Upload screen catalog
+        uses: actions/upload-artifact@v7
+        if: always() && hashFiles('screens/**') != ''
+        with:
+          name: screen-catalog
+          path: screens/
+          retention-days: 14
