@@ -92,12 +92,12 @@ describe("EmbeddingRepo", () => {
 
     expect(results.length).toBe(3);
     // a1 (identical) should be first
-    expect(results[0]?.articleId).toBe("a1");
+    expect(results[0]?.articleId).toBe(ArticleId("a1"));
     // similarity of identical vectors should be ≈ 1
     expect(results[0]?.similarity).toBeGreaterThan(0.99);
     // Results should be ordered descending by similarity
     for (let i = 1; i < results.length; i++) {
-      expect(results[i - 1]?.similarity).toBeGreaterThanOrEqual(results[i]?.similarity);
+      expect(results[i - 1]?.similarity ?? 0).toBeGreaterThanOrEqual(results[i]?.similarity ?? 0);
     }
   });
 
