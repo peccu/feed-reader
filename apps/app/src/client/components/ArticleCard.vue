@@ -73,7 +73,7 @@
             >Open original article <ExternalLink :size="14" /></a>
           </div>
 
-          <!-- Source link -->
+          <!-- Source link + share -->
           <div class="mt-6 pt-3 border-t border-border text-xs text-muted-foreground">
             <a
               :href="article.url"
@@ -84,6 +84,12 @@
               <ExternalLink :size="12" class="mt-0.5 shrink-0" />
               <span>{{ article.url }}</span>
             </a>
+            <button
+              @click="shareArticle"
+              class="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border text-foreground hover:bg-accent transition-colors"
+            >
+              <Share2 :size="12" /> {{ shareLabel }}
+            </button>
           </div>
 
           <!-- Claude: summarize / chat / save-as-note -->
@@ -104,8 +110,8 @@
 
 <script setup lang="ts">
 import type { ArticleDetailResponse, QueueItemResponse } from "@feed-reader/types";
-import { ExternalLink, StickyNote } from "lucide-vue-next";
-import { computed } from "vue";
+import { ExternalLink, Share2, StickyNote } from "lucide-vue-next";
+import { computed, ref } from "vue";
 import { sanitizeHtml } from "../lib/sanitize.ts";
 import { hostname } from "../lib/url.ts";
 import ClaudePanel from "./ClaudePanel.vue";
@@ -132,5 +138,27 @@ const formattedDate = computed(() => {
 function onImageError(e: Event) {
   // Hide broken eyecatch images rather than showing a broken-image icon.
   (e.target as HTMLImageElement).style.display = "none";
+}
+
+const shareLabel = ref("Share");
+
+// Use the Web Share API where available (mobile), else copy the link.
+async function shareArticle() {
+  const article = props.article;
+  if (!article) return;
+  const data = { title: article.title, url: article.url };
+  try {
+    if (navigator.share) {
+      await navigator.share(data);
+    } else {
+      await navigator.clipboard.writeText(article.url);
+      shareLabel.value = "Link copied";
+      setTimeout(() => {
+        shareLabel.value = "Share";
+      }, 2000);
+    }
+  } catch {
+    // User dismissed the share sheet, or share/clipboard is unavailable.
+  }
 }
 </script>
