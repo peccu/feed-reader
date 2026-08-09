@@ -5,14 +5,17 @@ import { Scheduler } from "./scheduler.ts";
 
 const SECOND = 1_000;
 const MINUTE = 60 * SECOND;
-const HOUR = 60 * MINUTE;
+
+const pendingIntervalMs = Number(process.env.PENDING_JOB_CHECK_INTERVAL_SECONDS ?? 30) * SECOND;
+const rssIntervalMs = Number(process.env.RSS_POLL_INTERVAL_MINUTES ?? 60) * MINUTE;
+const preferenceIntervalMs = Number(process.env.PREFERENCE_DEBOUNCE_MINUTES ?? 5) * MINUTE;
 
 console.log("[ingester] starting");
 
 const scheduler = new Scheduler()
-  .add("pending-jobs", runPendingJobRunner, 30 * SECOND)
-  .add("rss-poll", runRSSPollJob, HOUR)
-  .add("preference-update", runPreferenceUpdateJob, 5 * MINUTE);
+  .add("pending-jobs", runPendingJobRunner, pendingIntervalMs)
+  .add("rss-poll", runRSSPollJob, rssIntervalMs)
+  .add("preference-update", runPreferenceUpdateJob, preferenceIntervalMs);
 
 scheduler.start(5 * SECOND);
 

@@ -104,19 +104,23 @@ const visibleItems = computed((): VisibleItem[] => {
   });
 });
 
-// Prefetch articles near current index
+// Prefetch articles near current index. Watches both the index and the loaded
+// item count so prefetching also kicks in once fetchQueue() populates the list
+// (currentIndex stays 0 on first load, so watching it alone never fires).
+function prefetchAround(idx: number) {
+  for (
+    let i = Math.max(0, idx - prefetchRange);
+    i <= Math.min(queue.total - 1, idx + prefetchRange);
+    i++
+  ) {
+    const item = queue.items[i];
+    if (item) queue.fetchArticle(item.articleId);
+  }
+}
+
 watch(
-  () => queue.currentIndex,
-  (idx) => {
-    for (
-      let i = Math.max(0, idx - prefetchRange);
-      i <= Math.min(queue.total - 1, idx + prefetchRange);
-      i++
-    ) {
-      const item = queue.items[i];
-      if (item) queue.fetchArticle(item.articleId);
-    }
-  },
+  () => [queue.currentIndex, queue.items.length] as const,
+  () => prefetchAround(queue.currentIndex),
   { immediate: true },
 );
 

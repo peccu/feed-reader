@@ -6,7 +6,7 @@ services:
     ports:
       - "8088:3000"
     environment:
-      - DATABASE_PATH=/data/db/feed-reader.db
+      - DB_PATH=/data/db/feed-reader.db
       - KUZU_PATH=/data/db/kuzu
       - CLAUDE_WORKER_URL=http://claude-worker:3001
       - JINA_API_KEY=${JINA_API_KEY}
@@ -22,7 +22,7 @@ services:
       context: .
       dockerfile: apps/ingester/Dockerfile
     environment:
-      - DATABASE_PATH=/data/db/feed-reader.db
+      - DB_PATH=/data/db/feed-reader.db
       - KUZU_PATH=/data/db/kuzu
       - CLAUDE_WORKER_URL=http://claude-worker:3001
       - JINA_API_KEY=${JINA_API_KEY}
@@ -41,7 +41,7 @@ services:
       context: .
       dockerfile: apps/claude-worker/Dockerfile
     environment:
-      - SESSION_PATH=/data/sessions
+      - SESSIONS_DIR=/data/sessions
       - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN}
     volumes:
       - session-data:/data/sessions
