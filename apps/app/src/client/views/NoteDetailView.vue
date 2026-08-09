@@ -22,6 +22,8 @@
           <textarea
             v-model="draft"
             rows="8"
+            @keydown.enter.meta="save"
+            @keydown.enter.ctrl="save"
             class="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           />
           <div class="flex gap-2 justify-end mt-2">

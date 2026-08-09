@@ -83,8 +83,10 @@
       </div>
       <textarea
         v-model="noteContent"
+        @keydown.enter.meta="saveNote"
+        @keydown.enter.ctrl="saveNote"
         class="flex-1 p-4 resize-none bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
-        placeholder="Write a note about this article..."
+        placeholder="Write a note about this article... (⌘/Ctrl+Enter to save)"
       />
     </div>
   </div>

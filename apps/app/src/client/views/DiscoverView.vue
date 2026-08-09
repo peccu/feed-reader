@@ -16,7 +16,7 @@
       <div class="flex gap-2">
         <input
           v-model="query"
-          @keydown.enter="search()"
+          @keydown.enter="onEnter"
           type="search"
           placeholder="Search articles..."
           class="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
@@ -54,7 +54,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { api } from "../api/client.ts";
 import BackButton from "../components/BackButton.vue";
 
@@ -65,15 +66,25 @@ interface SearchResult {
   score: number | null;
 }
 
+const route = useRoute();
+const router = useRouter();
 const query = ref("");
 const results = ref<SearchResult[]>([]);
 const searched = ref(false);
 const searching = ref(false);
 const mode = ref<"vector" | "text" | null>(null);
 
+// Don't submit while an IME composition is in progress (Japanese conversion).
+function onEnter(e: KeyboardEvent) {
+  if (e.isComposing || e.keyCode === 229) return;
+  search();
+}
+
 async function search() {
   if (!query.value.trim() || searching.value) return;
   searching.value = true;
+  // Persist the query in the URL so it (and the results) restore on back.
+  router.replace({ query: { q: query.value } });
   try {
     const res = await api.get<{ items: SearchResult[]; mode: "vector" | "text" }>(
       `/search?q=${encodeURIComponent(query.value)}`,
@@ -85,4 +96,12 @@ async function search() {
     searching.value = false;
   }
 }
+
+onMounted(() => {
+  const q = route.query.q;
+  if (typeof q === "string" && q.trim()) {
+    query.value = q;
+    search();
+  }
+});
 </script>
