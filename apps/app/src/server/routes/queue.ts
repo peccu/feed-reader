@@ -55,10 +55,12 @@ router.get("/list", async (c) => {
   const rawStatus = c.req.query("status") as QueueStatus | undefined;
   const limit = Number(c.req.query("limit") ?? 100);
   const favorited = c.req.query("favorited");
+  const rawSort = c.req.query("sort") as "relevance" | "addedAt" | undefined;
   const rows = await queueRepo.findListView({
     limit,
     ...(rawStatus ? { status: rawStatus } : {}),
     ...(favorited !== undefined ? { favorited: favorited === "1" || favorited === "true" } : {}),
+    ...(rawSort ? { sortBy: rawSort } : {}),
   });
   const items: QueueListItemResponse[] = rows.map((r) => ({
     ...toResponse(r.item),

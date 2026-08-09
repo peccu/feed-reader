@@ -11,7 +11,7 @@
       <RouterLink
         v-for="it in items"
         :key="it.id"
-        :to="`/reader/${it.articleId}`"
+        :to="`/feed/${active}?start=${it.articleId}`"
         class="flex gap-3 p-2 rounded-lg border border-border bg-card hover:bg-accent transition-colors"
       >
         <img
