@@ -1,7 +1,7 @@
 <template>
   <div
-    class="flex items-center justify-around px-2 py-2 border-t border-border bg-background"
-    style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom))"
+    class="flex items-center justify-around px-2 pt-2 pb-2 border-t border-border bg-background"
+    style="padding-bottom: max(0.5rem, calc(env(safe-area-inset-bottom) - 0.75rem))"
   >
     <button
       v-for="btn in orderedButtons"
