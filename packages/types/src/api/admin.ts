@@ -16,6 +16,10 @@ export interface AdminStatsResponse {
     done: number;
     failed: number;
   };
+  feedback: {
+    like: number;
+    dislike: number;
+  };
 }
 
 export interface PendingJobResponse {

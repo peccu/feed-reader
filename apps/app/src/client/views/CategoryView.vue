@@ -20,17 +20,23 @@
         class="p-3 rounded-lg border border-primary bg-card space-y-2"
       >
         <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">New Category</p>
-        <input
-          v-model="newName"
-          placeholder="Name"
-          required
-          class="w-full px-3 py-1.5 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-        />
-        <input
-          v-model="newDesc"
-          placeholder="Description (optional)"
-          class="w-full px-3 py-1.5 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-        />
+        <label class="block">
+          <span class="text-xs text-muted-foreground">Name (required) — e.g. "AI", "Gadgets", "日本酒"</span>
+          <input
+            v-model="newName"
+            placeholder="Category name"
+            required
+            class="mt-1 w-full px-3 py-1.5 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+          />
+        </label>
+        <label class="block">
+          <span class="text-xs text-muted-foreground">Description (optional) — what belongs in this category</span>
+          <input
+            v-model="newDesc"
+            placeholder="Optional description"
+            class="mt-1 w-full px-3 py-1.5 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+          />
+        </label>
         <div class="flex items-center gap-2">
           <label class="text-xs text-muted-foreground">Color</label>
           <input v-model="newColor" type="color" class="h-7 w-10 rounded border border-input cursor-pointer" />
@@ -76,17 +82,23 @@
 
         <!-- Edit mode -->
         <form v-else @submit.prevent="saveEdit(cat.id)" class="p-3 space-y-2">
-          <input
-            v-model="editName"
-            placeholder="Name"
-            required
-            class="w-full px-3 py-1.5 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-          />
-          <input
-            v-model="editDesc"
-            placeholder="Description (optional)"
-            class="w-full px-3 py-1.5 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-          />
+          <label class="block">
+            <span class="text-xs text-muted-foreground">Name (required)</span>
+            <input
+              v-model="editName"
+              placeholder="Category name"
+              required
+              class="mt-1 w-full px-3 py-1.5 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+          </label>
+          <label class="block">
+            <span class="text-xs text-muted-foreground">Description (optional)</span>
+            <input
+              v-model="editDesc"
+              placeholder="Optional description"
+              class="mt-1 w-full px-3 py-1.5 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+          </label>
           <div class="flex items-center gap-2">
             <label class="text-xs text-muted-foreground">Color</label>
             <input v-model="editColor" type="color" class="h-7 w-10 rounded border border-input cursor-pointer" />

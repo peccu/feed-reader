@@ -10,7 +10,11 @@ import { PreferenceRepo, createDatabase } from "../../src/sqlite/index.ts";
 let repo: PreferenceRepo;
 
 beforeEach(() => {
-  repo = new PreferenceRepo(createDatabase());
+  const db = createDatabase();
+  // createDatabase seeds a default profile; clear it so tests control the data.
+  db.run("DELETE FROM preference_vectors");
+  db.run("DELETE FROM preference_profiles");
+  repo = new PreferenceRepo(db);
 });
 
 function makeProfile(name = "default") {

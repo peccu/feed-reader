@@ -43,6 +43,10 @@ router.get("/stats", (c) => {
       done: countBy("pending_jobs", "status", "done"),
       failed: countBy("pending_jobs", "status", "failed"),
     },
+    feedback: {
+      like: countBy("feedback", "feedback_type", "like"),
+      dislike: countBy("feedback", "feedback_type", "dislike"),
+    },
   };
   return c.json(body);
 });

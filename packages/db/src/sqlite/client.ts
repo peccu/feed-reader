@@ -152,7 +152,27 @@ export function createDatabase(path = ":memory:"): Database {
   const db = new Database(path, { create: true });
   db.exec(SCHEMA);
   migrate(db);
+  ensureDefaultProfile(db);
   return db;
+}
+
+/**
+ * Ensure a default preference profile exists. Without it, scoring has no
+ * vector to compare against (every article scores 0) and feedback can never
+ * be applied. The vector starts at zero and shifts as feedback is applied.
+ */
+function ensureDefaultProfile(db: Database): void {
+  const exists = db
+    .query<{ n: number }, []>(
+      "SELECT COUNT(*) AS n FROM preference_profiles WHERE name = 'default'",
+    )
+    .get();
+  if ((exists?.n ?? 0) > 0) return;
+  const now = Date.now();
+  db.run(
+    "INSERT INTO preference_profiles (id, name, learning_rate, article_count, created_at, updated_at) VALUES (?, 'default', 0.05, 0, ?, ?)",
+    [crypto.randomUUID(), now, now],
+  );
 }
 
 /** Idempotent column additions for DBs created before a column existed. */

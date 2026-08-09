@@ -69,6 +69,19 @@
         </div>
       </section>
 
+      <!-- My feedback -->
+      <section v-if="stats">
+        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">My feedback</h2>
+        <div class="flex flex-wrap gap-2">
+          <span class="px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground text-xs">
+            Like: <span class="font-semibold tabular-nums">{{ stats.feedback.like }}</span>
+          </span>
+          <span class="px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground text-xs">
+            Dislike: <span class="font-semibold tabular-nums">{{ stats.feedback.dislike }}</span>
+          </span>
+        </div>
+      </section>
+
       <!-- Recent jobs (what happened to submitted URLs) -->
       <section>
         <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Recent jobs</h2>
@@ -93,15 +106,27 @@
       <!-- Debug query (read-only SELECT) -->
       <section>
         <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-          Debug query <span class="normal-case font-normal">(read-only SELECT)</span>
+          Debug query <span class="normal-case font-normal">(SQLite, read-only SELECT)</span>
         </h2>
+        <p class="text-xs text-muted-foreground mb-2">
+          Runs a single SELECT against the SQLite DB and returns the matching rows (columns + values, up to 200).
+        </p>
+        <select
+          @change="onSample(($event.target as HTMLSelectElement).value)"
+          class="w-full mb-2 px-3 py-1.5 rounded-lg border border-input bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+        >
+          <option value="">Insert a sample query…</option>
+          <option v-for="s in samples" :key="s.label" :value="s.sql">{{ s.label }}</option>
+        </select>
         <textarea
           v-model="sql"
           rows="3"
           spellcheck="false"
-          placeholder="SELECT id, title, ingest_version FROM articles ORDER BY created_at DESC LIMIT 20"
           class="w-full px-3 py-2 rounded-lg border border-input bg-background text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         />
+        <p class="text-xs text-muted-foreground mt-1">
+          Graph DB (Kuzu) queries are not available yet — the graph store is not implemented.
+        </p>
         <div class="flex items-center gap-2 mt-2">
           <button
             @click="runQuery"
@@ -152,10 +177,34 @@ const stats = ref<AdminStatsResponse | null>(null);
 const jobs = ref<PendingJobResponse[]>([]);
 const health = ref<ServiceHealthResponse[]>([]);
 
-const sql = ref("");
+const samples = [
+  {
+    label: "Recent articles",
+    sql: "SELECT id, title, ingest_version FROM articles ORDER BY created_at DESC LIMIT 10",
+  },
+  {
+    label: "Queue by status",
+    sql: "SELECT status, COUNT(*) AS n FROM queue_items GROUP BY status",
+  },
+  {
+    label: "Feedback counts",
+    sql: "SELECT feedback_type, COUNT(*) AS n FROM feedback GROUP BY feedback_type",
+  },
+  {
+    label: "Top scored (unread)",
+    sql: "SELECT a.title, q.relevance_score FROM queue_items q JOIN articles a ON a.id=q.article_id WHERE q.status='unread' ORDER BY q.relevance_score DESC LIMIT 10",
+  },
+  { label: "Feeds", sql: "SELECT title, url, last_polled_at FROM feeds LIMIT 10" },
+];
+
+const sql = ref(samples[0].sql);
 const querying = ref(false);
 const queryError = ref("");
 const result = ref<DebugQueryResponse | null>(null);
+
+function onSample(value: string) {
+  if (value) sql.value = value;
+}
 
 const topStats = computed(() =>
   stats.value
