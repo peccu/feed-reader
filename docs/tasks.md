@@ -184,7 +184,7 @@ Proxy {__v_skip: true}
 凡例: ☐ 未着手 / ◑ 部分実装（backendのみ等） / ✖ 現状スコープ外
 
 ### Epic A. コンテンツ取り込みの拡張
-- [ ] ◑ A1a. Settings に「HTML貼り付け投入」フォーム（`POST /articles/ingest/html` は実装済み・UI無し）
+- [x] ☑ A1a. Settings に「HTML貼り付け投入」フォーム（`POST /articles/ingest/html` は実装済み・UI無し）→ Settings に「Submit HTML」セクション（URL＋任意タイトル＋HTML本文）を追加して投入可能に
 - [ ] ☐ A1b. メール → HTML POST ブリッジ（受信メール本文HTMLを `/ingest/html` へ）※方式決定/受口/送信元ホワイトリスト
 - [ ] ☐ A2. Gmail ポーリング（送信元ホワイトリスト）※フェーズ2
 - [ ] ☐ A3. IMAP 対応 ※フェーズ2
