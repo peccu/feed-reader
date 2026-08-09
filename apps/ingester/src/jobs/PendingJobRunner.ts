@@ -39,7 +39,7 @@ export async function runPendingJobRunner(): Promise<void> {
         if (!article) throw new Error(`article ${articleId} not found`);
 
         const parsed = article.fullText ? parseHtml(article.fullText) : null;
-        const embeddingInput = parsed ? buildEmbeddingInput(parsed) : article.title;
+        const embeddingInput = parsed ? buildEmbeddingInput(parsed, article.title) : article.title;
 
         let embedding: Awaited<ReturnType<typeof embed>> | null = null;
         try {

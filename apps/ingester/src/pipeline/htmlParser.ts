@@ -57,16 +57,18 @@ export function firstImageUrlInText(text: string): string | undefined {
 }
 
 /** Append link metadata to text so embeddings capture link context. */
-export function buildEmbeddingInput(content: ParsedContent, maxWords = 4000): string {
+export function buildEmbeddingInput(content: ParsedContent, title = "", maxWords = 4000): string {
   const words = content.text.split(/\s+/);
   const mainText = words.slice(0, maxWords).join(" ");
+  // The title is the most concentrated topical signal, so lead with it.
+  const head = title.trim() ? `${title.trim()}\n\n` : "";
 
-  if (content.links.length === 0) return mainText;
+  if (content.links.length === 0) return `${head}${mainText}`;
 
   const linkMeta = content.links
     .slice(0, 20) // cap at 20 links to avoid bloat
     .map((l) => `[${l.text}]`)
     .join(", ");
 
-  return `${mainText}\n\nLinks: ${linkMeta}`;
+  return `${head}${mainText}\n\nLinks: ${linkMeta}`;
 }

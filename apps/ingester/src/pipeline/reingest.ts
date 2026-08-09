@@ -36,7 +36,7 @@ export async function reingestArticle(
   if (!leadImageUrl && html) leadImageUrl = firstImageSrc(html);
 
   // Re-embed against the refreshed text.
-  const embeddingInput = parsed ? buildEmbeddingInput(parsed) : title;
+  const embeddingInput = parsed ? buildEmbeddingInput(parsed, title) : title;
   let embedding: Awaited<ReturnType<typeof embed>> | null = null;
   try {
     embedding = await embed(embeddingInput);

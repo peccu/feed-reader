@@ -70,7 +70,7 @@ export async function ingestUrl(
   const enriched = await enrichWithClaude(articleId, cleanText);
 
   // 5. Embed — use clean text with link context
-  const embeddingInput = parsed ? buildEmbeddingInput(parsed) : title;
+  const embeddingInput = parsed ? buildEmbeddingInput(parsed, title) : title;
 
   let embedding: Awaited<ReturnType<typeof embed>> | null = null;
   try {

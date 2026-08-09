@@ -74,9 +74,15 @@ describe("buildEmbeddingInput", () => {
   it("truncates text to maxWords", () => {
     const words = Array.from({ length: 100 }, (_, i) => `w${i}`);
     const content = { text: words.join(" "), links: [], wordCount: 100 };
-    const result = buildEmbeddingInput(content, 10);
+    const result = buildEmbeddingInput(content, "", 10);
     const resultWords = result.split(/\s+/);
     expect(resultWords).toHaveLength(10);
+  });
+
+  it("prepends the title when provided", () => {
+    const content = { text: "body text", links: [], wordCount: 2 };
+    const result = buildEmbeddingInput(content, "My Title");
+    expect(result).toBe("My Title\n\nbody text");
   });
 
   it("caps links at 20", () => {
