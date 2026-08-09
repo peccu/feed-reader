@@ -17,9 +17,23 @@ router.get("/:id/similar", async (c) => {
   // Exclude self from results
   const results = similar.filter((s) => s.articleId !== articleId).slice(0, limit);
 
+  const items = await Promise.all(
+    results.map(async (s) => {
+      const article = await articleRepo.findById(s.articleId);
+      if (!article) return null;
+      return {
+        articleId: article.id,
+        title: article.title,
+        url: article.url,
+        similarity: s.similarity,
+      };
+    }),
+  );
+  const filtered = items.filter((x): x is NonNullable<typeof x> => x !== null);
+
   const body: ListResponse<SimilarArticleResponse> = {
-    items: results.map((s) => ({ articleId: s.articleId, similarity: s.similarity })),
-    total: results.length,
+    items: filtered,
+    total: filtered.length,
   };
   return c.json(body);
 });

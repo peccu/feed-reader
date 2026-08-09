@@ -85,6 +85,9 @@
               <span>{{ article.url }}</span>
             </a>
           </div>
+
+          <!-- "More like this" (vector-similar articles) -->
+          <SimilarArticles :article-id="article.id" />
         </div>
       </div>
 
@@ -102,6 +105,7 @@ import { ExternalLink, StickyNote } from "lucide-vue-next";
 import { computed } from "vue";
 import { sanitizeHtml } from "../lib/sanitize.ts";
 import { hostname } from "../lib/url.ts";
+import SimilarArticles from "./SimilarArticles.vue";
 
 const props = defineProps<{
   item: QueueItemResponse | null;

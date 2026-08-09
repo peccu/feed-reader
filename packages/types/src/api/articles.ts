@@ -41,6 +41,8 @@ export interface ArticleDetailResponse extends ArticleResponse {
 
 export interface SimilarArticleResponse {
   articleId: string;
+  title: string;
+  url: string;
   similarity: number;
 }
 
