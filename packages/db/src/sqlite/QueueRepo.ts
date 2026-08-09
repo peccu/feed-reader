@@ -104,11 +104,16 @@ export class QueueRepo implements QueueRepository {
    * Unread items whose relevance score is closest to the 0.5 decision
    * boundary — the "borderline" articles most useful for training the
    * preference vector. Enriched with article info.
+   *
+   * Already-evaluated articles (any like/dislike feedback) are excluded:
+   * training is about teaching the vector on undecided items, so there is
+   * no value in re-surfacing something the user has already rated.
    */
   async findBorderline(limit = 30): Promise<QueueListItem[]> {
     const sql = `SELECT ${LIST_SELECT}
        FROM queue_items q JOIN articles a ON a.id = q.article_id
        WHERE q.status = 'unread'
+         AND NOT EXISTS(SELECT 1 FROM feedback f WHERE f.article_id = a.id)
        ORDER BY ABS(q.relevance_score - 0.5) ASC, q.added_at DESC
        LIMIT ?`;
     return this.db.prepare<QueueListRow, [number]>(sql).all(limit).map(toListItem);
