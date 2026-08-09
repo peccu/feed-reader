@@ -33,15 +33,6 @@
             <span v-if="it.publishedAt" class="ml-auto">{{ formatDate(it.publishedAt) }}</span>
           </div>
         </div>
-        <button
-          v-if="it.status !== 'unread'"
-          @click.prevent.stop="restore(it)"
-          title="Move back to the unread queue"
-          class="self-center shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded hover:bg-accent"
-        >
-          <Undo2 :size="14" />
-          <span>Unread</span>
-        </button>
       </RouterLink>
 
       <p v-if="!loading && items.length === 0" class="text-sm text-muted-foreground text-center py-10">
@@ -71,7 +62,7 @@
 
 <script setup lang="ts">
 import type { QueueListItemResponse } from "@feed-reader/types";
-import { Bookmark, ThumbsDown, ThumbsUp, Undo2 } from "lucide-vue-next";
+import { Bookmark, ThumbsDown, ThumbsUp } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 import { api } from "../api/client.ts";
 import BackButton from "../components/BackButton.vue";
@@ -121,11 +112,6 @@ function select(tab: TabKey) {
   if (active.value === tab) return;
   active.value = tab;
   load();
-}
-
-async function restore(it: QueueListItemResponse) {
-  await api.patch(`/queue/${it.id}/status`, { status: "unread" });
-  await load();
 }
 
 function formatDate(iso: string): string {

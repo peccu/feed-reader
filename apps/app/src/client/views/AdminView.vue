@@ -1,17 +1,23 @@
 <template>
   <div class="h-full flex flex-col bg-background relative">
     <BackButton />
+    <!-- Refresh (bottom, thumb zone) -->
+    <button
+      @click="load"
+      aria-label="Refresh"
+      class="absolute left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-4 h-11 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg text-sm text-muted-foreground hover:text-foreground"
+      style="bottom: calc(env(safe-area-inset-bottom) + 0.75rem)"
+    >
+      <RotateCw :size="16" /> Refresh
+    </button>
     <div
       class="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0"
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
     >
       <h1 class="text-base font-semibold flex-1">Admin / Status</h1>
-      <button @click="load" class="text-xs px-2 py-1 rounded border border-border text-muted-foreground hover:text-foreground">
-        Refresh
-      </button>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-4 space-y-6">
+    <div class="flex-1 overflow-y-auto p-4 pb-20 space-y-6">
       <!-- Stats -->
       <section v-if="stats">
         <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Database</h2>
@@ -30,7 +36,7 @@
           <span
             v-for="svc in health"
             :key="svc.name"
-            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-card border border-border text-xs"
+            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-card border border-border text-xs text-foreground"
             :title="svc.detail ?? ''"
           >
             <span
@@ -170,6 +176,7 @@ import type {
   PendingJobResponse,
   ServiceHealthResponse,
 } from "@feed-reader/types";
+import { RotateCw } from "lucide-vue-next";
 import { computed, onMounted, ref } from "vue";
 import { api } from "../api/client.ts";
 import BackButton from "../components/BackButton.vue";

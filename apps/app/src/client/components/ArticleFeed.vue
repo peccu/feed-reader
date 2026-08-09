@@ -19,7 +19,6 @@
         class="flex items-center gap-1.5 text-sm font-mono text-muted-foreground hover:text-foreground transition-colors"
       >
         <Hand v-if="ui.direction === 'backward'" :size="15" style="transform: scaleX(-1)" />
-        <span class="text-xs">{{ ui.direction === 'forward' ? '→' : '←' }}</span>
         <span class="tabular-nums">
           {{ feed.total.value > 0 ? feed.currentIndex.value + 1 : 0 }}
           <span class="text-xs text-muted-foreground/60">/</span>

@@ -6,16 +6,6 @@
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
     >
       <h1 class="text-base font-semibold flex-1">Note</h1>
-      <template v-if="note && !editing">
-        <button
-          @click="startEdit()"
-          class="text-xs px-2 py-1 rounded border border-border text-muted-foreground hover:text-foreground"
-        >Edit</button>
-        <button
-          @click="remove()"
-          class="text-xs px-2 py-1 rounded border border-border text-destructive hover:bg-accent"
-        >Delete</button>
-      </template>
     </div>
 
     <div class="flex-1 overflow-y-auto p-4">
@@ -58,11 +48,32 @@
       </div>
       <p v-else class="text-sm text-muted-foreground">Loading…</p>
     </div>
+
+    <!-- Bottom action bar (edit / delete) -->
+    <div
+      v-if="note && !editing"
+      class="flex items-center justify-end gap-2 px-4 py-3 border-t border-border bg-background shrink-0"
+      style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom))"
+    >
+      <button
+        @click="startEdit()"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm text-foreground hover:bg-accent"
+      >
+        <Pencil :size="16" /> Edit
+      </button>
+      <button
+        @click="remove()"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm text-destructive hover:bg-accent"
+      >
+        <Trash2 :size="16" /> Delete
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { NoteResponse } from "@feed-reader/types";
+import { Pencil, Trash2 } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "../api/client.ts";
