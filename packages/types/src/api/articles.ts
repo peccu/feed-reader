@@ -33,6 +33,8 @@ export interface ArticleDetailResponse extends ArticleResponse {
   fullText: string | null;
   html: string | null;
   leadImageUrl: string | null;
+  /** Title of the source feed (for RSS articles), if any. */
+  feedTitle: string | null;
 }
 
 export interface SimilarArticleResponse {

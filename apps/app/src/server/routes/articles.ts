@@ -29,6 +29,14 @@ function toResponse(a: Awaited<ReturnType<typeof articleRepo.findById>>): Articl
   };
 }
 
+function feedTitleFor(feedId: string | null): string | null {
+  if (!feedId) return null;
+  const row = db
+    .query<{ title: string }, [string]>("SELECT title FROM feeds WHERE id = ?")
+    .get(feedId);
+  return row?.title ?? null;
+}
+
 function toDetailResponse(
   a: NonNullable<Awaited<ReturnType<typeof articleRepo.findById>>>,
 ): ArticleDetailResponse {
@@ -37,6 +45,7 @@ function toDetailResponse(
     fullText: a.fullText ?? null,
     html: a.html ?? null,
     leadImageUrl: a.leadImageUrl ?? null,
+    feedTitle: feedTitleFor(a.feedId),
   };
 }
 

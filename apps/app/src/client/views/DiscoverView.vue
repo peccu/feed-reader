@@ -42,7 +42,7 @@
               {{ Math.round(a.score * 100) }}%
             </span>
           </div>
-          <p class="text-xs text-muted-foreground truncate mt-0.5">{{ a.url }}</p>
+          <p class="text-xs text-muted-foreground truncate mt-0.5">{{ hostname(a.url) }}</p>
         </RouterLink>
       </div>
 
@@ -58,6 +58,7 @@ import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "../api/client.ts";
 import BackButton from "../components/BackButton.vue";
+import { hostname } from "../lib/url.ts";
 
 interface SearchResult {
   id: string;

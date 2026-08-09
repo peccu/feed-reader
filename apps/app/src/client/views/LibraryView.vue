@@ -26,6 +26,7 @@
           <p class="text-sm font-medium text-foreground line-clamp-2">{{ it.title }}</p>
           <div class="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
             <span class="px-1.5 py-0.5 rounded bg-secondary">{{ it.status }}</span>
+            <span class="truncate max-w-[45%]">{{ hostname(it.url) }}</span>
             <span class="tabular-nums">{{ Math.round(it.relevanceScore * 100) }}%</span>
             <ThumbsUp v-if="it.feedback === 'like'" :size="13" class="text-yellow-500" />
             <ThumbsDown v-if="it.feedback === 'dislike'" :size="13" class="text-destructive" />
@@ -66,6 +67,7 @@ import { Bookmark, ThumbsDown, ThumbsUp } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 import { api } from "../api/client.ts";
 import BackButton from "../components/BackButton.vue";
+import { hostname } from "../lib/url.ts";
 
 type TabKey = "unread" | "training" | "read" | "favorites" | "skipped" | "all";
 const tabs: Array<{ key: TabKey; label: string }> = [

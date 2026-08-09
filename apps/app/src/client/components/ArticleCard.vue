@@ -19,7 +19,9 @@
               v-if="article.sourceType === 'rss'"
               class="px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground"
             >RSS</span>
-            <span v-if="article.author" class="font-medium">{{ article.author }}</span>
+            <span v-if="article.feedTitle" class="font-medium text-foreground/80">{{ article.feedTitle }}</span>
+            <span>{{ host }}</span>
+            <span v-if="article.author">{{ article.author }}</span>
             <span v-if="formattedDate">{{ formattedDate }}</span>
             <span v-if="article.wordCount">{{ article.wordCount.toLocaleString() }} words</span>
             <span class="ml-auto tabular-nums">
@@ -90,6 +92,7 @@ import type { ArticleDetailResponse, QueueItemResponse } from "@feed-reader/type
 import { ExternalLink } from "lucide-vue-next";
 import { computed } from "vue";
 import { sanitizeHtml } from "../lib/sanitize.ts";
+import { hostname } from "../lib/url.ts";
 
 const props = defineProps<{
   item: QueueItemResponse | null;
@@ -97,6 +100,7 @@ const props = defineProps<{
 }>();
 
 const renderedHtml = computed(() => (props.article?.html ? sanitizeHtml(props.article.html) : ""));
+const host = computed(() => (props.article ? hostname(props.article.url) : ""));
 
 const formattedDate = computed(() => {
   const date = props.article?.publishedAt;
