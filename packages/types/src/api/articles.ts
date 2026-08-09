@@ -35,6 +35,8 @@ export interface ArticleDetailResponse extends ArticleResponse {
   leadImageUrl: string | null;
   /** Title of the source feed (for RSS articles), if any. */
   feedTitle: string | null;
+  /** Whether the article has any note. */
+  hasNote: boolean;
 }
 
 export interface SimilarArticleResponse {

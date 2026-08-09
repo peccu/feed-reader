@@ -43,6 +43,7 @@ export interface QueueListItem {
   leadImageUrl: string | null;
   publishedAt: Date | null;
   feedback: "like" | "dislike" | null;
+  hasNote: boolean;
 }
 
 type QueueListRow = QueueItemRow & {
@@ -51,12 +52,14 @@ type QueueListRow = QueueItemRow & {
   lead_image_url: string | null;
   published_at: number | null;
   feedback: string | null;
+  has_note: number;
 };
 
-// Shared SELECT: queue item + article info + latest feedback for list views.
+// Shared SELECT: queue item + article info + latest feedback + note flag.
 const LIST_SELECT = `q.*, a.title, a.url, a.lead_image_url, a.published_at,
   (SELECT f.feedback_type FROM feedback f WHERE f.article_id = a.id
-   ORDER BY f.created_at DESC LIMIT 1) AS feedback`;
+   ORDER BY f.created_at DESC LIMIT 1) AS feedback,
+  EXISTS(SELECT 1 FROM notes n WHERE n.article_id = a.id) AS has_note`;
 
 function toListItem(r: QueueListRow): QueueListItem {
   return {
@@ -66,6 +69,7 @@ function toListItem(r: QueueListRow): QueueListItem {
     leadImageUrl: r.lead_image_url,
     publishedAt: r.published_at !== null ? new Date(r.published_at) : null,
     feedback: r.feedback === "like" || r.feedback === "dislike" ? r.feedback : null,
+    hasNote: r.has_note === 1,
   };
 }
 

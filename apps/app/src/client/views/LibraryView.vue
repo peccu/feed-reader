@@ -31,6 +31,7 @@
             <ThumbsUp v-if="it.feedback === 'like'" :size="13" class="text-yellow-500" />
             <ThumbsDown v-if="it.feedback === 'dislike'" :size="13" class="text-destructive" />
             <Bookmark v-if="it.favorited" :size="13" class="text-amber-500" />
+            <StickyNote v-if="it.hasNote" :size="13" class="text-primary" />
             <span v-if="it.publishedAt" class="ml-auto">{{ formatDate(it.publishedAt) }}</span>
           </div>
         </div>
@@ -63,7 +64,7 @@
 
 <script setup lang="ts">
 import type { QueueListItemResponse } from "@feed-reader/types";
-import { Bookmark, ThumbsDown, ThumbsUp } from "lucide-vue-next";
+import { Bookmark, StickyNote, ThumbsDown, ThumbsUp } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 import { api } from "../api/client.ts";
 import BackButton from "../components/BackButton.vue";

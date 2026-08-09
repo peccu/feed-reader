@@ -24,6 +24,7 @@
             <span v-if="article.author">{{ article.author }}</span>
             <span v-if="formattedDate">{{ formattedDate }}</span>
             <span v-if="article.wordCount">{{ article.wordCount.toLocaleString() }} words</span>
+            <StickyNote v-if="article.hasNote" :size="13" class="text-primary" title="Has a note" />
             <span class="ml-auto tabular-nums">
               Score {{ Math.round((item?.relevanceScore ?? 0) * 100) }}%
             </span>
@@ -89,7 +90,7 @@
 
 <script setup lang="ts">
 import type { ArticleDetailResponse, QueueItemResponse } from "@feed-reader/types";
-import { ExternalLink } from "lucide-vue-next";
+import { ExternalLink, StickyNote } from "lucide-vue-next";
 import { computed } from "vue";
 import { sanitizeHtml } from "../lib/sanitize.ts";
 import { hostname } from "../lib/url.ts";

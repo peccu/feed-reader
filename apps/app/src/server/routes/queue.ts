@@ -69,6 +69,7 @@ router.get("/list", async (c) => {
     leadImageUrl: r.leadImageUrl,
     publishedAt: r.publishedAt?.toISOString() ?? null,
     feedback: r.feedback,
+    hasNote: r.hasNote,
   }));
   return c.json({ items, total: items.length });
 });
@@ -84,6 +85,7 @@ router.get("/by-article/:articleId", async (c) => {
     leadImageUrl: row.leadImageUrl,
     publishedAt: row.publishedAt?.toISOString() ?? null,
     feedback: row.feedback,
+    hasNote: row.hasNote,
   };
   return c.json(item);
 });
@@ -99,6 +101,7 @@ router.get("/training", async (c) => {
     leadImageUrl: r.leadImageUrl,
     publishedAt: r.publishedAt?.toISOString() ?? null,
     feedback: r.feedback,
+    hasNote: r.hasNote,
   }));
   return c.json({ items, total: items.length });
 });

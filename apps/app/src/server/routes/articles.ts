@@ -40,12 +40,16 @@ function feedTitleFor(feedId: string | null): string | null {
 function toDetailResponse(
   a: NonNullable<Awaited<ReturnType<typeof articleRepo.findById>>>,
 ): ArticleDetailResponse {
+  const noteRow = db
+    .query<{ n: number }, [string]>("SELECT COUNT(*) AS n FROM notes WHERE article_id = ?")
+    .get(a.id);
   return {
     ...toResponse(a),
     fullText: a.fullText ?? null,
     html: a.html ?? null,
     leadImageUrl: a.leadImageUrl ?? null,
     feedTitle: feedTitleFor(a.feedId),
+    hasNote: (noteRow?.n ?? 0) > 0,
   };
 }
 

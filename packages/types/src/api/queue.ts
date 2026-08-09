@@ -37,6 +37,8 @@ export interface QueueListItemResponse {
   publishedAt: string | null;
   /** Latest like/dislike feedback for the article, if any. */
   feedback: "like" | "dislike" | null;
+  /** Whether the article has any note. */
+  hasNote: boolean;
 }
 
 export interface QueueStatsResponse {

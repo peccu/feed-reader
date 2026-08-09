@@ -11,7 +11,7 @@
     <button
       @click="showMenu = true"
       aria-label="Menu"
-      class="absolute z-40 flex items-center justify-center w-11 h-11 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg text-muted-foreground hover:text-foreground"
+      class="absolute z-40 flex items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-xl ring-1 ring-black/5 active:scale-95 transition-transform"
       :class="ui.sideClass"
       style="bottom: calc(env(safe-area-inset-bottom) + 4.75rem)"
     >

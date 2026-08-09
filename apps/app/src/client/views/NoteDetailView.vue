@@ -39,9 +39,9 @@
           </div>
         </template>
 
-        <!-- View mode -->
+        <!-- View mode (rendered Markdown) -->
         <template v-else>
-          <p class="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{{ note.content }}</p>
+          <div class="article-html text-sm text-foreground leading-relaxed" v-html="renderedNote" />
           <RouterLink
             :to="`/reader/${note.articleId}`"
             class="inline-block mt-6 text-sm text-primary underline underline-offset-4"
@@ -76,14 +76,16 @@
 <script setup lang="ts">
 import type { NoteResponse } from "@feed-reader/types";
 import { Pencil, Trash2 } from "lucide-vue-next";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "../api/client.ts";
 import BackButton from "../components/BackButton.vue";
+import { renderMarkdown } from "../lib/sanitize.ts";
 
 const route = useRoute();
 const router = useRouter();
 const note = ref<NoteResponse | null>(null);
+const renderedNote = computed(() => (note.value ? renderMarkdown(note.value.content) : ""));
 const editing = ref(false);
 const draft = ref("");
 const saving = ref(false);
