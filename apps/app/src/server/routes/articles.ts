@@ -8,7 +8,7 @@ import type {
   ListResponse,
 } from "@feed-reader/types";
 import { Hono } from "hono";
-import { articleRepo } from "../db.ts";
+import { articleRepo, db } from "../db.ts";
 
 const CLAUDE_WORKER_URL = process.env.CLAUDE_WORKER_URL ?? "http://claude-worker:3001";
 
@@ -54,21 +54,24 @@ router.get("/:id", async (c) => {
   return c.json(toDetailResponse(article));
 });
 
+router.get("/ingest/pending", (c) => {
+  const row = db
+    .query<{ count: number }, []>(
+      "SELECT COUNT(*) as count FROM pending_jobs WHERE status IN ('pending','processing')",
+    )
+    .get();
+  return c.json({ count: row?.count ?? 0 });
+});
+
 router.post("/ingest/url", async (c) => {
   const body = await c.req.json<IngestUrlRequest>();
   if (!body.url) return c.json({ error: "url required" }, 400);
   const jobId = crypto.randomUUID();
-  // Insert into pending_jobs — ingester will pick it up
-  const article = createArticle({
-    id: ArticleId(jobId),
-    url: body.url,
-    title: body.url,
-    sourceType: "url",
-  });
-  // We insert an article stub immediately; ingester enriches it
-  await articleRepo.save(article);
-  // Optionally notify ingester via claude-worker
-  fetch(`${CLAUDE_WORKER_URL}/health`).catch(() => {});
+  const now = Date.now();
+  db.run(
+    "INSERT INTO pending_jobs (id, job_type, payload, status, created_at, updated_at) VALUES (?, 'ingest_url', ?, 'pending', ?, ?)",
+    [jobId, JSON.stringify({ url: body.url }), now, now],
+  );
   const resp: IngestJobResponse = { jobId };
   return c.json(resp, 202);
 });

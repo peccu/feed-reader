@@ -76,13 +76,17 @@
           />
           <button
             @click="ingestArticle()"
-            :disabled="!ingestUrl"
+            :disabled="!ingestUrl || submitting"
             class="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium disabled:opacity-50"
           >
             Submit
           </button>
         </div>
-        <p v-if="ingestMessage" class="text-xs text-muted-foreground mt-2">{{ ingestMessage }}</p>
+        <div v-if="pendingCount > 0" class="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+          <span class="inline-block w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+          {{ pendingCount }} job{{ pendingCount === 1 ? '' : 's' }} processing — articles will appear in queue shortly
+        </div>
+        <p v-if="ingestMessage" class="text-xs text-green-600 dark:text-green-400 mt-2">{{ ingestMessage }}</p>
       </section>
     </div>
   </div>
@@ -90,7 +94,7 @@
 
 <script setup lang="ts">
 import type { IngestJobResponse } from "@feed-reader/types";
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { api } from "../api/client.ts";
 import { useFeedsStore } from "../stores/feeds.ts";
 
@@ -98,8 +102,37 @@ const feedsStore = useFeedsStore();
 const newFeedUrl = ref("");
 const ingestUrl = ref("");
 const ingestMessage = ref("");
+const submitting = ref(false);
+const pendingCount = ref(0);
+let pollTimer: ReturnType<typeof setInterval> | null = null;
 
-onMounted(() => feedsStore.fetchFeeds());
+onMounted(() => {
+  feedsStore.fetchFeeds();
+  fetchPendingCount();
+});
+
+onUnmounted(() => {
+  if (pollTimer) clearInterval(pollTimer);
+});
+
+async function fetchPendingCount() {
+  try {
+    const res = await api.get<{ count: number }>("/articles/ingest/pending");
+    pendingCount.value = res.count;
+    if (res.count > 0 && !pollTimer) {
+      pollTimer = setInterval(async () => {
+        const r = await api.get<{ count: number }>("/articles/ingest/pending");
+        pendingCount.value = r.count;
+        if (r.count === 0 && pollTimer) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+      }, 5000);
+    }
+  } catch {
+    // ignore
+  }
+}
 
 async function addFeed() {
   if (!newFeedUrl.value) return;
@@ -108,12 +141,16 @@ async function addFeed() {
 }
 
 async function ingestArticle() {
-  if (!ingestUrl.value) return;
-  const res = await api.post<IngestJobResponse>("/articles/ingest/url", { url: ingestUrl.value });
-  ingestMessage.value = `Job queued: ${res.jobId}`;
-  ingestUrl.value = "";
-  setTimeout(() => {
-    ingestMessage.value = "";
-  }, 3000);
+  if (!ingestUrl.value || submitting.value) return;
+  submitting.value = true;
+  try {
+    const res = await api.post<IngestJobResponse>("/articles/ingest/url", { url: ingestUrl.value });
+    ingestMessage.value = `Queued (job: ${res.jobId.slice(0, 8)}…)`;
+    ingestUrl.value = "";
+    pendingCount.value += 1;
+    fetchPendingCount();
+  } finally {
+    submitting.value = false;
+  }
 }
 </script>

@@ -13,7 +13,7 @@ import {
 } from "@feed-reader/db/sqlite";
 
 const DB_PATH = process.env.DB_PATH ?? "feed-reader.db";
-const db = createDatabase(DB_PATH);
+export const db = createDatabase(DB_PATH);
 initVec(db);
 
 export const feedRepo = new FeedRepo(db);
