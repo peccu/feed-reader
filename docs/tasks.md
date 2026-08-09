@@ -216,7 +216,7 @@ Proxy {__v_skip: true}
 - [ ] ☐ E4. claude-worker セッション継続バグ修正（`--resume` はID／`/sessions/:id` が常に404）
 
 ### Epic F. 発見・共有
-- [ ] ◑ F1. 「この路線でもっと」= 類似記事UI（`GET /articles/:id/similar` は実装済み・導線無し）
+- [x] ☑ F1. 「この路線でもっと」= 類似記事UI（`GET /articles/:id/similar` は実装済み・導線無し）→ エンドポイントに title/url を追加し、記事下部に「More like this」（ベクトル類似 top5・リンク付き）を表示。埋め込み無し記事では非表示
 - [ ] ☐ F2. SNSシェア（`navigator.share` ＋ 読了記録＋外部公開）
 - [ ] ☐ F3. Discover のカテゴリ探索
 
