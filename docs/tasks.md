@@ -214,7 +214,7 @@ Proxy {__v_skip: true}
 - [x] ☑ E2. 記事要約の表示（`POST /claude/summarize` 実装済み・UI無し）→ ClaudePanel の「Summarize」ボタンで要約取得＋表示（article.summary にも永続化）
 - [x] ☑ E3. 対話→ノート保存（`POST /claude/note` 実装済み・UI無し）→ 各 Claude 返信に「Save as note」を追加（claude_conversation ノートとして保存）
   - ※これらは claude-worker が必要。開発環境で未起動のため runtime 検証は未実施（build/型/テストは green）
-- [ ] ☐ E4. claude-worker セッション継続バグ修正（`--resume` はID／`/sessions/:id` が常に404）
+- [x] ☑ E4. claude-worker セッション継続バグ修正（`--resume` はID／`/sessions/:id` が常に404）→ `claude -p --output-format json` で CLI の実 session_id を取得して返し、次ターンは `--resume <id>` で継続。既知 sessionId を Set で保持し `/sessions/:id` が実在を返すように。パース処理は parseClaudeResult() に切り出し単体テスト追加。※claude CLI 実行の end-to-end は未検証（環境に CLI 無し）
 
 ### Epic F. 発見・共有
 - [x] ☑ F1. 「この路線でもっと」= 類似記事UI（`GET /articles/:id/similar` は実装済み・導線無し）→ エンドポイントに title/url を追加し、記事下部に「More like this」（ベクトル類似 top5・リンク付き）を表示。埋め込み無し記事では非表示
