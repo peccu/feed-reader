@@ -2,9 +2,17 @@
   <div class="h-full flex flex-col bg-background">
     <!-- Position indicator (tap to toggle reading direction) -->
     <div
-      class="flex items-center justify-center px-4 py-2 border-b border-border bg-background z-20 shrink-0"
+      class="relative flex items-center justify-center px-4 py-2 border-b border-border bg-background z-20 shrink-0"
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
     >
+      <span
+        v-if="listLabel"
+        class="absolute left-4 flex items-center gap-1.5 text-xs font-semibold"
+        :style="{ color: labelColor }"
+      >
+        <span class="inline-block w-2 h-2 rounded-full" :style="{ backgroundColor: labelColor }" />
+        {{ listLabel }}
+      </span>
       <button
         @click="ui.toggleDirection()"
         :title="ui.direction === 'forward' ? 'Right-hand mode (tap to switch)' : 'Left-hand mode (tap to switch)'"
@@ -100,9 +108,23 @@ const props = defineProps<{
   listKey: string;
   startArticleId?: string;
   emptyText?: string;
+  /** Short label shown in the header so you know which list you're viewing. */
+  listLabel?: string;
 }>();
 
 const emptyText = computed(() => props.emptyText ?? "Nothing here");
+
+// Colour-code the list label so it's obvious at a glance which list this is.
+const LIST_COLORS: Record<string, string> = {
+  unread: "#6366f1",
+  training: "#f59e0b",
+  read: "#16a34a",
+  favorites: "#eab308",
+  skipped: "#64748b",
+  all: "#0ea5e9",
+  single: "#6366f1",
+};
+const labelColor = computed(() => LIST_COLORS[props.listKey] ?? "#6366f1");
 const ui = useUiStore();
 const feed = useArticleFeed();
 

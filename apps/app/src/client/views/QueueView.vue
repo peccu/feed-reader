@@ -3,6 +3,7 @@
     <ArticleFeed
       :items="items"
       list-key="unread"
+      list-label="Unread"
       empty-text="Queue is empty — open the menu to add a feed or submit a URL"
     />
 

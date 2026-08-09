@@ -51,10 +51,10 @@
 
     <BackButton />
 
-    <!-- Floating filter tab bar (capsule, thumb zone) -->
+    <!-- Floating filter tab bar (capsule, thumb zone; scrolls if it overflows) -->
     <div
-      class="absolute left-1/2 -translate-x-1/2 z-40 flex gap-1 p-1 rounded-full bg-card/85 backdrop-blur border border-border shadow-lg"
-      style="bottom: calc(env(safe-area-inset-bottom) + 0.75rem)"
+      class="absolute left-1/2 -translate-x-1/2 z-40 flex gap-1 p-1 rounded-full bg-card/85 backdrop-blur border border-border shadow-lg max-w-[calc(100vw-1.5rem)] overflow-x-auto"
+      style="bottom: calc(env(safe-area-inset-bottom) + 0.75rem); scrollbar-width: none"
     >
       <button
         v-for="t in tabs"

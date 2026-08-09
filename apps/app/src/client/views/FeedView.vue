@@ -3,6 +3,7 @@
     <ArticleFeed
       :items="items"
       :list-key="listKey"
+      :list-label="LABELS[listKey] ?? listKey"
       :start-article-id="startArticleId"
       :empty-text="emptyText"
     />
