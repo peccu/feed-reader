@@ -13,7 +13,6 @@ export type FeedItem = QueueListItemResponse;
 export function useArticleFeed() {
   const items = ref<FeedItem[]>([]);
   const currentIndex = ref(0);
-  const direction = ref<"forward" | "backward">("forward");
   const articleCache = ref<Map<string, ArticleDetailResponse>>(new Map());
   const evaluations = ref<Map<string, "like" | "dislike">>(new Map());
 
@@ -27,6 +26,11 @@ export function useArticleFeed() {
 
   function setItems(next: FeedItem[], startArticleId?: string) {
     items.value = next;
+    // Seed evaluation highlights from stored feedback so already-liked/disliked
+    // articles show their state (not "unevaluated") when reopened.
+    for (const it of next) {
+      if (it.feedback) evaluations.value.set(it.articleId, it.feedback);
+    }
     const idx = startArticleId ? next.findIndex((i) => i.articleId === startArticleId) : 0;
     currentIndex.value = idx >= 0 ? idx : 0;
     prefetchAround(currentIndex.value);
@@ -67,10 +71,6 @@ export function useArticleFeed() {
     prefetchAround(currentIndex.value);
   }
 
-  function toggleDirection() {
-    direction.value = direction.value === "forward" ? "backward" : "forward";
-  }
-
   /** Remove the current item from the list (after read/skip in a live queue). */
   function removeCurrent() {
     const idx = currentIndex.value;
@@ -84,7 +84,6 @@ export function useArticleFeed() {
   return {
     items,
     currentIndex,
-    direction,
     total,
     currentItem,
     currentEvaluation,
@@ -93,7 +92,6 @@ export function useArticleFeed() {
     fetchArticle,
     articleFor,
     navigate,
-    toggleDirection,
     removeCurrent,
   };
 }

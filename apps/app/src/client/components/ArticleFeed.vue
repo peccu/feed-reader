@@ -6,15 +6,18 @@
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
     >
       <button
-        @click="feed.toggleDirection()"
-        class="flex items-center gap-1 text-sm font-mono text-muted-foreground hover:text-foreground transition-colors"
+        @click="ui.toggleDirection()"
+        :title="ui.direction === 'forward' ? 'Right-hand mode (tap to switch)' : 'Left-hand mode (tap to switch)'"
+        class="flex items-center gap-1.5 text-sm font-mono text-muted-foreground hover:text-foreground transition-colors"
       >
-        <span class="text-xs">{{ feed.direction.value === 'forward' ? '→' : '←' }}</span>
+        <Hand v-if="ui.direction === 'backward'" :size="15" style="transform: scaleX(-1)" />
+        <span class="text-xs">{{ ui.direction === 'forward' ? '→' : '←' }}</span>
         <span class="tabular-nums">
           {{ feed.total.value > 0 ? feed.currentIndex.value + 1 : 0 }}
           <span class="text-xs text-muted-foreground/60">/</span>
           {{ feed.total.value }}
         </span>
+        <Hand v-if="ui.direction === 'forward'" :size="15" />
       </button>
     </div>
 
@@ -33,7 +36,7 @@
       class="flex-1 min-h-0"
       :current-index="feed.currentIndex.value"
       :total="feed.total.value"
-      :reversed="feed.direction.value === 'backward'"
+      :reversed="ui.reversed"
       @navigate="onNavigate"
     >
       <ArticleCard
@@ -52,7 +55,7 @@
       :favorited="feed.currentItem.value?.favorited ?? false"
       :status="feed.currentItem.value?.status"
       :actions="actions"
-      :reversed="feed.direction.value === 'backward'"
+      :reversed="ui.reversed"
       @action="onAction"
     />
 
@@ -82,10 +85,11 @@
 
 <script setup lang="ts">
 import type { CreateNoteRequest, NoteResponse } from "@feed-reader/types";
-import { Inbox } from "lucide-vue-next";
+import { Hand, Inbox } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import { api } from "../api/client.ts";
 import { type FeedItem, useArticleFeed } from "../composables/useArticleFeed.ts";
+import { useUiStore } from "../stores/ui.ts";
 import ActionBar from "./ActionBar.vue";
 import ArticleCard from "./ArticleCard.vue";
 import ArticleCarousel from "./ArticleCarousel.vue";
@@ -99,6 +103,7 @@ const props = defineProps<{
 }>();
 
 const emptyText = computed(() => props.emptyText ?? "Nothing here");
+const ui = useUiStore();
 const feed = useArticleFeed();
 
 watch(
@@ -208,6 +213,4 @@ async function saveNote() {
     savingNote.value = false;
   }
 }
-
-defineExpose({ toggleDirection: feed.toggleDirection, direction: feed.direction });
 </script>

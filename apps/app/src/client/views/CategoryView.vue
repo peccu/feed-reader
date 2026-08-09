@@ -1,10 +1,10 @@
 <template>
-  <div class="h-full flex flex-col bg-background">
+  <div class="h-full flex flex-col bg-background relative">
+    <BackButton />
     <div
       class="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0"
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
     >
-      <RouterLink to="/" class="text-muted-foreground hover:text-foreground text-xl">←</RouterLink>
       <h1 class="text-base font-semibold flex-1">Categories</h1>
       <button
         @click="showNew = true"
@@ -130,6 +130,7 @@
 import type { CategoryResponse } from "@feed-reader/types";
 import { onMounted, ref } from "vue";
 import { api } from "../api/client.ts";
+import BackButton from "../components/BackButton.vue";
 
 const categories = ref<CategoryResponse[]>([]);
 const showNew = ref(false);

@@ -1,17 +1,17 @@
 <template>
   <div class="h-full relative">
     <ArticleFeed
-      ref="feedRef"
       :items="items"
       list-key="unread"
       empty-text="Queue is empty — open the menu to add a feed or submit a URL"
     />
 
-    <!-- Floating menu button (bottom, thumb zone; always reachable) -->
+    <!-- Floating menu button (bottom, thumb zone; follows handedness) -->
     <button
       @click="showMenu = true"
       aria-label="Menu"
-      class="absolute left-3 z-40 flex items-center justify-center w-11 h-11 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg text-muted-foreground hover:text-foreground"
+      class="absolute z-40 flex items-center justify-center w-11 h-11 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg text-muted-foreground hover:text-foreground"
+      :class="ui.sideClass"
       style="bottom: calc(env(safe-area-inset-bottom) + 4.75rem)"
     >
       <Menu :size="20" />
@@ -25,11 +25,14 @@
         style="padding-bottom: max(1rem, env(safe-area-inset-bottom))"
       >
         <button
-          @click="feedRef?.toggleDirection()"
+          @click="ui.toggleDirection()"
           class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent text-foreground"
         >
           <ArrowLeftRight :size="20" class="text-muted-foreground" />
-          <span class="text-sm font-medium flex-1 text-left">Toggle direction (left / right hand)</span>
+          <span class="text-sm font-medium flex-1 text-left">Direction</span>
+          <span class="text-xs text-muted-foreground">
+            {{ ui.direction === 'forward' ? 'Right-hand' : 'Left-hand' }}
+          </span>
         </button>
 
         <div class="my-1 border-t border-border" />
@@ -65,8 +68,9 @@ import {
 import { type Component, onMounted, ref } from "vue";
 import { api } from "../api/client.ts";
 import ArticleFeed from "../components/ArticleFeed.vue";
+import { useUiStore } from "../stores/ui.ts";
 
-const feedRef = ref<{ toggleDirection: () => void } | null>(null);
+const ui = useUiStore();
 const items = ref<QueueListItemResponse[]>([]);
 const showMenu = ref(false);
 
