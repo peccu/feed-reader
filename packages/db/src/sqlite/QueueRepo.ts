@@ -84,6 +84,29 @@ export class QueueRepo implements QueueRepository {
       }));
   }
 
+  /**
+   * Unread items whose relevance score is closest to the 0.5 decision
+   * boundary — the "borderline" articles most useful for training the
+   * preference vector. Enriched with article info.
+   */
+  async findBorderline(limit = 30): Promise<QueueListItem[]> {
+    const sql = `SELECT q.*, a.title, a.url, a.lead_image_url, a.published_at
+       FROM queue_items q JOIN articles a ON a.id = q.article_id
+       WHERE q.status = 'unread'
+       ORDER BY ABS(q.relevance_score - 0.5) ASC, q.added_at DESC
+       LIMIT ?`;
+    return this.db
+      .prepare<QueueListRow, [number]>(sql)
+      .all(limit)
+      .map((r) => ({
+        item: toItem(r),
+        title: r.title,
+        url: r.url,
+        leadImageUrl: r.lead_image_url,
+        publishedAt: r.published_at !== null ? new Date(r.published_at) : null,
+      }));
+  }
+
   async findById(id: QueueItemId): Promise<QueueItem | null> {
     const row =
       this.db.query<QueueItemRow, [string]>("SELECT * FROM queue_items WHERE id = ?").get(id) ??

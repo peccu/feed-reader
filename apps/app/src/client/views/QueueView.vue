@@ -8,6 +8,7 @@
       <!-- Nav links -->
       <div class="flex items-center gap-3 text-muted-foreground">
         <RouterLink to="/discover" class="text-sm hover:text-foreground transition-colors">Discover</RouterLink>
+        <RouterLink to="/train" class="text-sm hover:text-foreground transition-colors">Train</RouterLink>
         <RouterLink to="/library" class="text-sm hover:text-foreground transition-colors">Library</RouterLink>
         <RouterLink to="/notes" class="text-sm hover:text-foreground transition-colors">Notes</RouterLink>
       </div>

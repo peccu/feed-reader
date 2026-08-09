@@ -70,6 +70,20 @@ router.get("/list", async (c) => {
   return c.json({ items, total: items.length });
 });
 
+// Borderline-score unread items for the training screen.
+router.get("/training", async (c) => {
+  const limit = Number(c.req.query("limit") ?? 30);
+  const rows = await queueRepo.findBorderline(limit);
+  const items: QueueListItemResponse[] = rows.map((r) => ({
+    ...toResponse(r.item),
+    title: r.title,
+    url: r.url,
+    leadImageUrl: r.leadImageUrl,
+    publishedAt: r.publishedAt?.toISOString() ?? null,
+  }));
+  return c.json({ items, total: items.length });
+});
+
 router.get("/stats", async (c) => {
   const [unread, reading, read, skipped, archived] = await Promise.all([
     queueRepo.countByStatus("unread"),

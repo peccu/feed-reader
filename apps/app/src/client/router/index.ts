@@ -7,6 +7,7 @@ export const router = createRouter({
     { path: "/reader/:id", component: () => import("../views/ReaderView.vue") },
     { path: "/discover", component: () => import("../views/DiscoverView.vue") },
     { path: "/library", component: () => import("../views/LibraryView.vue") },
+    { path: "/train", component: () => import("../views/TrainingView.vue") },
     { path: "/notes", component: () => import("../views/NotesView.vue") },
     { path: "/notes/:id", component: () => import("../views/NoteDetailView.vue") },
     { path: "/categories", component: () => import("../views/CategoryView.vue") },
