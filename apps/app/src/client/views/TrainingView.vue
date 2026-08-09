@@ -35,7 +35,7 @@
     </div>
 
     <div v-else class="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground px-8 text-center">
-      <span class="text-5xl">🎯</span>
+      <Target :size="48" :stroke-width="1.5" />
       <p class="text-base font-medium text-foreground">All caught up</p>
       <p class="text-sm">No borderline articles to train on right now.</p>
     </div>
@@ -68,7 +68,7 @@
 
 <script setup lang="ts">
 import type { QueueListItemResponse } from "@feed-reader/types";
-import { ThumbsDown, ThumbsUp } from "lucide-vue-next";
+import { Target, ThumbsDown, ThumbsUp } from "lucide-vue-next";
 import { computed, onMounted, ref } from "vue";
 import { api } from "../api/client.ts";
 import { useFeedbackStore } from "../stores/feedback.ts";

@@ -35,14 +35,14 @@
       v-if="!queue.loading && queue.total === 0"
       class="flex-1 flex flex-col items-center justify-center gap-4 text-muted-foreground px-8 text-center"
     >
-      <span class="text-5xl">🎉</span>
+      <Inbox :size="48" :stroke-width="1.5" />
       <p class="text-base font-medium text-foreground">Queue is empty</p>
       <p class="text-sm">Add a feed or submit a URL</p>
       <RouterLink
         to="/settings"
         class="mt-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium"
       >
-        Manage feeds →
+        Manage feeds
       </RouterLink>
     </div>
 
@@ -142,6 +142,7 @@ import {
   ArrowLeftRight,
   Compass,
   Gauge,
+  Inbox,
   Library,
   Menu,
   NotebookText,

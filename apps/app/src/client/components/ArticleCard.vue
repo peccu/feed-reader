@@ -58,8 +58,8 @@
               :href="article.url"
               target="_blank"
               rel="noopener"
-              class="text-primary underline underline-offset-4"
-            >Open original article ↗</a>
+              class="inline-flex items-center gap-1 text-primary underline underline-offset-4"
+            >Open original article <ExternalLink :size="14" /></a>
           </div>
 
           <!-- Source link -->
@@ -68,8 +68,11 @@
               :href="article.url"
               target="_blank"
               rel="noopener"
-              class="block break-all hover:text-foreground transition-colors"
-            >{{ article.url }} ↗</a>
+              class="flex items-start gap-1 break-all hover:text-foreground transition-colors"
+            >
+              <ExternalLink :size="12" class="mt-0.5 shrink-0" />
+              <span>{{ article.url }}</span>
+            </a>
           </div>
         </div>
       </div>
@@ -84,6 +87,7 @@
 
 <script setup lang="ts">
 import type { ArticleDetailResponse, QueueItemResponse } from "@feed-reader/types";
+import { ExternalLink } from "lucide-vue-next";
 import { computed } from "vue";
 import { sanitizeHtml } from "../lib/sanitize.ts";
 

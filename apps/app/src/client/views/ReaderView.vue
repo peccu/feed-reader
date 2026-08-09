@@ -12,8 +12,9 @@
         :href="article.url"
         target="_blank"
         rel="noopener"
-        class="text-muted-foreground hover:text-foreground text-sm"
-      >↗</a>
+        class="text-muted-foreground hover:text-foreground"
+        aria-label="Open original"
+      ><ExternalLink :size="18" /></a>
     </div>
 
     <!-- Content -->
@@ -59,8 +60,8 @@
           >{{ article.fullText }}</div>
 
           <div v-else class="text-center py-8 text-muted-foreground">
-            <a :href="article.url" target="_blank" rel="noopener" class="text-primary underline underline-offset-4">
-              Open original article ↗
+            <a :href="article.url" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-primary underline underline-offset-4">
+              Open original article <ExternalLink :size="14" />
             </a>
           </div>
         </div>
@@ -150,7 +151,7 @@
 
 <script setup lang="ts">
 import type { ArticleDetailResponse, CreateNoteRequest, NoteResponse } from "@feed-reader/types";
-import { Check, LayoutList, StickyNote, ThumbsDown, ThumbsUp } from "lucide-vue-next";
+import { Check, ExternalLink, LayoutList, StickyNote, ThumbsDown, ThumbsUp } from "lucide-vue-next";
 import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "../api/client.ts";
