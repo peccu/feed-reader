@@ -131,7 +131,7 @@ Proxy {__v_skip: true}
 - [x] 全体的に、インプットフォームなどがダークモードの時に黒い文字で読めない
 - [x] ノートはmarkdownで記述します。maeked.jsでレンダリングしてもらえますか？他にいいものがあれば私に聞いて欲しいです（marked.js でパース→DOMPurify でサニタイズして NoteDetail 表示モードにレンダリング。marked は軽量・実績十分で採用）
 - [x] ライブラリなど、記事を一覧する場所では記事のドメイン名を記載して欲しいです。情報源のカテゴリとして視認したいです（Library 行・Discover 結果・記事ヘッダーに hostname を表示）
-- [ ] dislike, readのように操作すると消えるものはundoするためのバナーか何かを一定時間表示してもらえますか。可能ならiphoneをshakeしてundoできるとさらに良いです
+- [x] dislike, readのように操作すると消えるものはundoするためのバナーか何かを一定時間表示してもらえますか。可能ならiphoneをshakeしてundoできるとさらに良いです（dislike/read/skip で記事が消えた直後に Undo バナーを約6秒表示。ステータス＋フィードバックを元に戻し、元の位置に復帰。端末のモーションセンサーがあればシェイクでも undo＝iOS は初回操作時に許可要求）
 - [x] discoverの検索フォームにフォーカスするとズームしてしまったので文字が小さすぎるかもしれません。iphone safariでズームしないようなフォームにして欲しいです。この画面に限らず全体に適用して
 - [ ] ホーム画面に追加するとボトムのボタンの下に無駄に余白があります
 - [x] スワイプできなくなってる
@@ -171,6 +171,8 @@ Proxy {__v_skip: true}
     Error Context: test-results/settings-Settings-View-shows-feed-URL-input-and-add-button-Desktop-Chrome/error-context.md
 ```
 - [ ] discoverの検索フォームもios26のようにボトムに移動してもらえますか。丸い感じで
+- [ ] 記事を見ている時に、その記事についているノートを確認するための動線が欲しいです。
+
 
 
 ---
