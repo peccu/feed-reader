@@ -70,6 +70,16 @@
     /* Disable the double-tap-to-zoom delay/behavior on mobile (pinch-zoom stays). */
     touch-action: manipulation;
   }
+
+  /* Form controls: inherit the theme text colour (fixes black text on dark bg),
+     and use a >=16px font so iOS Safari doesn't zoom in on focus. */
+  input,
+  textarea,
+  select {
+    color: hsl(var(--foreground));
+    font-size: 16px;
+  }
+
 }
 
 /* Readable styling for sanitized article HTML rendered via v-html

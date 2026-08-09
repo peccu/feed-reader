@@ -4,6 +4,7 @@
          (flex-row-reverse) so index 0 sits on the right and advancing moves
          leftward — the next article enters from the left. -->
     <div
+      ref="trackEl"
       class="flex h-full will-change-transform touch-pan-y"
       :class="[{ 'transition-transform duration-300 ease-out': !dragging }, { 'flex-row-reverse': reversed }]"
       :style="{ transform: `translateX(calc(${basePct}% + ${dragDx}px))` }"
@@ -51,6 +52,8 @@ const emit = defineEmits<{
   navigate: [delta: number];
 }>();
 
+const trackEl = ref<HTMLElement | null>(null);
+
 // Track offset. Forward: index grows rightward (translate negative). Reversed:
 // row-reverse flips the strip, so translate positive to reveal higher indices.
 const basePct = computed(() => (props.reversed ? props.currentIndex : -props.currentIndex) * 100);
@@ -89,6 +92,9 @@ function onPointerMove(e: PointerEvent) {
   if (!decided && Math.abs(dx) + Math.abs(dy) > 8) {
     decided = true;
     horizontal = Math.abs(dx) > Math.abs(dy);
+    // Capture the pointer for horizontal drags so events keep coming even as
+    // the finger passes over the card's own (vertically) scrollable content.
+    if (horizontal) trackEl.value?.setPointerCapture?.(e.pointerId);
   }
   if (horizontal) {
     e.preventDefault();
