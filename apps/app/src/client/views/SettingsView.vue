@@ -127,6 +127,43 @@
         <p v-if="ingestMessage" class="text-xs text-green-600 dark:text-green-400 mt-2">{{ ingestMessage }}</p>
       </section>
 
+      <!-- HTML paste ingest -->
+      <section>
+        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Submit HTML</h2>
+        <p class="text-xs text-muted-foreground mb-2">
+          Paste an article's HTML directly (e.g. from an email or a page that can't be fetched). The
+          source URL identifies the article.
+        </p>
+        <div class="space-y-2">
+          <input
+            v-model="htmlUrl"
+            type="url"
+            placeholder="Source URL (https://example.com/article)"
+            class="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          />
+          <input
+            v-model="htmlTitle"
+            type="text"
+            placeholder="Title (optional)"
+            class="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          />
+          <textarea
+            v-model="htmlBody"
+            rows="5"
+            placeholder="<article>…</article>"
+            class="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-y"
+          />
+          <button
+            @click="ingestHtml()"
+            :disabled="!htmlUrl || !htmlBody || submittingHtml"
+            class="px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium disabled:opacity-50"
+          >
+            {{ submittingHtml ? 'Submitting…' : 'Submit HTML' }}
+          </button>
+        </div>
+        <p v-if="htmlMessage" class="text-xs text-green-600 dark:text-green-400 mt-2">{{ htmlMessage }}</p>
+      </section>
+
       <!-- Submitted URL history -->
       <section>
         <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
@@ -237,6 +274,11 @@ const newFeedUrl = ref("");
 const ingestUrl = ref("");
 const ingestMessage = ref("");
 const submitting = ref(false);
+const htmlUrl = ref("");
+const htmlTitle = ref("");
+const htmlBody = ref("");
+const htmlMessage = ref("");
+const submittingHtml = ref(false);
 const pendingCount = ref(0);
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -384,6 +426,26 @@ async function ingestArticle() {
     fetchPendingCount();
   } finally {
     submitting.value = false;
+  }
+}
+
+async function ingestHtml() {
+  if (!htmlUrl.value || !htmlBody.value || submittingHtml.value) return;
+  submittingHtml.value = true;
+  try {
+    const res = await api.post<IngestJobResponse>("/articles/ingest/html", {
+      url: htmlUrl.value,
+      html: htmlBody.value,
+      ...(htmlTitle.value ? { title: htmlTitle.value } : {}),
+    });
+    htmlMessage.value = `Queued (job: ${res.jobId.slice(0, 8)}…)`;
+    htmlUrl.value = "";
+    htmlTitle.value = "";
+    htmlBody.value = "";
+    pendingCount.value += 1;
+    fetchPendingCount();
+  } finally {
+    submittingHtml.value = false;
   }
 }
 </script>
