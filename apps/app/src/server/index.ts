@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import adminRouter from "./routes/admin.ts";
 import articlesRouter from "./routes/articles.ts";
 import categoriesRouter, { articleCategoryRouter } from "./routes/categories.ts";
 import claudeRouter from "./routes/claude.ts";
@@ -45,6 +46,9 @@ api.route("/claude", claudeRouter);
 
 // Search
 api.route("/search", searchRouter);
+
+// Admin / status
+api.route("/admin", adminRouter);
 
 app.route("/api/v1", api);
 
