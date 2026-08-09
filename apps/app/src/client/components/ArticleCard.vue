@@ -86,6 +86,9 @@
             </a>
           </div>
 
+          <!-- Claude: summarize / chat / save-as-note -->
+          <ClaudePanel :article-id="article.id" />
+
           <!-- "More like this" (vector-similar articles) -->
           <SimilarArticles :article-id="article.id" />
         </div>
@@ -105,6 +108,7 @@ import { ExternalLink, StickyNote } from "lucide-vue-next";
 import { computed } from "vue";
 import { sanitizeHtml } from "../lib/sanitize.ts";
 import { hostname } from "../lib/url.ts";
+import ClaudePanel from "./ClaudePanel.vue";
 import SimilarArticles from "./SimilarArticles.vue";
 
 const props = defineProps<{
