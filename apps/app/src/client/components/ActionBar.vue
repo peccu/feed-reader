@@ -10,7 +10,7 @@
       :disabled="disabled"
     >
       <span class="text-xl">⏭</span>
-      <span class="text-xs">スキップ</span>
+      <span class="text-xs">Skip</span>
     </button>
 
     <!-- Dislike -->
@@ -20,7 +20,7 @@
       :disabled="disabled"
     >
       <span class="text-xl">👎</span>
-      <span class="text-xs">興味なし</span>
+      <span class="text-xs">Not interested</span>
     </button>
 
     <!-- Read full article -->
@@ -30,7 +30,7 @@
       :disabled="disabled"
     >
       <span class="text-xl">📖</span>
-      <span class="text-xs font-medium">全文</span>
+      <span class="text-xs font-medium">Full text</span>
     </button>
 
     <!-- Like -->
@@ -40,7 +40,7 @@
       :disabled="disabled"
     >
       <span class="text-xl">👍</span>
-      <span class="text-xs">いいね</span>
+      <span class="text-xs">Like</span>
     </button>
 
     <!-- Note -->
@@ -50,7 +50,7 @@
       :disabled="disabled"
     >
       <span class="text-xl">📝</span>
-      <span class="text-xs">メモ</span>
+      <span class="text-xs">Note</span>
     </button>
   </div>
 </template>

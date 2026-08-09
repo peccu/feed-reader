@@ -5,10 +5,10 @@
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
     >
       <RouterLink to="/notes" class="text-muted-foreground hover:text-foreground text-xl">←</RouterLink>
-      <h1 class="text-base font-semibold flex-1">メモ</h1>
+      <h1 class="text-base font-semibold flex-1">Note</h1>
     </div>
     <div class="flex-1 overflow-y-auto p-4">
-      <p class="text-sm text-foreground whitespace-pre-wrap">{{ note?.content ?? "読み込み中..." }}</p>
+      <p class="text-sm text-foreground whitespace-pre-wrap">{{ note?.content ?? "Loading..." }}</p>
     </div>
   </div>
 </template>

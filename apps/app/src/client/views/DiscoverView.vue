@@ -5,7 +5,7 @@
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
     >
       <RouterLink to="/" class="text-muted-foreground hover:text-foreground text-xl">←</RouterLink>
-      <h1 class="text-base font-semibold flex-1">探索</h1>
+      <h1 class="text-base font-semibold flex-1">Discover</h1>
     </div>
 
     <div class="flex-1 overflow-y-auto p-4 space-y-4">
@@ -15,13 +15,13 @@
           v-model="query"
           @keydown.enter="search()"
           type="search"
-          placeholder="記事を検索..."
+          placeholder="Search articles..."
           class="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         />
         <button
           @click="search()"
           class="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm"
-        >検索</button>
+        >Search</button>
       </div>
 
       <!-- Results -->
@@ -38,7 +38,7 @@
       </div>
 
       <p v-else-if="searched" class="text-sm text-muted-foreground text-center py-8">
-        一致する記事が見つかりませんでした
+        No articles found
       </p>
     </div>
   </div>

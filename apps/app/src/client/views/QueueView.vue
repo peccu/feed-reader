@@ -7,15 +7,15 @@
     >
       <!-- Nav links -->
       <div class="flex items-center gap-3 text-muted-foreground">
-        <RouterLink to="/discover" class="text-sm hover:text-foreground transition-colors">探索</RouterLink>
-        <RouterLink to="/notes" class="text-sm hover:text-foreground transition-colors">メモ</RouterLink>
+        <RouterLink to="/discover" class="text-sm hover:text-foreground transition-colors">Discover</RouterLink>
+        <RouterLink to="/notes" class="text-sm hover:text-foreground transition-colors">Notes</RouterLink>
       </div>
 
       <!-- Position indicator (tap to toggle direction) -->
       <button
         @click="queue.toggleDirection()"
         class="flex items-center gap-1 text-sm font-mono text-muted-foreground hover:text-foreground transition-colors"
-        :title="queue.direction === 'forward' ? '→ 前向き (タップで逆順)' : '← 逆順 (タップで順方向)'"
+        :title="queue.direction === 'forward' ? '→ Forward (tap to reverse)' : '← Reverse (tap for forward)'"
       >
         <span class="text-xs">{{ queue.direction === 'forward' ? '→' : '←' }}</span>
         <span class="tabular-nums">
@@ -37,13 +37,13 @@
       class="flex-1 flex flex-col items-center justify-center gap-4 text-muted-foreground px-8 text-center"
     >
       <span class="text-5xl">🎉</span>
-      <p class="text-base font-medium text-foreground">キューが空です</p>
-      <p class="text-sm">フィードを追加するか、URLを投稿してください</p>
+      <p class="text-base font-medium text-foreground">Queue is empty</p>
+      <p class="text-sm">Add a feed or submit a URL</p>
       <RouterLink
         to="/settings"
         class="mt-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium"
       >
-        フィード管理 →
+        Manage feeds →
       </RouterLink>
     </div>
 
@@ -77,6 +77,9 @@
 import type { ArticleDetailResponse, QueueItemResponse } from "@feed-reader/types";
 import { computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
+import ActionBar from "../components/ActionBar.vue";
+import ArticleCard from "../components/ArticleCard.vue";
+import ArticleCarousel from "../components/ArticleCarousel.vue";
 import { useFeedbackStore } from "../stores/feedback.ts";
 import { useQueueStore } from "../stores/queue.ts";
 

@@ -5,7 +5,7 @@
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
     >
       <RouterLink to="/" class="text-muted-foreground hover:text-foreground text-xl">←</RouterLink>
-      <h1 class="text-base font-semibold flex-1">カテゴリ</h1>
+      <h1 class="text-base font-semibold flex-1">Categories</h1>
     </div>
     <div class="flex-1 overflow-y-auto p-4 space-y-3">
       <div
@@ -22,11 +22,11 @@
           <p v-if="cat.description" class="text-xs text-muted-foreground">{{ cat.description }}</p>
         </div>
         <span v-if="cat.isAutoCluster" class="text-xs px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">
-          自動
+          Auto
         </span>
       </div>
       <p v-if="categories.length === 0" class="text-sm text-muted-foreground text-center py-8">
-        カテゴリがありません
+        No categories
       </p>
     </div>
   </div>

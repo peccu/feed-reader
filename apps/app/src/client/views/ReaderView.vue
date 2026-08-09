@@ -6,7 +6,7 @@
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
     >
       <button @click="router.back()" class="text-muted-foreground hover:text-foreground text-xl leading-none">←</button>
-      <span class="flex-1 truncate text-sm font-medium text-foreground">{{ article?.title ?? "読み込み中..." }}</span>
+      <span class="flex-1 truncate text-sm font-medium text-foreground">{{ article?.title ?? "Loading..." }}</span>
       <a
         v-if="article"
         :href="article.url"
@@ -23,7 +23,7 @@
         <div class="flex flex-wrap items-center gap-2 mb-4 text-xs text-muted-foreground">
           <span v-if="article.author" class="font-medium">{{ article.author }}</span>
           <span v-if="article.publishedAt">{{ formattedDate }}</span>
-          <span v-if="article.wordCount">{{ article.wordCount.toLocaleString() }} 語</span>
+          <span v-if="article.wordCount">{{ article.wordCount.toLocaleString() }} words</span>
         </div>
 
         <!-- Title -->
@@ -42,12 +42,12 @@
 
         <div v-else class="text-center py-8 text-muted-foreground">
           <a :href="article.url" target="_blank" rel="noopener" class="text-primary underline underline-offset-4">
-            元記事を開く ↗
+            Open original article ↗
           </a>
         </div>
       </div>
       <div v-else class="flex items-center justify-center h-full text-muted-foreground text-sm">
-        読み込み中...
+        Loading...
       </div>
     </div>
 
@@ -61,7 +61,7 @@
         class="flex flex-col items-center gap-1 text-muted-foreground hover:text-destructive transition-colors px-3 py-1 rounded-lg"
       >
         <span class="text-xl">👎</span>
-        <span class="text-xs">興味なし</span>
+        <span class="text-xs">Not interested</span>
       </button>
 
       <button
@@ -69,7 +69,7 @@
         class="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground px-3 py-1 rounded-lg"
       >
         <span class="text-xl">✓</span>
-        <span class="text-xs">既読</span>
+        <span class="text-xs">Read</span>
       </button>
 
       <button
@@ -77,7 +77,7 @@
         class="flex flex-col items-center gap-1 bg-primary text-primary-foreground px-4 py-1 rounded-lg"
       >
         <span class="text-xl">📝</span>
-        <span class="text-xs font-medium">メモ</span>
+        <span class="text-xs font-medium">Note</span>
       </button>
 
       <button
@@ -85,7 +85,7 @@
         class="flex flex-col items-center gap-1 text-muted-foreground hover:text-yellow-500 transition-colors px-3 py-1 rounded-lg"
       >
         <span class="text-xl">👍</span>
-        <span class="text-xs">いいね</span>
+        <span class="text-xs">Like</span>
       </button>
 
       <RouterLink
@@ -93,7 +93,7 @@
         class="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground transition-colors px-3 py-1 rounded-lg"
       >
         <span class="text-xl">≡</span>
-        <span class="text-xs">キュー</span>
+        <span class="text-xs">Queue</span>
       </RouterLink>
     </div>
 
@@ -105,13 +105,13 @@
     >
       <div class="flex items-center px-4 py-3 border-b border-border">
         <button @click="showNoteForm = false" class="text-muted-foreground hover:text-foreground">✕</button>
-        <span class="flex-1 text-center font-medium text-sm">メモを追加</span>
-        <button @click="saveNote()" class="text-primary text-sm font-medium">保存</button>
+        <span class="flex-1 text-center font-medium text-sm">Add note</span>
+        <button @click="saveNote()" class="text-primary text-sm font-medium">Save</button>
       </div>
       <textarea
         v-model="noteContent"
         class="flex-1 p-4 resize-none bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
-        placeholder="記事についてのメモを書く..."
+        placeholder="Write a note about this article..."
         autofocus
       />
     </div>
@@ -139,7 +139,7 @@ const noteContent = ref("");
 const formattedDate = computed(() => {
   const date = article.value?.publishedAt;
   if (!date) return "";
-  return new Date(date).toLocaleDateString("ja-JP", {
+  return new Date(date).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",

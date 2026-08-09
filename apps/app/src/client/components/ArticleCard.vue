@@ -9,9 +9,9 @@
         <div class="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
           <span v-if="article.sourceType === 'rss'" class="px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">RSS</span>
           <span>{{ formattedDate }}</span>
-          <span v-if="article.wordCount">{{ article.wordCount.toLocaleString() }} 語</span>
+          <span v-if="article.wordCount">{{ article.wordCount.toLocaleString() }} words</span>
           <span class="ml-auto">
-            スコア {{ Math.round((item?.relevanceScore ?? 0) * 100) }}%
+            Score {{ Math.round((item?.relevanceScore ?? 0) * 100) }}%
           </span>
         </div>
 
@@ -33,19 +33,19 @@
 
         <!-- No text fallback -->
         <div v-else class="text-center py-8 text-muted-foreground text-sm">
-          <p class="mb-2">本文が取得されていません</p>
+          <p class="mb-2">Full text not available</p>
           <a
             :href="article.url"
             target="_blank"
             rel="noopener"
             class="text-primary underline underline-offset-4"
-          >元記事を開く ↗</a>
+          >Open original article ↗</a>
         </div>
       </div>
 
       <!-- Loading state -->
       <div v-else class="flex items-center justify-center h-full">
-        <div class="text-muted-foreground text-sm">読み込み中...</div>
+        <div class="text-muted-foreground text-sm">Loading...</div>
       </div>
     </div>
 
