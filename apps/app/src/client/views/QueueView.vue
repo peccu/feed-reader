@@ -67,6 +67,7 @@
     <ActionBar
       v-if="queue.total > 0"
       :disabled="queue.loading || !queue.currentItem"
+      :evaluation="currentEvaluation"
       @action="handleAction"
     />
 
@@ -116,6 +117,14 @@ const showNoteForm = ref(false);
 const noteContent = ref("");
 const savingNote = ref(false);
 
+// Local record of like/dislike per article so the buttons reflect that an
+// evaluation was sent — evaluation does NOT change queue status or remove the
+// article (that's what "Read"/"Skip" do).
+const evaluations = ref<Map<string, "like" | "dislike">>(new Map());
+const currentEvaluation = computed(
+  () => queue.currentItem && (evaluations.value.get(queue.currentItem.articleId) ?? null),
+);
+
 // Prefetch current + adjacent articles
 const prefetchRange = 1;
 interface VisibleItem {
@@ -162,23 +171,26 @@ function handleNavigate(delta: number) {
   queue.navigate(actual);
 }
 
-async function handleAction(type: "skip" | "like" | "dislike" | "note") {
+async function handleAction(type: "dislike" | "like" | "done" | "skip" | "note") {
   const item = queue.currentItem;
   if (!item) return;
 
   switch (type) {
+    // Evaluation only: update the preference vector, keep the article unread.
+    case "like":
+    case "dislike":
+      evaluations.value.set(item.articleId, type);
+      await feedback.sendFeedback(item.articleId, type);
+      break;
+
+    // Finished reading → mark read (leaves the unread queue).
+    case "done":
+      await queue.updateStatus(item.id, "read");
+      break;
+
+    // Not now → skip (leaves the unread queue).
     case "skip":
       await queue.updateStatus(item.id, "skipped");
-      break;
-
-    case "like":
-      await feedback.sendFeedback(item.articleId, "like");
-      await queue.updateStatus(item.id, "read");
-      break;
-
-    case "dislike":
-      await feedback.sendFeedback(item.articleId, "dislike");
-      await queue.updateStatus(item.id, "read");
       break;
 
     case "note":

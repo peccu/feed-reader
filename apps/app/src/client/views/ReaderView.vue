@@ -77,15 +77,29 @@
     >
       <button
         @click="sendFeedback('dislike')"
-        class="flex flex-col items-center gap-1 text-muted-foreground hover:text-destructive transition-colors px-3 py-1 rounded-lg"
+        :class="[
+          'flex flex-col items-center gap-1 transition-colors px-3 py-1 rounded-lg',
+          evaluation === 'dislike' ? 'text-destructive' : 'text-muted-foreground hover:text-destructive',
+        ]"
       >
         <ThumbsDown :size="22" />
-        <span class="text-[11px]">Not interested</span>
+        <span class="text-[11px]">Dislike</span>
+      </button>
+
+      <button
+        @click="sendFeedback('like')"
+        :class="[
+          'flex flex-col items-center gap-1 transition-colors px-3 py-1 rounded-lg',
+          evaluation === 'like' ? 'text-yellow-500' : 'text-muted-foreground hover:text-yellow-500',
+        ]"
+      >
+        <ThumbsUp :size="22" />
+        <span class="text-[11px]">Like</span>
       </button>
 
       <button
         @click="markRead()"
-        class="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground px-3 py-1 rounded-lg"
+        class="flex flex-col items-center gap-1 text-muted-foreground hover:text-green-600 transition-colors px-3 py-1 rounded-lg"
       >
         <Check :size="22" />
         <span class="text-[11px]">Read</span>
@@ -97,14 +111,6 @@
       >
         <StickyNote :size="22" />
         <span class="text-[11px] font-medium">Note</span>
-      </button>
-
-      <button
-        @click="sendFeedback('like')"
-        class="flex flex-col items-center gap-1 text-muted-foreground hover:text-yellow-500 transition-colors px-3 py-1 rounded-lg"
-      >
-        <ThumbsUp :size="22" />
-        <span class="text-[11px]">Like</span>
       </button>
 
       <RouterLink
@@ -157,6 +163,7 @@ const article = ref<ArticleDetailResponse | null>(null);
 const showNoteForm = ref(route.query.note === "1");
 const noteContent = ref("");
 
+const evaluation = ref<"like" | "dislike" | null>(null);
 const renderedHtml = computed(() => (article.value?.html ? sanitizeHtml(article.value.html) : ""));
 
 function onImageError(e: Event) {
@@ -177,11 +184,13 @@ onMounted(async () => {
   article.value = await queue.fetchArticle(articleId.value);
 });
 
+// Evaluation only — updates the preference vector, does not mark read/navigate.
 async function sendFeedback(type: "like" | "dislike") {
+  evaluation.value = type;
   await feedback.sendFeedback(articleId.value, type);
-  await markRead();
 }
 
+// Finished reading → mark read and leave the reader.
 async function markRead() {
   const item = queue.items.find((i) => i.articleId === articleId.value);
   if (item) {

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex items-center justify-around px-4 py-2 border-t border-border bg-background"
+    class="flex items-center justify-around px-2 py-2 border-t border-border bg-background"
     style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom))"
   >
     <button
@@ -9,10 +9,11 @@
       @click="emit('action', btn.type)"
       :disabled="disabled"
       :class="[
-        'flex flex-col items-center gap-1 py-1.5 px-3 rounded-lg transition-colors disabled:opacity-40',
-        btn.class,
+        'flex flex-col items-center gap-1 py-1.5 px-2.5 rounded-lg transition-colors disabled:opacity-40',
+        isActive(btn.type) ? btn.activeClass : btn.class,
       ]"
       :aria-label="btn.label"
+      :aria-pressed="isActive(btn.type)"
     >
       <component :is="btn.icon" :size="22" :stroke-width="2" />
       <span class="text-[11px] font-medium">{{ btn.label }}</span>
@@ -21,38 +22,63 @@
 </template>
 
 <script setup lang="ts">
-import { SkipForward, StickyNote, ThumbsDown, ThumbsUp } from "lucide-vue-next";
+import { Check, SkipForward, StickyNote, ThumbsDown, ThumbsUp } from "lucide-vue-next";
 import type { Component } from "vue";
 
-type ActionType = "skip" | "dislike" | "like" | "note";
+type ActionType = "dislike" | "like" | "done" | "skip" | "note";
 
-defineProps<{ disabled?: boolean }>();
+const props = defineProps<{
+  disabled?: boolean;
+  /** Current evaluation for the visible article, to highlight like/dislike. */
+  evaluation?: "like" | "dislike" | null;
+}>();
 const emit = defineEmits<{ action: [type: ActionType] }>();
 
-const buttons: Array<{ type: ActionType; label: string; icon: Component; class: string }> = [
-  {
-    type: "skip",
-    label: "Skip",
-    icon: SkipForward,
-    class: "text-muted-foreground hover:text-foreground",
-  },
+function isActive(type: ActionType): boolean {
+  return (type === "like" || type === "dislike") && props.evaluation === type;
+}
+
+const buttons: Array<{
+  type: ActionType;
+  label: string;
+  icon: Component;
+  class: string;
+  activeClass: string;
+}> = [
   {
     type: "dislike",
-    label: "Not interested",
+    label: "Dislike",
     icon: ThumbsDown,
     class: "text-muted-foreground hover:text-destructive",
+    activeClass: "text-destructive",
   },
   {
     type: "like",
     label: "Like",
     icon: ThumbsUp,
     class: "text-muted-foreground hover:text-yellow-500",
+    activeClass: "text-yellow-500",
+  },
+  {
+    type: "done",
+    label: "Read",
+    icon: Check,
+    class: "text-muted-foreground hover:text-green-600",
+    activeClass: "text-green-600",
+  },
+  {
+    type: "skip",
+    label: "Skip",
+    icon: SkipForward,
+    class: "text-muted-foreground hover:text-foreground",
+    activeClass: "text-foreground",
   },
   {
     type: "note",
     label: "Note",
     icon: StickyNote,
     class: "text-muted-foreground hover:text-primary",
+    activeClass: "text-primary",
   },
 ];
 </script>
