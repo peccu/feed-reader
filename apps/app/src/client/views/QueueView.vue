@@ -79,6 +79,20 @@
         class="absolute left-0 right-0 bottom-0 bg-background border-t border-border rounded-t-2xl p-2"
         style="padding-bottom: max(1rem, env(safe-area-inset-bottom))"
       >
+        <!-- Direction toggle (also available by tapping the top indicator) -->
+        <button
+          @click="queue.toggleDirection()"
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent text-foreground"
+        >
+          <ArrowLeftRight :size="20" class="text-muted-foreground" />
+          <span class="text-sm font-medium flex-1 text-left">Direction</span>
+          <span class="text-xs text-muted-foreground">
+            {{ queue.direction === 'forward' ? 'Right-hand →' : '← Left-hand' }}
+          </span>
+        </button>
+
+        <div class="my-1 border-t border-border" />
+
         <RouterLink
           v-for="link in menuLinks"
           :key="link.to"
@@ -124,6 +138,7 @@ import type {
   QueueItemResponse,
 } from "@feed-reader/types";
 import {
+  ArrowLeftRight,
   Compass,
   Gauge,
   Library,
