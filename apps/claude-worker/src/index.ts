@@ -10,19 +10,51 @@ import { spawnSync } from "bun";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 
-const SESSIONS_DIR = process.env.SESSIONS_DIR ?? "/data/sessions";
-
 const app = new Hono();
 
 app.use("*", cors());
 
 app.get("/health", (c) => c.json({ status: "ok" }));
 
-/** Run claude -p with a prompt and return the output text. */
-async function runClaude(prompt: string, sessionFile?: string): Promise<string> {
-  const args = ["claude", "-p", prompt];
-  if (sessionFile) {
-    args.push("--resume", sessionFile);
+// Session IDs we've seen returned by the CLI, so /sessions/:id can report
+// whether a conversation exists (the CLI owns the actual transcript store).
+const knownSessions = new Set<string>();
+
+export interface ClaudeResult {
+  text: string;
+  sessionId: string | null;
+}
+
+/**
+ * Parse the stdout of `claude -p --output-format json`. That prints a single
+ * JSON object with the assistant text in `result` and the real conversation id
+ * in `session_id`. Falls back to treating the output as plain text if it isn't
+ * JSON (older CLIs / `--output-format text`).
+ */
+export function parseClaudeResult(stdout: string): ClaudeResult {
+  const trimmed = stdout.trim();
+  try {
+    const obj = JSON.parse(trimmed) as Record<string, unknown>;
+    const text = obj.result ?? obj.text ?? obj.content;
+    const sessionId = obj.session_id ?? obj.sessionId;
+    return {
+      text: typeof text === "string" ? text : trimmed,
+      sessionId: typeof sessionId === "string" ? sessionId : null,
+    };
+  } catch {
+    return { text: trimmed, sessionId: null };
+  }
+}
+
+/**
+ * Run `claude -p` and return the assistant text plus the CLI session id.
+ * Pass `resumeSessionId` (a real session id, not a file) to continue a
+ * conversation.
+ */
+async function runClaude(prompt: string, resumeSessionId?: string): Promise<ClaudeResult> {
+  const args = ["claude", "-p", prompt, "--output-format", "json"];
+  if (resumeSessionId) {
+    args.push("--resume", resumeSessionId);
   }
 
   const proc = spawnSync(args, {
@@ -36,7 +68,9 @@ async function runClaude(prompt: string, sessionFile?: string): Promise<string> 
     throw new Error(`claude exited with ${proc.exitCode}: ${stderr}`);
   }
 
-  return new TextDecoder().decode(proc.stdout).trim();
+  const result = parseClaudeResult(new TextDecoder().decode(proc.stdout));
+  if (result.sessionId) knownSessions.add(result.sessionId);
+  return result;
 }
 
 app.post("/summarize", async (c) => {
@@ -47,7 +81,7 @@ app.post("/summarize", async (c) => {
   const prompt = `Summarize the following article in 2-3 sentences. Be concise.\n\n${text.slice(0, 6000)}`;
 
   try {
-    const summary = await runClaude(prompt);
+    const { text: summary } = await runClaude(prompt);
     const resp: SummarizeResponse = { summary };
     return c.json(resp);
   } catch (err) {
@@ -58,15 +92,18 @@ app.post("/summarize", async (c) => {
 
 app.post("/chat", async (c) => {
   const body = await c.req.json<ChatRequest>();
-  const sessionId = body.sessionId ?? crypto.randomUUID();
-  const sessionFile = `${SESSIONS_DIR}/${sessionId}.jsonl`;
 
   const contextPrefix = body.articleId ? `[Reading article: ${body.articleId}]\n\n` : "";
   const prompt = `${contextPrefix}${body.message}`;
 
   try {
-    const content = await runClaude(prompt, body.sessionId ? sessionFile : undefined);
-    const resp: ChatResponse = { sessionId, content };
+    // Resume by the real session id from a previous turn (if any).
+    const { text, sessionId } = await runClaude(prompt, body.sessionId);
+    const resp: ChatResponse = {
+      // Prefer the CLI's session id; fall back to the incoming one.
+      sessionId: sessionId ?? body.sessionId ?? crypto.randomUUID(),
+      content: text,
+    };
     return c.json(resp);
   } catch (err) {
     console.error("[claude-worker] chat error:", err);
@@ -76,14 +113,8 @@ app.post("/chat", async (c) => {
 
 app.get("/sessions/:id", (c) => {
   const sessionId = c.req.param("id");
-  const sessionFile = `${SESSIONS_DIR}/${sessionId}.jsonl`;
-  try {
-    const file = Bun.file(sessionFile);
-    if (!file.size) return c.json({ error: "session not found" }, 404);
-    return c.json({ sessionId, path: sessionFile });
-  } catch {
-    return c.json({ error: "session not found" }, 404);
-  }
+  if (!knownSessions.has(sessionId)) return c.json({ error: "session not found" }, 404);
+  return c.json({ sessionId });
 });
 
 app.post("/analyze", async (c) => {
@@ -97,7 +128,7 @@ Text:
 ${body.text.slice(0, 4000)}`;
 
   try {
-    const raw = await runClaude(prompt);
+    const { text: raw } = await runClaude(prompt);
     // Extract JSON from response
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("no JSON in response");
