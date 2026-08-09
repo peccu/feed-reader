@@ -1,20 +1,10 @@
 <template>
   <div class="h-full flex flex-col bg-background">
-    <!-- Top bar -->
+    <!-- Top bar: position indicator only (nav lives in the bottom menu) -->
     <div
-      class="flex items-center justify-between px-4 py-2 border-b border-border bg-background z-20 shrink-0"
+      class="flex items-center justify-center px-4 py-2 border-b border-border bg-background z-20 shrink-0"
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
     >
-      <!-- Menu (opens a bottom sheet — keeps navigation in the thumb zone) -->
-      <button
-        @click="showMenu = true"
-        class="text-muted-foreground hover:text-foreground transition-colors"
-        aria-label="Menu"
-      >
-        <Menu :size="22" />
-      </button>
-
-      <!-- Position indicator (tap to toggle direction) -->
       <button
         @click="queue.toggleDirection()"
         class="flex items-center gap-1 text-sm font-mono text-muted-foreground hover:text-foreground transition-colors"
@@ -27,10 +17,17 @@
           {{ queue.total }}
         </span>
       </button>
-
-      <!-- Spacer to keep the indicator centered -->
-      <span class="w-[22px]" aria-hidden="true" />
     </div>
+
+    <!-- Floating menu button (bottom, thumb zone; always reachable) -->
+    <button
+      @click="showMenu = true"
+      aria-label="Menu"
+      class="absolute left-3 z-40 flex items-center justify-center w-11 h-11 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg text-muted-foreground hover:text-foreground"
+      style="bottom: calc(env(safe-area-inset-bottom) + 4.75rem)"
+    >
+      <Menu :size="20" />
+    </button>
 
     <!-- Empty state -->
     <div
