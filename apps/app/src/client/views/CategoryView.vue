@@ -6,13 +6,9 @@
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
     >
       <h1 class="text-base font-semibold flex-1">Categories</h1>
-      <button
-        @click="showNew = true"
-        class="text-sm px-3 py-1 rounded-md bg-primary text-primary-foreground"
-      >+ Add</button>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-4 space-y-3">
+    <div class="flex-1 overflow-y-auto p-4 pb-20 space-y-3">
       <!-- New category form -->
       <form
         v-if="showNew"
@@ -120,14 +116,25 @@
       </div>
 
       <p v-if="categories.length === 0 && !showNew" class="text-sm text-muted-foreground text-center py-8">
-        No categories yet — tap "+ Add" to create one
+        No categories yet — tap "Add category" to create one
       </p>
     </div>
+
+    <!-- Add action lives at the bottom (thumb zone), not in the header. -->
+    <button
+      v-if="!showNew"
+      @click="showNew = true"
+      class="absolute left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-4 h-11 rounded-full bg-primary text-primary-foreground shadow-lg active:scale-95 transition-transform"
+      style="bottom: calc(env(safe-area-inset-bottom) + 0.75rem)"
+    >
+      <Plus :size="18" /> Add category
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { CategoryResponse } from "@feed-reader/types";
+import { Plus } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 import { api } from "../api/client.ts";
 import BackButton from "../components/BackButton.vue";
