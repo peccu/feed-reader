@@ -117,45 +117,21 @@
 
 ### コンテナ構成（3コンテナ）
 
-```
-ZimaBoard / Docker Compose
-
-┌─────────────────┐      ┌──────────────────────────┐
-│   ingester      │      │    app                   │
-│   (Bun)         │      │    (Hono / Bun)          │
-│                 │      │                          │
-│ - RSSポーリング  │      │ - REST API               │
-│ - URL取込み     │      │ - Vue.js静的ファイル配信  │
-│ - HTML POST受取 │ ←──→ │ - スコアリング           │
-│ - 本文スクレイプ │  DB  │ - フィードバック受取     │
-│ - Jina API呼出し│      │ - 嗜好ベクトル更新       │
-│ - ベクトル保存   │      │ - カテゴリ管理           │
-└─────────────────┘      └──────────────────────────┘
-        │                          │
-        └────────────┬─────────────┘
-                     ↓
-        ┌─────────────────────┐
-        │   claude-worker     │
-        │   (claude -p)       │
-        │                     │
-        │ - 記事要約・分析     │
-        │ - ユーザー対話      │
-        │ - ノート生成        │
-        └─────────────────────┘
-                     ↕
-┌──────────────────────────────────────────────────┐
-│  共有Dockerボリューム                              │
-│  - sqlite-vec（articles / embeddings / queue /   │
-│                preference_profile / notes /      │
-│                actions / categories）            │
-│  - Kuzu（記事・ノート・カテゴリ間の関係グラフ）    │
-└──────────────────────────────────────────────────┘
-
-↑ Tailscale経由でどこからでもアクセス可
-↓ 外向き通信
-┌──────────────────────────────────────────────────┐
-│  Jina AI API（外部SaaS）                          │
-└──────────────────────────────────────────────────┘
+```mermaid
+graph TD
+  subgraph ZimaBoard["ZimaBoard / Docker Compose"]
+    ingester["ingester (Bun)<br/>RSSポーリング / URL取込 / HTML POST受取<br/>本文スクレイプ / Jina呼出し / ベクトル保存"]
+    app["app (Hono / Bun)<br/>REST API / Vue静的配信 / スコアリング<br/>フィードバック受取 / 嗜好ベクトル更新 / カテゴリ管理"]
+    worker["claude-worker (claude -p)<br/>記事要約・分析 / ユーザー対話 / ノート生成"]
+    vol[("共有Dockerボリューム<br/>sqlite-vec: articles / embeddings / queue /<br/>preference_profile / notes / actions / categories<br/>Kuzu: 記事・ノート・カテゴリの関係グラフ")]
+    ingester <--> vol
+    app <--> vol
+    ingester --> worker
+    app --> worker
+  end
+  jina["Jina AI API（外部SaaS）"]
+  ingester -->|外向き通信| jina
+  user["ユーザー"] -->|Tailscale経由| app
 ```
 
 ### コンテナ分離の理由
