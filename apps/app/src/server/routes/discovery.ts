@@ -2,6 +2,7 @@ import { ArticleId } from "@feed-reader/domain";
 import type { ListResponse, SimilarArticleResponse } from "@feed-reader/types";
 import { Hono } from "hono";
 import { articleRepo, embeddingRepo } from "../db.ts";
+import { embedQuery } from "../embed.ts";
 
 const router = new Hono();
 
@@ -34,16 +35,38 @@ export const searchRouter = new Hono();
 searchRouter.get("/", async (c) => {
   const q = c.req.query("q") ?? "";
   if (!q) return c.json({ error: "q required" }, 400);
-  // Full-text search via LIKE — vector hybrid search added once we have embeddings
-  const articles = await articleRepo.findMany({ limit: 20 });
-  const matched = articles.filter(
-    (a) =>
-      a.title.toLowerCase().includes(q.toLowerCase()) ||
-      (a.fullText?.toLowerCase().includes(q.toLowerCase()) ?? false),
-  );
+  const limit = Number(c.req.query("limit") ?? 20);
+
+  // Try vector search first
+  const embedding = await embedQuery(q);
+  if (embedding) {
+    const similar = await embeddingRepo.findSimilar(embedding, limit);
+    if (similar.length > 0) {
+      const items = await Promise.all(
+        similar.map(async (s) => {
+          const article = await articleRepo.findById(s.articleId);
+          if (!article) return null;
+          return { id: article.id, title: article.title, url: article.url, score: s.similarity };
+        }),
+      );
+      const results = items.filter((x): x is NonNullable<typeof x> => x !== null);
+      return c.json({ items: results, total: results.length, mode: "vector" });
+    }
+  }
+
+  // Fallback: title/text LIKE search
+  const articles = await articleRepo.findMany({ limit: 200 });
+  const ql = q.toLowerCase();
+  const matched = articles
+    .filter(
+      (a) =>
+        a.title.toLowerCase().includes(ql) || (a.fullText?.toLowerCase().includes(ql) ?? false),
+    )
+    .slice(0, limit);
   return c.json({
-    items: matched.map((a) => ({ id: a.id, title: a.title, url: a.url })),
+    items: matched.map((a) => ({ id: a.id, title: a.title, url: a.url, score: null })),
     total: matched.length,
+    mode: "text",
   });
 });
 
