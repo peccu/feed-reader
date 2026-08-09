@@ -1,6 +1,14 @@
-import type { AdminStatsResponse, PendingJobResponse } from "@feed-reader/types";
+import type {
+  AdminStatsResponse,
+  DebugQueryRequest,
+  DebugQueryResponse,
+  PendingJobResponse,
+  ServiceHealthResponse,
+} from "@feed-reader/types";
 import { Hono } from "hono";
 import { db } from "../db.ts";
+
+const CLAUDE_WORKER_URL = process.env.CLAUDE_WORKER_URL ?? "http://localhost:3001";
 
 const router = new Hono();
 
@@ -67,6 +75,72 @@ router.get("/jobs", (c) => {
     updatedAt: new Date(r.updated_at).toISOString(),
   }));
   return c.json({ items, total: items.length });
+});
+
+router.get("/health", async (c) => {
+  const services: ServiceHealthResponse[] = [];
+
+  // app: this process is serving the request.
+  services.push({ name: "app", status: "up", detail: null });
+
+  // ingester: alive if it wrote a heartbeat recently.
+  const hb = db
+    .query<{ beat_at: number }, []>("SELECT beat_at FROM heartbeats WHERE name = 'ingester'")
+    .get();
+  if (!hb) {
+    services.push({ name: "ingester", status: "unknown", detail: "no heartbeat yet" });
+  } else {
+    const ageMs = Date.now() - hb.beat_at;
+    services.push({
+      name: "ingester",
+      status: ageMs < 30_000 ? "up" : "down",
+      detail: `last beat ${Math.round(ageMs / 1000)}s ago`,
+    });
+  }
+
+  // claude-worker: probe its /health endpoint.
+  try {
+    const res = await fetch(`${CLAUDE_WORKER_URL}/health`, { signal: AbortSignal.timeout(2000) });
+    services.push({
+      name: "claude-worker",
+      status: res.ok ? "up" : "down",
+      detail: `HTTP ${res.status}`,
+    });
+  } catch {
+    services.push({ name: "claude-worker", status: "down", detail: "unreachable" });
+  }
+
+  return c.json({ services });
+});
+
+const FORBIDDEN =
+  /\b(insert|update|delete|drop|alter|create|replace|attach|detach|pragma|vacuum)\b/i;
+
+router.post("/query", (c) => {
+  return c.req.json<DebugQueryRequest>().then((body) => {
+    const sql = (body.sql ?? "").trim();
+    // Read-only guard: a single SELECT statement, no mutations.
+    if (!/^select\b/i.test(sql)) {
+      return c.json({ error: "only a single SELECT statement is allowed" }, 400);
+    }
+    if (sql.includes(";") && sql.indexOf(";") !== sql.length - 1) {
+      return c.json({ error: "multiple statements are not allowed" }, 400);
+    }
+    if (FORBIDDEN.test(sql)) {
+      return c.json({ error: "query contains a forbidden keyword" }, 400);
+    }
+    try {
+      const rows = db
+        .query<Record<string, unknown>, []>(sql.replace(/;\s*$/, ""))
+        .all()
+        .slice(0, 200);
+      const columns = rows.length > 0 ? Object.keys(rows[0] as object) : [];
+      const body: DebugQueryResponse = { columns, rows, rowCount: rows.length };
+      return c.json(body);
+    } catch (err) {
+      return c.json({ error: String(err) }, 400);
+    }
+  });
 });
 
 export default router;

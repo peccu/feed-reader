@@ -27,3 +27,19 @@ export interface PendingJobResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ServiceHealthResponse {
+  name: string;
+  status: "up" | "down" | "unknown";
+  detail: string | null;
+}
+
+export interface DebugQueryRequest {
+  sql: string;
+}
+
+export interface DebugQueryResponse {
+  columns: string[];
+  rows: Array<Record<string, unknown>>;
+  rowCount: number;
+}

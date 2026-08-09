@@ -36,6 +36,11 @@ CREATE TABLE IF NOT EXISTS articles (
   updated_at INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS heartbeats (
+  name TEXT PRIMARY KEY,
+  beat_at INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS pending_jobs (
   id TEXT PRIMARY KEY,
   job_type TEXT NOT NULL,

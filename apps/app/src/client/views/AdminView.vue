@@ -23,6 +23,25 @@
         </div>
       </section>
 
+      <!-- Service health -->
+      <section>
+        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Services</h2>
+        <div class="flex flex-wrap gap-2">
+          <span
+            v-for="svc in health"
+            :key="svc.name"
+            class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-card border border-border text-xs"
+            :title="svc.detail ?? ''"
+          >
+            <span
+              class="inline-block w-2 h-2 rounded-full"
+              :class="svc.status === 'up' ? 'bg-green-500' : svc.status === 'down' ? 'bg-destructive' : 'bg-muted-foreground'"
+            />
+            {{ svc.name }}
+          </span>
+        </div>
+      </section>
+
       <!-- Queue breakdown -->
       <section v-if="stats">
         <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Queue</h2>
@@ -71,6 +90,46 @@
         </div>
       </section>
 
+      <!-- Debug query (read-only SELECT) -->
+      <section>
+        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+          Debug query <span class="normal-case font-normal">(read-only SELECT)</span>
+        </h2>
+        <textarea
+          v-model="sql"
+          rows="3"
+          spellcheck="false"
+          placeholder="SELECT id, title, ingest_version FROM articles ORDER BY created_at DESC LIMIT 20"
+          class="w-full px-3 py-2 rounded-lg border border-input bg-background text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+        />
+        <div class="flex items-center gap-2 mt-2">
+          <button
+            @click="runQuery"
+            :disabled="querying || !sql.trim()"
+            class="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm disabled:opacity-50"
+          >{{ querying ? '…' : 'Run' }}</button>
+          <span v-if="queryError" class="text-xs text-destructive break-all">{{ queryError }}</span>
+          <span v-else-if="result" class="text-xs text-muted-foreground">{{ result.rowCount }} row(s)</span>
+        </div>
+
+        <div v-if="result && result.columns.length" class="mt-3 overflow-x-auto">
+          <table class="w-full text-xs border border-border rounded-lg">
+            <thead>
+              <tr class="bg-secondary text-secondary-foreground">
+                <th v-for="col in result.columns" :key="col" class="text-left px-2 py-1 font-medium">{{ col }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, i) in result.rows" :key="i" class="border-t border-border">
+                <td v-for="col in result.columns" :key="col" class="px-2 py-1 align-top text-foreground max-w-[16rem] truncate">
+                  {{ formatCell(row[col]) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <RouterLink
         to="/library"
         class="block text-center text-sm text-primary underline underline-offset-4"
@@ -80,12 +139,23 @@
 </template>
 
 <script setup lang="ts">
-import type { AdminStatsResponse, PendingJobResponse } from "@feed-reader/types";
+import type {
+  AdminStatsResponse,
+  DebugQueryResponse,
+  PendingJobResponse,
+  ServiceHealthResponse,
+} from "@feed-reader/types";
 import { computed, onMounted, ref } from "vue";
 import { api } from "../api/client.ts";
 
 const stats = ref<AdminStatsResponse | null>(null);
 const jobs = ref<PendingJobResponse[]>([]);
+const health = ref<ServiceHealthResponse[]>([]);
+
+const sql = ref("");
+const querying = ref(false);
+const queryError = ref("");
+const result = ref<DebugQueryResponse | null>(null);
 
 const topStats = computed(() =>
   stats.value
@@ -99,12 +169,34 @@ const topStats = computed(() =>
 );
 
 async function load() {
-  const [s, j] = await Promise.all([
+  const [s, j, h] = await Promise.all([
     api.get<AdminStatsResponse>("/admin/stats"),
     api.get<{ items: PendingJobResponse[] }>("/admin/jobs"),
+    api.get<{ services: ServiceHealthResponse[] }>("/admin/health"),
   ]);
   stats.value = s;
   jobs.value = j.items;
+  health.value = h.services;
+}
+
+async function runQuery() {
+  if (!sql.value.trim() || querying.value) return;
+  querying.value = true;
+  queryError.value = "";
+  try {
+    result.value = await api.post<DebugQueryResponse>("/admin/query", { sql: sql.value });
+  } catch (err) {
+    result.value = null;
+    queryError.value = err instanceof Error ? err.message : String(err);
+  } finally {
+    querying.value = false;
+  }
+}
+
+function formatCell(v: unknown): string {
+  if (v === null || v === undefined) return "";
+  if (typeof v === "object") return JSON.stringify(v);
+  return String(v);
 }
 
 function statusClass(status: string): string {
