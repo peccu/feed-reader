@@ -21,3 +21,8 @@ export interface PreferenceResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface UpdatePreferenceRequest {
+  name?: string;
+  learningRate?: number;
+}

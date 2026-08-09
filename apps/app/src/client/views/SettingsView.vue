@@ -64,6 +64,36 @@
         </div>
       </section>
 
+      <!-- Preference -->
+      <section>
+        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Learning Preference</h2>
+        <div v-if="pref" class="space-y-3 p-3 rounded-lg border border-border bg-card">
+          <div class="flex items-center gap-3">
+            <label class="text-xs text-muted-foreground w-28">Learning rate</label>
+            <input
+              v-model.number="prefRate"
+              type="number"
+              min="0.01"
+              max="1"
+              step="0.01"
+              class="w-24 px-2 py-1 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+          </div>
+          <div class="flex items-center gap-3 text-xs text-muted-foreground">
+            <span class="w-28">Articles seen</span>
+            <span>{{ pref.articleCount }}</span>
+          </div>
+          <div class="flex justify-end">
+            <button
+              @click="savePref()"
+              :disabled="savingPref"
+              class="px-3 py-1 text-sm rounded bg-primary text-primary-foreground disabled:opacity-50"
+            >{{ savingPref ? '…' : 'Save' }}</button>
+          </div>
+        </div>
+        <p v-else class="text-xs text-muted-foreground">No preference profile found</p>
+      </section>
+
       <!-- URL ingest -->
       <section>
         <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Submit URL</h2>
@@ -93,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import type { IngestJobResponse } from "@feed-reader/types";
+import type { IngestJobResponse, PreferenceResponse } from "@feed-reader/types";
 import { onMounted, onUnmounted, ref } from "vue";
 import { api } from "../api/client.ts";
 import { useFeedsStore } from "../stores/feeds.ts";
@@ -106,10 +136,38 @@ const submitting = ref(false);
 const pendingCount = ref(0);
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
+const pref = ref<PreferenceResponse | null>(null);
+const prefRate = ref(0.1);
+const savingPref = ref(false);
+
 onMounted(() => {
   feedsStore.fetchFeeds();
   fetchPendingCount();
+  loadPref();
 });
+
+async function loadPref() {
+  try {
+    const res = await api.get<PreferenceResponse>("/preference");
+    pref.value = res;
+    prefRate.value = res.learningRate;
+  } catch {
+    // no profile yet
+  }
+}
+
+async function savePref() {
+  if (savingPref.value) return;
+  savingPref.value = true;
+  try {
+    const res = await api.patch<PreferenceResponse>("/preference", {
+      learningRate: prefRate.value,
+    });
+    pref.value = res;
+  } finally {
+    savingPref.value = false;
+  }
+}
 
 onUnmounted(() => {
   if (pollTimer) clearInterval(pollTimer);
