@@ -6,7 +6,7 @@
   "scripts": {
     "dev:server": "bun run src/server/index.ts",
     "dev:client": "bunx vite",
-    "dev": "bun run dev:server & bun run dev:client",
+    "dev": "bun run ../../scripts/dev.ts",
     "build": "bunx vite build",
     "test": "bun test",
     "typecheck": "bunx tsc --noEmit"
