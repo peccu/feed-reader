@@ -76,7 +76,7 @@
 - [x] requirements.mdの図もAAじゃなくて描画できる図にしてください（mermaid化。docs/requirements.md）
 - [x] JINAとCLAUDEの環境変数は.envファイルが必要なので、.env.sampleのようなファイルを作ってコミットしておいてください
 - [x] アーキテクチャとrequirements, tasksはdocsに移動しましょう（docs/ へ移動）
-- [ ] DDDとはいえ非エンジニア向けのドキュメントを用意したいです。何かしら書類にする仕組みを入れてもらえますか。docsフォルダに出力するか、actionsで生成して、github上で何か確認できるフォーマット、場所に出力するとか。playwrightの画面設計図も同様にgithub上で参照できると嬉しいです。今はactionsを探して特定してダウンロードしてunzipしてindex.htmlを開く必要があるのが手間です
+- [x] DDDとはいえ非エンジニア向けのドキュメントを用意したいです。何かしら書類にする仕組みを入れてもらえますか。docsフォルダに出力するか、actionsで生成して、github上で何か確認できるフォーマット、場所に出力するとか。playwrightの画面設計図も同様にgithub上で参照できると嬉しいです。今はactionsを探して特定してダウンロードしてunzipしてindex.htmlを開く必要があるのが手間です（GitHub Pages に自動デプロイする仕組みを追加。①TypeDoc で packages/{domain,types,db} の Domain & API Reference を生成＋docs/domain-model.md を平易な英語のDDDガイドとして表紙に、②画面カタログを英語化して Pages に掲載、③scripts/build-docs-site.ts が英語ランディングで両者を統合。.github/workflows/docs.yml が push(v2) でビルド&デプロイ。`bun run docs` でローカル生成可。※初回のみ GitHub 設定→Pages→Source を "GitHub Actions" にする必要あり）
 - [x] PWA対応（manifest＋SVGアイコン＋apple-touch-icon）。theme-color を light/dark で出し分け、status-bar-style=black-translucent。アプリもOSのダーク/ライトに追従（.dark自動適用）するよう修正
 - [x] 設定画面に、feed別に取り込み済みの記事の数を表示して欲しいです
 - [x] 設定画面のフィードはフィードメタ情報を載せきれていないです。フィードURLが2行表示されているので、発行元とフィードの名前など、その辺りフィード取得次に取得可能な情報を表示できるようにして欲しいです
