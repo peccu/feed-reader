@@ -38,6 +38,18 @@ export interface ServiceHealthResponse {
   detail: string | null;
 }
 
+/** Like/dislike counts aggregated by the source domain (article host). */
+export interface FeedbackByDomainItem {
+  host: string;
+  like: number;
+  dislike: number;
+  total: number;
+}
+
+export interface FeedbackByDomainResponse {
+  items: FeedbackByDomainItem[];
+}
+
 export interface DebugQueryRequest {
   sql: string;
 }

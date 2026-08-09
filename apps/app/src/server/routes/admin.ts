@@ -2,11 +2,22 @@ import type {
   AdminStatsResponse,
   DebugQueryRequest,
   DebugQueryResponse,
+  FeedbackByDomainItem,
+  FeedbackByDomainResponse,
   PendingJobResponse,
   ServiceHealthResponse,
 } from "@feed-reader/types";
 import { Hono } from "hono";
 import { db } from "../db.ts";
+
+/** Extract a bare host (no leading www.) from a URL, or "(unknown)". */
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "(unknown)";
+  }
+}
 
 const CLAUDE_WORKER_URL = process.env.CLAUDE_WORKER_URL ?? "http://localhost:3001";
 
@@ -48,6 +59,29 @@ router.get("/stats", (c) => {
       dislike: countBy("feedback", "feedback_type", "dislike"),
     },
   };
+  return c.json(body);
+});
+
+// Like/dislike aggregated by source domain. Hostnames are derived in JS since
+// SQLite has no URL parser.
+router.get("/feedback-by-domain", (c) => {
+  const rows = db
+    .query<{ url: string; feedback_type: string }, []>(
+      `SELECT a.url AS url, f.feedback_type AS feedback_type
+         FROM feedback f JOIN articles a ON a.id = f.article_id`,
+    )
+    .all();
+  const byHost = new Map<string, FeedbackByDomainItem>();
+  for (const r of rows) {
+    const host = hostOf(r.url);
+    const item = byHost.get(host) ?? { host, like: 0, dislike: 0, total: 0 };
+    if (r.feedback_type === "like") item.like += 1;
+    else if (r.feedback_type === "dislike") item.dislike += 1;
+    item.total += 1;
+    byHost.set(host, item);
+  }
+  const items = [...byHost.values()].sort((a, b) => b.total - a.total);
+  const body: FeedbackByDomainResponse = { items };
   return c.json(body);
 });
 

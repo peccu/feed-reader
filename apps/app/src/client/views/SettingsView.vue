@@ -151,6 +151,32 @@
         </div>
       </section>
 
+      <!-- Feedback by source domain -->
+      <section v-if="domainFeedback.length > 0">
+        <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+          Feedback by source
+        </h2>
+        <div class="space-y-1.5">
+          <div
+            v-for="d in domainFeedback"
+            :key="d.host"
+            class="flex items-center gap-2 p-2 rounded-lg border border-border bg-card text-xs"
+          >
+            <span class="flex-1 truncate text-foreground">{{ d.host }}</span>
+            <span class="flex items-center gap-1 text-yellow-500 tabular-nums">
+              <ThumbsUp :size="12" />{{ d.like }}
+            </span>
+            <span class="flex items-center gap-1 text-destructive tabular-nums">
+              <ThumbsDown :size="12" />{{ d.dislike }}
+            </span>
+            <span class="w-10 text-right text-muted-foreground tabular-nums">
+              {{ Math.round((d.like / d.total) * 100) }}%
+            </span>
+          </div>
+        </div>
+        <p class="text-xs text-muted-foreground mt-1">Like rate per domain (like / total feedback).</p>
+      </section>
+
       <!-- Tools (from the legacy reader) -->
       <section>
         <h2 class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Tools</h2>
@@ -184,12 +210,14 @@
 
 <script setup lang="ts">
 import type {
+  FeedbackByDomainItem,
   IngestJobResponse,
   PendingJobResponse,
   PreferenceResponse,
   SettingsExport,
   SettingsImportResponse,
 } from "@feed-reader/types";
+import { ThumbsDown, ThumbsUp } from "lucide-vue-next";
 import { onMounted, onUnmounted, ref } from "vue";
 import { api } from "../api/client.ts";
 import BackButton from "../components/BackButton.vue";
@@ -198,6 +226,7 @@ import { useFeedsStore } from "../stores/feeds.ts";
 const feedsStore = useFeedsStore();
 
 const submissions = ref<PendingJobResponse[]>([]);
+const domainFeedback = ref<FeedbackByDomainItem[]>([]);
 const importMessage = ref("");
 const tools = [
   { label: "Feed URL Extractor (article-images)", url: "https://article-images.netlify.app/" },
@@ -220,7 +249,17 @@ onMounted(() => {
   fetchPendingCount();
   loadPref();
   loadSubmissions();
+  loadDomainFeedback();
 });
+
+async function loadDomainFeedback() {
+  try {
+    const res = await api.get<{ items: FeedbackByDomainItem[] }>("/admin/feedback-by-domain");
+    domainFeedback.value = res.items;
+  } catch {
+    // ignore
+  }
+}
 
 async function loadSubmissions() {
   try {
