@@ -24,7 +24,7 @@
       @click="showMenu = true"
       aria-label="Menu"
       class="absolute z-40 flex items-center justify-center w-11 h-11 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg text-muted-foreground hover:text-foreground"
-      :class="queue.direction === 'forward' ? 'left-3' : 'right-3'"
+      :class="queue.direction === 'forward' ? 'right-3' : 'left-3'"
       style="bottom: calc(env(safe-area-inset-bottom) + 4.75rem)"
     >
       <Menu :size="20" />

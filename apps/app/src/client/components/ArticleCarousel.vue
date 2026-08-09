@@ -1,10 +1,12 @@
 <template>
   <div class="relative h-full overflow-hidden select-none">
-    <!-- Index-driven track: translateX by whole viewports for deterministic nav -->
+    <!-- Index-driven track. In reversed mode the whole strip is mirrored
+         (flex-row-reverse) so index 0 sits on the right and advancing moves
+         leftward — the next article enters from the left. -->
     <div
       class="flex h-full will-change-transform touch-pan-y"
-      :class="{ 'transition-transform duration-300 ease-out': !dragging }"
-      :style="{ transform: `translateX(calc(${-currentIndex * 100}% + ${dragDx}px))` }"
+      :class="[{ 'transition-transform duration-300 ease-out': !dragging }, { 'flex-row-reverse': reversed }]"
+      :style="{ transform: `translateX(calc(${basePct}% + ${dragDx}px))` }"
       @pointerdown="onPointerDown"
       @pointermove="onPointerMove"
       @pointerup="onPointerUp"
@@ -13,14 +15,14 @@
       <slot />
     </div>
 
-    <!-- Left edge -->
+    <!-- Left edge (always points outward; delta depends on direction) -->
     <button
       v-if="canLeft"
       class="absolute left-0 top-0 h-full w-14 z-10 flex items-center justify-start pl-1 text-foreground/25 hover:text-foreground/50 bg-transparent"
       aria-label="Left"
       @click="emit('navigate', leftDelta)"
     >
-      <span class="text-3xl leading-none">{{ reversed ? '›' : '‹' }}</span>
+      <span class="text-3xl leading-none">‹</span>
     </button>
 
     <!-- Right edge -->
@@ -30,7 +32,7 @@
       aria-label="Right"
       @click="emit('navigate', rightDelta)"
     >
-      <span class="text-3xl leading-none">{{ reversed ? '‹' : '›' }}</span>
+      <span class="text-3xl leading-none">›</span>
     </button>
   </div>
 </template>
@@ -48,6 +50,10 @@ const props = defineProps<{
 const emit = defineEmits<{
   navigate: [delta: number];
 }>();
+
+// Track offset. Forward: index grows rightward (translate negative). Reversed:
+// row-reverse flips the strip, so translate positive to reveal higher indices.
+const basePct = computed(() => (props.reversed ? props.currentIndex : -props.currentIndex) * 100);
 
 // Index delta produced by tapping each physical edge (mirrored when reversed).
 const leftDelta = computed(() => (props.reversed ? 1 : -1));
