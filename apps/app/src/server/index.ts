@@ -50,6 +50,8 @@ const distRoot = process.env.DIST_ROOT ?? "./apps/app/dist/client";
 app.use("/*", serveStatic({ root: distRoot }));
 app.get("/*", serveStatic({ path: `${distRoot}/index.html` }));
 
+export { app };
+
 export default {
   port: Number(process.env.PORT ?? 3000),
   fetch: app.fetch,

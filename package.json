@@ -4,10 +4,15 @@
   "private": true,
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "test": "bun run --filter '*' test",
+    "test": "bun test packages/ apps/",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "typecheck": "bun run --filter '*' typecheck"
+    "typecheck": "bun run --filter '*' typecheck",
+    "dev": "bun run --cwd apps/app dev",
+    "seed": "bun run scripts/seed.ts",
+    "seed:reset": "bun run scripts/seed.ts --reset",
+    "e2e": "bunx playwright test",
+    "e2e:ui": "bunx playwright test --ui"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

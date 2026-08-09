@@ -7,8 +7,9 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [["html"], ["list"]],
+  globalSetup: "./e2e/globalSetup.ts",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: "http://localhost:3737",
     trace: "on-first-retry",
     screenshot: "on",
   },
@@ -26,10 +27,12 @@ export default defineConfig({
       },
     },
   ],
-  // webServer will be configured when E2E tests are added
-  // webServer: {
-  //   command: "bun run apps/app/src/server/index.ts",
-  //   url: "http://localhost:3000",
-  //   reuseExistingServer: !process.env.CI,
-  // },
+  webServer: {
+    command: "bun run e2e/server/start.ts",
+    url: "http://localhost:3737/health",
+    reuseExistingServer: !process.env.CI,
+    stdout: "pipe",
+    stderr: "pipe",
+    timeout: 60_000,
+  },
 });
