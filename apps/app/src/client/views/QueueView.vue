@@ -8,6 +8,7 @@
       <!-- Nav links -->
       <div class="flex items-center gap-3 text-muted-foreground">
         <RouterLink to="/discover" class="text-sm hover:text-foreground transition-colors">Discover</RouterLink>
+        <RouterLink to="/library" class="text-sm hover:text-foreground transition-colors">Library</RouterLink>
         <RouterLink to="/notes" class="text-sm hover:text-foreground transition-colors">Notes</RouterLink>
       </div>
 
@@ -68,6 +69,7 @@
       v-if="queue.total > 0"
       :disabled="queue.loading || !queue.currentItem"
       :evaluation="currentEvaluation"
+      :favorited="queue.currentItem?.favorited ?? false"
       @action="handleAction"
     />
 
@@ -171,7 +173,7 @@ function handleNavigate(delta: number) {
   queue.navigate(actual);
 }
 
-async function handleAction(type: "dislike" | "like" | "done" | "skip" | "note") {
+async function handleAction(type: "dislike" | "like" | "done" | "skip" | "note" | "favorite") {
   const item = queue.currentItem;
   if (!item) return;
 
@@ -181,6 +183,10 @@ async function handleAction(type: "dislike" | "like" | "done" | "skip" | "note")
     case "dislike":
       evaluations.value.set(item.articleId, type);
       await feedback.sendFeedback(item.articleId, type);
+      break;
+
+    case "favorite":
+      await queue.toggleFavorite(item.id);
       break;
 
     // Finished reading → mark read (leaves the unread queue).

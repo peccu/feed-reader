@@ -22,19 +22,22 @@
 </template>
 
 <script setup lang="ts">
-import { Check, SkipForward, StickyNote, ThumbsDown, ThumbsUp } from "lucide-vue-next";
+import { Bookmark, Check, SkipForward, StickyNote, ThumbsDown, ThumbsUp } from "lucide-vue-next";
 import type { Component } from "vue";
 
-type ActionType = "dislike" | "like" | "done" | "skip" | "note";
+type ActionType = "dislike" | "like" | "done" | "skip" | "note" | "favorite";
 
 const props = defineProps<{
   disabled?: boolean;
   /** Current evaluation for the visible article, to highlight like/dislike. */
   evaluation?: "like" | "dislike" | null;
+  /** Whether the visible article is bookmarked, to highlight the save button. */
+  favorited?: boolean;
 }>();
 const emit = defineEmits<{ action: [type: ActionType] }>();
 
 function isActive(type: ActionType): boolean {
+  if (type === "favorite") return !!props.favorited;
   return (type === "like" || type === "dislike") && props.evaluation === type;
 }
 
@@ -72,6 +75,13 @@ const buttons: Array<{
     icon: SkipForward,
     class: "text-muted-foreground hover:text-foreground",
     activeClass: "text-foreground",
+  },
+  {
+    type: "favorite",
+    label: "Save",
+    icon: Bookmark,
+    class: "text-muted-foreground hover:text-amber-500",
+    activeClass: "text-amber-500",
   },
   {
     type: "note",

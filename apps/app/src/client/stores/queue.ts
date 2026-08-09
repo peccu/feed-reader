@@ -53,6 +53,18 @@ export const useQueueStore = defineStore("queue", () => {
     }
   }
 
+  async function toggleFavorite(id: string) {
+    const item = items.value.find((i) => i.id === id);
+    if (!item) return;
+    const favorited = !item.favorited;
+    item.favorited = favorited; // optimistic
+    try {
+      await api.patch(`/queue/${id}/favorite`, { favorited });
+    } catch {
+      item.favorited = !favorited; // revert on failure
+    }
+  }
+
   async function updateStatus(id: string, status: "reading" | "read" | "skipped" | "archived") {
     await api.patch(`/queue/${id}/status`, { status });
     items.value = items.value.filter((i) => i.id !== id);
@@ -91,6 +103,7 @@ export const useQueueStore = defineStore("queue", () => {
     fetchQueue,
     fetchStats,
     fetchArticle,
+    toggleFavorite,
     updateStatus,
     navigate,
     goTo,
