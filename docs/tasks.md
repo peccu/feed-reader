@@ -172,7 +172,7 @@ Proxy {__v_skip: true}
 ```
 - [ ] discoverの検索フォームもios26のようにボトムに移動してもらえますか。丸い感じで
 - [ ] 記事を見ている時に、その記事についているノートを確認するための動線が欲しいです。
-
+- [x] 記事中のaタグがアプリを上書きしてしまうので新しいタブで開くようにできますか（sanitize.ts の DOMPurify afterSanitizeAttributes フックで、記事HTML・ノートMarkdown 内の全リンクに target=_blank / rel=noopener noreferrer を付与）
 
 
 ---
