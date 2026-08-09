@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import articlesRouter from "./routes/articles.ts";
 import categoriesRouter, { articleCategoryRouter } from "./routes/categories.ts";
@@ -42,6 +43,10 @@ api.route("/claude", claudeRouter);
 api.route("/search", searchRouter);
 
 app.route("/api/v1", api);
+
+// Serve built Vue frontend (only in production; dev uses Vite server)
+app.use("/*", serveStatic({ root: "./dist/client" }));
+app.get("/*", serveStatic({ path: "./dist/client/index.html" }));
 
 export default {
   port: Number(process.env.PORT ?? 3000),

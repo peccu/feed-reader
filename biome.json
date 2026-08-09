@@ -32,5 +32,18 @@
   },
   "files": {
     "ignore": ["legacy/**", "node_modules/**", "dist/**", ".git/**"]
-  }
+  },
+  "overrides": [
+    {
+      "include": ["**/*.vue"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off",
+            "noUnusedImports": "off"
+          }
+        }
+      }
+    }
+  ]
 }

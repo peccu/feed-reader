@@ -4,14 +4,24 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun run src/server/index.ts",
+    "dev:server": "bun run src/server/index.ts",
+    "dev:client": "bunx vite",
+    "dev": "bun run dev:server & bun run dev:client",
+    "build": "bunx vite build",
     "test": "bun test",
     "typecheck": "bunx tsc --noEmit"
   },
   "dependencies": {
-    "@feed-reader/domain": "workspace:*",
     "@feed-reader/db": "workspace:*",
+    "@feed-reader/domain": "workspace:*",
     "@feed-reader/types": "workspace:*",
-    "hono": "^4.6.0"
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "hono": "^4.6.0",
+    "pinia": "^2",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.2.1",
+    "vue": "^3",
+    "vue-router": "^4"
   }
 }
