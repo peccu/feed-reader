@@ -19,11 +19,12 @@
       </button>
     </div>
 
-    <!-- Floating menu button (bottom, thumb zone; always reachable) -->
+    <!-- Floating menu button (bottom, thumb zone; mirrors with direction) -->
     <button
       @click="showMenu = true"
       aria-label="Menu"
-      class="absolute left-3 z-40 flex items-center justify-center w-11 h-11 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg text-muted-foreground hover:text-foreground"
+      class="absolute z-40 flex items-center justify-center w-11 h-11 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg text-muted-foreground hover:text-foreground"
+      :class="queue.direction === 'forward' ? 'left-3' : 'right-3'"
       style="bottom: calc(env(safe-area-inset-bottom) + 4.75rem)"
     >
       <Menu :size="20" />
@@ -51,6 +52,7 @@
       class="flex-1 min-h-0"
       :current-index="queue.currentIndex"
       :total="queue.total"
+      :reversed="queue.direction === 'backward'"
       @navigate="handleNavigate"
     >
       <ArticleCard
@@ -207,8 +209,8 @@ onMounted(async () => {
 });
 
 function handleNavigate(delta: number) {
-  const actual = queue.direction === "forward" ? delta : -delta;
-  queue.navigate(actual);
+  // The carousel already mirrors its emitted delta when reversed.
+  queue.navigate(delta);
 }
 
 async function handleAction(type: "dislike" | "like" | "done" | "skip" | "note" | "favorite") {

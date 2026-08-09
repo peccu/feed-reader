@@ -13,24 +13,24 @@
       <slot />
     </div>
 
-    <!-- Left tap area -->
+    <!-- Left edge -->
     <button
-      v-if="canGoBack"
+      v-if="canLeft"
       class="absolute left-0 top-0 h-full w-14 z-10 flex items-center justify-start pl-1 text-foreground/25 hover:text-foreground/50 bg-transparent"
-      aria-label="Previous"
-      @click="emit('navigate', -1)"
+      aria-label="Left"
+      @click="emit('navigate', leftDelta)"
     >
-      <span class="text-3xl leading-none">‹</span>
+      <span class="text-3xl leading-none">{{ reversed ? '›' : '‹' }}</span>
     </button>
 
-    <!-- Right tap area -->
+    <!-- Right edge -->
     <button
-      v-if="canGoForward"
+      v-if="canRight"
       class="absolute right-0 top-0 h-full w-14 z-10 flex items-center justify-end pr-1 text-foreground/25 hover:text-foreground/50 bg-transparent"
-      aria-label="Next"
-      @click="emit('navigate', 1)"
+      aria-label="Right"
+      @click="emit('navigate', rightDelta)"
     >
-      <span class="text-3xl leading-none">›</span>
+      <span class="text-3xl leading-none">{{ reversed ? '‹' : '›' }}</span>
     </button>
   </div>
 </template>
@@ -41,14 +41,21 @@ import { computed, ref } from "vue";
 const props = defineProps<{
   currentIndex: number;
   total: number;
+  /** When reversed, "forward" reads right-to-left, so mirror the edges/swipe. */
+  reversed?: boolean;
 }>();
 
 const emit = defineEmits<{
   navigate: [delta: number];
 }>();
 
-const canGoBack = computed(() => props.currentIndex > 0);
-const canGoForward = computed(() => props.currentIndex < props.total - 1);
+// Index delta produced by tapping each physical edge (mirrored when reversed).
+const leftDelta = computed(() => (props.reversed ? 1 : -1));
+const rightDelta = computed(() => (props.reversed ? -1 : 1));
+
+const inRange = (i: number) => i >= 0 && i < props.total;
+const canLeft = computed(() => inRange(props.currentIndex + leftDelta.value));
+const canRight = computed(() => inRange(props.currentIndex + rightDelta.value));
 
 // --- Horizontal swipe (pointer-based, threshold-driven) ---
 const SWIPE_THRESHOLD = 60; // px to commit a page turn
@@ -79,8 +86,8 @@ function onPointerMove(e: PointerEvent) {
   }
   if (horizontal) {
     e.preventDefault();
-    // Resist swiping past the ends.
-    const atEnd = (dx < 0 && !canGoForward.value) || (dx > 0 && !canGoBack.value);
+    // Resist swiping past the ends (dragging left reveals the right edge's target).
+    const atEnd = (dx < 0 && !canRight.value) || (dx > 0 && !canLeft.value);
     dragDx.value = atEnd ? dx * 0.25 : dx;
   }
 }
@@ -91,7 +98,7 @@ function onPointerUp() {
   dragging.value = false;
   dragDx.value = 0;
   if (horizontal && Math.abs(dx) > SWIPE_THRESHOLD) {
-    emit("navigate", dx < 0 ? 1 : -1);
+    emit("navigate", dx < 0 ? rightDelta.value : leftDelta.value);
   }
 }
 </script>
