@@ -37,6 +37,25 @@ export function parseHtml(html: string): ParsedContent {
   return { text, links, wordCount };
 }
 
+/**
+ * Extract the first usable absolute image URL from an HTML fragment.
+ * Mirrors the legacy feed-reader fallback (first image in description/content).
+ */
+export function firstImageSrc(html: string): string | undefined {
+  const re = /<img[^>]+src=["']([^"']+)["']/gi;
+  for (const m of html.matchAll(re)) {
+    const src = m[1]?.trim();
+    if (src?.startsWith("http")) return src;
+  }
+  return undefined;
+}
+
+/** Extract the first bare http(s) image URL appearing in text (RSS description). */
+export function firstImageUrlInText(text: string): string | undefined {
+  const m = text.match(/(https?:\/\/[^\s"'<>]+?\.(?:jpe?g|png|gif|webp|avif))/i);
+  return m?.[1];
+}
+
 /** Append link metadata to text so embeddings capture link context. */
 export function buildEmbeddingInput(content: ParsedContent, maxWords = 4000): string {
   const words = content.text.split(/\s+/);

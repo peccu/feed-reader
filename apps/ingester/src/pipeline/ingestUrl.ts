@@ -9,7 +9,7 @@ import type { FeedId } from "@feed-reader/domain";
 import Parser from "@postlight/parser";
 import { articleRepo, embeddingRepo, preferenceRepo, queueRepo } from "../db.ts";
 import { enrichWithClaude } from "./claudeEnricher.ts";
-import { buildEmbeddingInput, parseHtml } from "./htmlParser.ts";
+import { buildEmbeddingInput, firstImageSrc, parseHtml } from "./htmlParser.ts";
 import { embed } from "./jinaEmbedder.ts";
 
 export interface IngestResult {
@@ -31,7 +31,7 @@ export interface IngestResult {
  */
 export async function ingestUrl(
   url: string,
-  options: { feedId?: FeedId; overrideTitle?: string } = {},
+  options: { feedId?: FeedId; overrideTitle?: string; leadImageUrl?: string } = {},
 ): Promise<IngestResult> {
   // 1. Dedup
   if (await articleRepo.existsByUrl(url)) {
@@ -44,7 +44,8 @@ export async function ingestUrl(
   let html: string | undefined;
   let author: string | undefined;
   let publishedAt: Date | undefined;
-  let leadImageUrl: string | undefined;
+  // Image priority: caller-supplied (RSS enclosure) → scraped lead image → first <img>.
+  let leadImageUrl: string | undefined = options.leadImageUrl;
 
   // 2. Scrape with @postlight/parser (HTML content, so we keep formatting)
   try {
@@ -53,7 +54,7 @@ export async function ingestUrl(
     if (scraped.author) author = scraped.author;
     if (scraped.date_published) publishedAt = new Date(scraped.date_published);
     if (scraped.content) html = scraped.content;
-    if (scraped.lead_image_url) leadImageUrl = scraped.lead_image_url;
+    if (!leadImageUrl && scraped.lead_image_url) leadImageUrl = scraped.lead_image_url;
   } catch (err) {
     console.warn(`[ingester] scrape failed for ${url}:`, err);
   }
@@ -61,6 +62,9 @@ export async function ingestUrl(
   // 3. Parse HTML → clean text + links (used for embedding, word count)
   const parsed = html ? parseHtml(html) : null;
   const cleanText = parsed?.text ?? title;
+
+  // Final image fallback: first image embedded in the article body.
+  if (!leadImageUrl && html) leadImageUrl = firstImageSrc(html);
 
   // 4. Optional Claude enrichment (keywords/categories)
   const enriched = await enrichWithClaude(articleId, cleanText);
