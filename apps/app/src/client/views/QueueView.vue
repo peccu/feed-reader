@@ -5,13 +5,14 @@
       class="flex items-center justify-between px-4 py-2 border-b border-border bg-background z-20 shrink-0"
       style="padding-top: max(0.5rem, env(safe-area-inset-top))"
     >
-      <!-- Nav links -->
-      <div class="flex items-center gap-3 text-muted-foreground">
-        <RouterLink to="/discover" class="text-sm hover:text-foreground transition-colors">Discover</RouterLink>
-        <RouterLink to="/train" class="text-sm hover:text-foreground transition-colors">Train</RouterLink>
-        <RouterLink to="/library" class="text-sm hover:text-foreground transition-colors">Library</RouterLink>
-        <RouterLink to="/notes" class="text-sm hover:text-foreground transition-colors">Notes</RouterLink>
-      </div>
+      <!-- Menu (opens a bottom sheet — keeps navigation in the thumb zone) -->
+      <button
+        @click="showMenu = true"
+        class="text-muted-foreground hover:text-foreground transition-colors"
+        aria-label="Menu"
+      >
+        <Menu :size="22" />
+      </button>
 
       <!-- Position indicator (tap to toggle direction) -->
       <button
@@ -27,10 +28,8 @@
         </span>
       </button>
 
-      <!-- Settings -->
-      <RouterLink to="/settings" class="text-muted-foreground hover:text-foreground transition-colors">
-        <span class="text-lg">⚙</span>
-      </RouterLink>
+      <!-- Spacer to keep the indicator centered -->
+      <span class="w-[22px]" aria-hidden="true" />
     </div>
 
     <!-- Empty state -->
@@ -74,6 +73,26 @@
       @action="handleAction"
     />
 
+    <!-- Navigation menu (bottom sheet) -->
+    <div v-if="showMenu" class="absolute inset-0 z-50" @click.self="showMenu = false">
+      <div class="absolute inset-0 bg-black/40" @click="showMenu = false" />
+      <nav
+        class="absolute left-0 right-0 bottom-0 bg-background border-t border-border rounded-t-2xl p-2"
+        style="padding-bottom: max(1rem, env(safe-area-inset-bottom))"
+      >
+        <RouterLink
+          v-for="link in menuLinks"
+          :key="link.to"
+          :to="link.to"
+          @click="showMenu = false"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent text-foreground"
+        >
+          <component :is="link.icon" :size="20" class="text-muted-foreground" />
+          <span class="text-sm font-medium">{{ link.label }}</span>
+        </RouterLink>
+      </nav>
+    </div>
+
     <!-- Note overlay (card stays the reader; no navigation) -->
     <div
       v-if="showNoteForm"
@@ -105,13 +124,23 @@ import type {
   NoteResponse,
   QueueItemResponse,
 } from "@feed-reader/types";
-import { computed, onMounted, ref, watch } from "vue";
+import { Compass, Library, Menu, NotebookText, Settings, Target } from "lucide-vue-next";
+import { type Component, computed, onMounted, ref, watch } from "vue";
 import { api } from "../api/client.ts";
 import ActionBar from "../components/ActionBar.vue";
 import ArticleCard from "../components/ArticleCard.vue";
 import ArticleCarousel from "../components/ArticleCarousel.vue";
 import { useFeedbackStore } from "../stores/feedback.ts";
 import { useQueueStore } from "../stores/queue.ts";
+
+const showMenu = ref(false);
+const menuLinks: Array<{ to: string; label: string; icon: Component }> = [
+  { to: "/discover", label: "Discover", icon: Compass },
+  { to: "/train", label: "Train", icon: Target },
+  { to: "/library", label: "Library", icon: Library },
+  { to: "/notes", label: "Notes", icon: NotebookText },
+  { to: "/settings", label: "Settings / Feeds", icon: Settings },
+];
 
 const queue = useQueueStore();
 const feedback = useFeedbackStore();
