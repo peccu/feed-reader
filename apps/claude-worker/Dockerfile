@@ -7,7 +7,11 @@ RUN apt-get update && apt-get install -y curl && \
 
 FROM base AS deps
 COPY package.json bun.lock* ./
+COPY apps/app/package.json ./apps/app/
+COPY apps/ingester/package.json ./apps/ingester/
 COPY apps/claude-worker/package.json ./apps/claude-worker/
+COPY packages/domain/package.json ./packages/domain/
+COPY packages/db/package.json ./packages/db/
 COPY packages/types/package.json ./packages/types/
 RUN bun install --frozen-lockfile
 
