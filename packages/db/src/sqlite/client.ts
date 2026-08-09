@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS articles (
   scraped_at INTEGER,
   source_type TEXT NOT NULL CHECK(source_type IN ('rss','url','html_post','bookmark')),
   word_count INTEGER,
+  ingest_version INTEGER NOT NULL DEFAULT 0,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
@@ -157,6 +158,10 @@ function migrate(db: Database): void {
   if (!cols.includes("html")) db.run("ALTER TABLE articles ADD COLUMN html TEXT");
   if (!cols.includes("lead_image_url")) {
     db.run("ALTER TABLE articles ADD COLUMN lead_image_url TEXT");
+  }
+  if (!cols.includes("ingest_version")) {
+    // Existing rows predate versioning → 0, so reingest picks them up.
+    db.run("ALTER TABLE articles ADD COLUMN ingest_version INTEGER NOT NULL DEFAULT 0");
   }
 }
 

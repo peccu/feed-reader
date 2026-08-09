@@ -18,6 +18,7 @@ type ArticleRow = {
   scraped_at: number | null;
   source_type: string;
   word_count: number | null;
+  ingest_version: number;
   created_at: number;
   updated_at: number;
 };
@@ -37,6 +38,7 @@ function toArticle(r: ArticleRow): Article {
     scrapedAt: r.scraped_at !== null ? new Date(r.scraped_at) : null,
     sourceType: r.source_type as SourceType,
     wordCount: r.word_count,
+    ingestVersion: r.ingest_version ?? 0,
     createdAt: new Date(r.created_at),
     updatedAt: new Date(r.updated_at),
   };
@@ -83,14 +85,16 @@ export class ArticleRepo implements ArticleRepository {
     this.db.run(
       `INSERT INTO articles
          (id, feed_id, url, title, author, full_text, html, lead_image_url, summary,
-          published_at, scraped_at, source_type, word_count, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          published_at, scraped_at, source_type, word_count, ingest_version,
+          created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          feed_id = excluded.feed_id, title = excluded.title, author = excluded.author,
          full_text = excluded.full_text, html = excluded.html,
          lead_image_url = excluded.lead_image_url, summary = excluded.summary,
          published_at = excluded.published_at, scraped_at = excluded.scraped_at,
-         word_count = excluded.word_count, updated_at = excluded.updated_at`,
+         word_count = excluded.word_count, ingest_version = excluded.ingest_version,
+         updated_at = excluded.updated_at`,
       [
         article.id,
         article.feedId,
@@ -105,6 +109,7 @@ export class ArticleRepo implements ArticleRepository {
         article.scrapedAt?.getTime() ?? null,
         article.sourceType,
         article.wordCount,
+        article.ingestVersion,
         article.createdAt.getTime(),
         article.updatedAt.getTime(),
       ],

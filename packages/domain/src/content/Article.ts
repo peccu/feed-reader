@@ -1,6 +1,15 @@
 import type { ArticleId, FeedId } from "../shared.ts";
 import type { SourceType } from "./SourceType.ts";
 
+/**
+ * Version of the ingestion pipeline / data-acquisition method. Bump this
+ * whenever the way we fetch or store article data changes so older rows can
+ * be re-fetched (see scripts/reingest.ts).
+ *   1 = plain-text body only
+ *   2 = HTML body + lead/eyecatch image
+ */
+export const CURRENT_INGEST_VERSION = 2;
+
 export interface Article {
   readonly id: ArticleId;
   readonly feedId: FeedId | null;
@@ -17,6 +26,8 @@ export interface Article {
   readonly scrapedAt: Date | null;
   readonly sourceType: SourceType;
   readonly wordCount: number | null;
+  /** Ingestion pipeline version that produced this row. */
+  readonly ingestVersion: number;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 }
@@ -32,6 +43,7 @@ export interface CreateArticleInput {
   leadImageUrl?: string;
   publishedAt?: Date;
   sourceType: SourceType;
+  ingestVersion?: number;
 }
 
 export function createArticle(input: CreateArticleInput): Article {
@@ -54,6 +66,7 @@ export function createArticle(input: CreateArticleInput): Article {
     scrapedAt: input.fullText ? now : null,
     sourceType: input.sourceType,
     wordCount,
+    ingestVersion: input.ingestVersion ?? CURRENT_INGEST_VERSION,
     createdAt: now,
     updatedAt: now,
   };

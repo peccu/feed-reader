@@ -3,6 +3,7 @@ import { articleRepo, db, embeddingRepo, preferenceRepo, queueRepo } from "../db
 import { buildEmbeddingInput, parseHtml } from "../pipeline/htmlParser.ts";
 import { ingestUrl } from "../pipeline/ingestUrl.ts";
 import { embed } from "../pipeline/jinaEmbedder.ts";
+import { reingestArticle } from "../pipeline/reingest.ts";
 
 interface PendingJobRow {
   id: string;
@@ -29,6 +30,9 @@ export async function runPendingJobRunner(): Promise<void> {
       if (job.job_type === "ingest_url") {
         const url = payload.url as string;
         await ingestUrl(url);
+      } else if (job.job_type === "reingest") {
+        const result = await reingestArticle(ArticleId(payload.articleId as string));
+        if (!result.ok) throw new Error(`reingest failed: ${result.reason}`);
       } else if (job.job_type === "ingest_html") {
         const articleId = ArticleId(payload.articleId as string);
         const article = await articleRepo.findById(articleId);
