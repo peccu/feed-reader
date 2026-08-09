@@ -210,9 +210,10 @@ Proxy {__v_skip: true}
 - [ ] ☐ D5. カテゴリ自動クラスタリング（`centroid_vector` 算出・自動ラベル。現状は手動CRUDのみ）
 
 ### Epic E. Claude 連携 UI
-- [ ] ◑ E1. 記事からClaude対話UI（`POST /claude/chat` は実装済み・UI無し）
-- [ ] ◑ E2. 記事要約の表示（`POST /claude/summarize` 実装済み・UI無し）
-- [ ] ◑ E3. 対話→ノート保存（`POST /claude/note` 実装済み・UI無し）
+- [x] ☑ E1. 記事からClaude対話UI（`POST /claude/chat` は実装済み・UI無し）→ 記事下部の ClaudePanel にインラインチャット（sessionId をフォローアップに引き継ぎ）を追加。※worker 未起動時はエラー表示、multi-turn 文脈継続は E4 の未修正バグ依存
+- [x] ☑ E2. 記事要約の表示（`POST /claude/summarize` 実装済み・UI無し）→ ClaudePanel の「Summarize」ボタンで要約取得＋表示（article.summary にも永続化）
+- [x] ☑ E3. 対話→ノート保存（`POST /claude/note` 実装済み・UI無し）→ 各 Claude 返信に「Save as note」を追加（claude_conversation ノートとして保存）
+  - ※これらは claude-worker が必要。開発環境で未起動のため runtime 検証は未実施（build/型/テストは green）
 - [ ] ☐ E4. claude-worker セッション継続バグ修正（`--resume` はID／`/sessions/:id` が常に404）
 
 ### Epic F. 発見・共有
