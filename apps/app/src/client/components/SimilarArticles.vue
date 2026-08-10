@@ -1,6 +1,6 @@
 <template>
   <div v-if="items.length > 0" class="mt-6 pt-3 border-t border-border">
-    <h2 class="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+    <h2 class="text-xs font-semibold uppercase tracking-wide text-foreground mb-2">
       More like this
     </h2>
     <div class="space-y-1">
