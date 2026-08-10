@@ -481,6 +481,48 @@ flowchart TD
   J -.->|非同期・任意| L[claude-worker\nに要約依頼]
 ```
 
+### 埋め込み生成（チャンク分割・mean-pool）
+
+`apps/ingester/src/pipeline/jinaEmbedder.ts` の `embed(text)` が記事1本のベクトル
+（1024次元）を生成する。Jina のモデルは入力が **約8194トークン**を超えると失敗するため、
+長文は「切り捨て」ではなく**チャンク分割してから平均（mean-pool）** する。
+
+処理の流れ（`apps/ingester/src/pipeline/chunk.ts` の純関数を使用）:
+
+1. **`chunkText(text, 6000)`** — テキストを最大6000文字のチャンクに分割する。
+   まず段落（空行区切り）でまとめ、budget を超えそうなら切り、単独で超える段落は
+   6000文字ごとにハード分割する。短文はそのまま1チャンク。
+   （6000文字はトークン上限に対して十分安全なマージン。）
+2. 全チャンクを **1回のバッチ API 呼び出し**で埋め込み、各チャンクの正規化ベクトルを得る。
+3. **`meanPool(vectors)`** — チャンクベクトルを要素ごとに平均し、`normalize()` で単位ベクトル化。
+   これが記事の代表ベクトルになる（＝記事全体が寄与する。冒頭だけの切り捨てにならない）。
+4. `truncate: true` はチャンク単位の最終安全網として残す（通常は発火しない）。
+
+埋め込みに渡すテキストは **`buildEmbeddingInput()`**（`htmlParser.ts`）が組み立てる:
+先頭に**タイトル**（最も濃い話題シグナル）、続いて本文（語数上限あり）、末尾にリンク文言
+（最大20件）。`JINA_API_KEY` 未設定時はゼロベクトルを返す（ローカル/テスト用）。
+
+チャンク分割と平均は純関数で、`apps/ingester/tests/pipeline/chunk.test.ts` に単体テストがある。
+
+### HTML貼り付け投入フロー（`POST /articles/ingest/html`）
+
+「取りに行けない記事（メール本文・ログイン必須ページ等）」の HTML を直接投入する経路。
+Settings の「Submit HTML」フォーム（URL＋任意タイトル＋HTML本文）から利用する。
+
+1. `apps/app/src/server/routes/articles.ts` の `POST /articles/ingest/html` が、
+   受け取った HTML で `Article`（`sourceType: "html_post"`, `fullText=html`, `html=html`）を
+   **即時に保存**し、`pending_jobs` に `ingest_html`（`{url, articleId}`）を積んで `202` を返す。
+   → この時点では**キューにはまだ出ない**（埋め込み・スコアリングが未実施）。
+2. ingester の `PendingJobRunner`（毎30秒）が `ingest_html` を処理する:
+   `parseHtml` → `buildEmbeddingInput`（上記）→ `embed`（チャンク分割・mean-pool）→
+   `article_embeddings` 保存 → 既定嗜好プロファイルとの**コサイン類似度でスコア算出** →
+   `queue_items` に `status=unread` で INSERT。
+   → 数十秒後に**未読キューに出現**する。
+3. 埋め込みに失敗（例: `JINA_API_KEY` 未設定）してもスコア0でキューには入る。
+
+つまり「貼り付け＝即キュー」ではなく「貼り付け＝記事保存＋ジョブ投入 → バッチ処理でスコア付き
+未読化」という2段構え。処理状況は Settings の Submitted URLs / Admin のジョブ一覧で確認できる。
+
 ### 嗜好ベクトル更新（EMAアルゴリズム）
 
 ```typescript
